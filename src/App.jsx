@@ -38,32 +38,6 @@ export default function App() {
   const findUserSlotForInstrument = (instrumentName) => {
     const lowerInstrument = instrumentName.toLowerCase();
     
-    const mapping = {
-      'batterie': 'drums',
-      'drums': 'drums',
-      'chant': 'vocals',
-      'chanteur': 'vocals',
-      'chanteuse': 'vocals',
-      'vocal': 'vocals',
-      'vocals': 'vocals',
-      'basse': 'bass',
-      'bass': 'bass',
-      'guitare': 'guitar',
-      'guitar': 'guitar',
-      'choeur': 'choir',
-      'chœur': 'choir',
-      'choir': 'choir',
-      'piano': 'piano',
-      'clavier': 'piano'
-    };
-    
-    return mapping[lowerInstrument] || null;
-  };
-
-  // Trouver le slot correspondant à un instrument
-  const findUserSlotForInstrument = (instrumentName) => {
-    const lowerInstrument = instrumentName.toLowerCase();
-    
     // Mapping des instruments courants vers les slots
     const mapping = {
       'batterie': 'drums',
