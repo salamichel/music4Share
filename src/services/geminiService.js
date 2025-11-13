@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 
 // Initialiser l'API Gemini avec la clé
 const initGeminiAPI = () => {
@@ -7,7 +7,7 @@ const initGeminiAPI = () => {
     console.warn('⚠️ REACT_APP_GEMINI_API_KEY non définie. Les enrichissements de titres ne fonctionneront pas.');
     return null;
   }
-  return new GoogleGenerativeAI(apiKey);
+  return new GoogleGenAI({ apiKey });
 };
 
 /**
@@ -18,10 +18,10 @@ const initGeminiAPI = () => {
  */
 export const enrichSongWithGemini = async (title, artist) => {
   try {
-    const genAI = initGeminiAPI();
+    const ai = initGeminiAPI();
 
     // Si pas de clé API, retourner des données vides
-    if (!genAI) {
+    if (!ai) {
       return {
         duration: null,
         chords: null,
@@ -30,9 +30,6 @@ export const enrichSongWithGemini = async (title, artist) => {
         enriched: false
       };
     }
-
-    // Utiliser le modèle Gemini Pro (version stable et disponible)
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
 
     const prompt = `
 Tu es un assistant musical expert. Pour la chanson "${title}" de "${artist}", fournis les informations suivantes au format JSON strict :
@@ -51,9 +48,13 @@ IMPORTANT:
 - Retourne UNIQUEMENT le JSON, sans texte supplémentaire
 `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    // Utiliser le modèle Gemini 2.5 Flash (version stable et disponible)
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt
+    });
+
+    const text = response.text;
 
     // Parser la réponse JSON
     // Nettoyer le texte en enlevant les balises markdown si présentes
