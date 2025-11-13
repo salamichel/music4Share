@@ -170,7 +170,7 @@ export default function App() {
 
       setNewGroup({ name: '', style: '' });
       setView('repertoire');
-      alert('Groupe créé !');
+      console.log('✅ Groupe créé !');
     } catch (error) {
       // Fallback mode local
       setGroups([...groups, group]);
@@ -179,7 +179,7 @@ export default function App() {
       setCurrentUser(updatedUser);
       setNewGroup({ name: '', style: '' });
       setView('repertoire');
-      alert('Groupe créé !');
+      console.log('✅ Groupe créé !');
     }
   };
 
@@ -215,7 +215,7 @@ export default function App() {
         await addMultipleParticipations(newParticipations);
       }
 
-      alert(`Vous avez rejoint le groupe ! Vous êtes inscrit(e) sur ${groupSongs.length} titre(s).`);
+      console.log(`✅ Vous avez rejoint le groupe ! Vous êtes inscrit(e) sur ${groupSongs.length} titre(s).`);
     } catch (error) {
       // Fallback mode local
       setGroups(groups.map(g =>
@@ -236,7 +236,7 @@ export default function App() {
         }));
         setParticipations([...participations, ...newParticipations]);
       }
-      alert(`Vous avez rejoint le groupe ! Vous êtes inscrit(e) sur ${groupSongs.length} titre(s).`);
+      console.log(`✅ Vous avez rejoint le groupe ! Vous êtes inscrit(e) sur ${groupSongs.length} titre(s).`);
     }
   };
 
@@ -277,7 +277,8 @@ export default function App() {
         }
       }
 
-      alert('Titre ajouté avec succès ! 🎵 (Utilisez la sélection pour l\'enrichir)');
+      // Message dans la console uniquement (pas d'alert intempestif)
+      console.log('✅ Titre ajouté avec succès !');
     } catch (error) {
       // Fallback mode local
       setSongs([...songs, song]);
@@ -294,7 +295,7 @@ export default function App() {
           setParticipations([...participations, participation]);
         }
       }
-      alert('Titre ajouté avec succès ! 🎵 (Utilisez la sélection pour l\'enrichir)');
+      console.log('✅ Titre ajouté avec succès (mode local) !');
     }
   };
 
@@ -348,12 +349,12 @@ export default function App() {
         await addMultipleParticipations(newParticipations);
       }
 
-      alert(`${parsedSongs.length} titre(s) importé(s) avec succès ! 🎵\nUtilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir tous les titres en une seule fois.`);
+      console.log(`✅ ${parsedSongs.length} titre(s) importé(s) avec succès ! Utilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir tous les titres en une seule fois.`);
     } catch (error) {
       // Fallback mode local
       setSongs([...songs, ...newSongs]);
       setParticipations([...participations, ...newParticipations]);
-      alert(`${parsedSongs.length} titre(s) importé(s) avec succès ! 🎵\nUtilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir tous les titres en une seule fois.`);
+      console.log(`✅ ${parsedSongs.length} titre(s) importé(s) avec succès ! Utilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir tous les titres en une seule fois.`);
     }
   };
 
@@ -382,22 +383,22 @@ export default function App() {
       try {
         await updateSong(songId, updates);
         if (enrichedData.enriched) {
-          alert(`Titre "${song.title}" enrichi avec succès ! 🎵`);
+          console.log(`✅ Titre "${song.title}" enrichi avec succès !`);
         } else {
-          alert(`Impossible d'enrichir le titre "${song.title}". Veuillez réessayer plus tard.`);
+          console.error(`❌ Impossible d'enrichir le titre "${song.title}". Veuillez réessayer plus tard.`);
         }
       } catch (error) {
         // Fallback mode local
         setSongs(songs.map(s => s.id === songId ? { ...s, ...updates } : s));
         if (enrichedData.enriched) {
-          alert(`Titre "${song.title}" enrichi avec succès ! 🎵`);
+          console.log(`✅ Titre "${song.title}" enrichi avec succès !`);
         } else {
-          alert(`Impossible d'enrichir le titre "${song.title}". Veuillez réessayer plus tard.`);
+          console.error(`❌ Impossible d'enrichir le titre "${song.title}". Veuillez réessayer plus tard.`);
         }
       }
     } catch (error) {
-      console.error('Erreur lors du re-enrichissement:', error);
-      alert(`Erreur lors de l'enrichissement du titre "${song.title}".`);
+      console.error('❌ Erreur lors du re-enrichissement:', error);
+      console.error(`❌ Erreur lors de l'enrichissement du titre "${song.title}".`);
     } finally {
       // Retirer le titre de la liste des enrichissements en cours
       setEnrichingSongs(prev => {
@@ -438,12 +439,12 @@ export default function App() {
       for (const p of songParticipations) {
         await deleteParticipation(p.id);
       }
-      alert(`Titre "${song.title}" supprimé avec succès.`);
+      console.log(`✅ Titre "${song.title}" supprimé avec succès.`);
     } catch (error) {
       // Fallback mode local
       setSongs(songs.filter(s => s.id !== songId));
       setParticipations(participations.filter(p => p.songId !== songId));
-      alert(`Titre "${song.title}" supprimé avec succès.`);
+      console.log(`✅ Titre "${song.title}" supprimé avec succès.`);
     }
   };
 
@@ -471,10 +472,65 @@ export default function App() {
     setSelectedSongs(new Set());
   };
 
+  // Supprimer les titres sélectionnés en masse
+  const handleDeleteSelected = async () => {
+    if (selectedSongs.size === 0) {
+      console.log('⚠️ Aucun titre sélectionné');
+      return;
+    }
+
+    const songsToDelete = songs.filter(s => selectedSongs.has(s.id));
+
+    // Vérifier les permissions pour chaque titre
+    const deletableSongs = songsToDelete.filter(song => {
+      if (song.ownerGroupId) {
+        const ownerGroup = groups.find(g => g.id === song.ownerGroupId);
+        return ownerGroup && ownerGroup.memberIds.includes(currentUser.id);
+      }
+      return song.addedBy === currentUser.id;
+    });
+
+    if (deletableSongs.length === 0) {
+      alert('Aucun titre sélectionné ne peut être supprimé (permissions insuffisantes).');
+      return;
+    }
+
+    // Confirmation
+    const confirmMessage = deletableSongs.length === songsToDelete.length
+      ? `Supprimer ${deletableSongs.length} titre(s) sélectionné(s) ?`
+      : `Vous pouvez supprimer ${deletableSongs.length} titre(s) sur ${songsToDelete.length} sélectionné(s). Continuer ?`;
+
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    // Supprimer tous les titres autorisés
+    let successCount = 0;
+    for (const song of deletableSongs) {
+      try {
+        await deleteSong(song.id);
+        // Supprimer aussi les participations liées
+        const songParticipations = participations.filter(p => p.songId === song.id);
+        for (const p of songParticipations) {
+          await deleteParticipation(p.id);
+        }
+        successCount++;
+      } catch (error) {
+        // Fallback mode local
+        setSongs(prevSongs => prevSongs.filter(s => s.id !== song.id));
+        setParticipations(prevParts => prevParts.filter(p => p.songId !== song.id));
+        successCount++;
+      }
+    }
+
+    console.log(`✅ ${successCount} titre(s) supprimé(s) avec succès`);
+    setSelectedSongs(new Set());
+  };
+
   // Enrichir les titres sélectionnés en masse
   const handleEnrichSelected = async () => {
     if (selectedSongs.size === 0) {
-      alert('Aucun titre sélectionné');
+      console.log('⚠️ Aucun titre sélectionné');
       return;
     }
 
@@ -509,13 +565,13 @@ export default function App() {
       }
 
       const enrichedCount = enrichedResults.filter(r => r.enriched).length;
-      alert(`${enrichedCount}/${selectedSongs.size} titre(s) enrichi(s) avec succès ! 🎵`);
+      console.log(`✅ ${enrichedCount}/${selectedSongs.size} titre(s) enrichi(s) avec succès !`);
 
       // Désélectionner après enrichissement
       setSelectedSongs(new Set());
     } catch (error) {
-      console.error('Erreur lors de l\'enrichissement en masse:', error);
-      alert('Erreur lors de l\'enrichissement. Veuillez réessayer.');
+      console.error('❌ Erreur lors de l\'enrichissement en masse:', error);
+      console.error('❌ Erreur lors de l\'enrichissement. Veuillez réessayer.');
     } finally {
       // Retirer tous de la liste des enrichissements en cours
       setEnrichingSongs(new Set());
@@ -566,11 +622,11 @@ export default function App() {
 
     try {
       await addInstrumentSlot(slot);
-      alert('Emplacement ajouté !');
+      console.log('✅ Emplacement ajouté !');
     } catch (error) {
       // Fallback mode local
       setInstrumentSlots([...instrumentSlots, slot]);
-      alert('Emplacement ajouté !');
+      console.log('✅ Emplacement ajouté !');
     }
   };
 
@@ -604,12 +660,12 @@ export default function App() {
     try {
       await updateUser(currentUser.id, { instrument: newInstrumentId });
       setCurrentUser(updatedUser);
-      alert('Instrument mis à jour avec succès ! 🎵');
+      console.log('✅ Instrument mis à jour avec succès !');
     } catch (error) {
       // Mode local - mettre à jour directement le state
       setUsers(users.map(u => u.id === currentUser.id ? updatedUser : u));
       setCurrentUser(updatedUser);
-      alert('Instrument mis à jour avec succès ! 🎵');
+      console.log('✅ Instrument mis à jour avec succès !');
     }
   };
 
@@ -763,6 +819,7 @@ export default function App() {
               selectedSongs={selectedSongs}
               onToggleSongSelection={handleToggleSongSelection}
               onEnrichSelected={handleEnrichSelected}
+              onDeleteSelected={handleDeleteSelected}
               onSelectAllUnenriched={handleSelectAllUnenriched}
               onDeselectAll={handleDeselectAll}
             />
@@ -787,6 +844,7 @@ export default function App() {
               selectedSongs={selectedSongs}
               onToggleSongSelection={handleToggleSongSelection}
               onEnrichSelected={handleEnrichSelected}
+              onDeleteSelected={handleDeleteSelected}
               onSelectAllUnenriched={handleSelectAllUnenriched}
               onDeselectAll={handleDeselectAll}
             />

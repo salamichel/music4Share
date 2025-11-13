@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { List, Filter, Sparkles, CheckSquare, Square } from 'lucide-react';
+import { List, Filter, Sparkles, CheckSquare, Square, Trash2 } from 'lucide-react';
 import SongCard from './SongCard';
 
 const RepertoireView = ({
@@ -17,6 +17,7 @@ const RepertoireView = ({
   selectedSongs,
   onToggleSongSelection,
   onEnrichSelected,
+  onDeleteSelected,
   onSelectAllUnenriched,
   onDeselectAll
 }) => {
@@ -113,13 +114,25 @@ const RepertoireView = ({
             )}
           </div>
           {selectedSongs && selectedSongs.size > 0 && (
-            <button
-              onClick={onEnrichSelected}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1.5 rounded text-sm flex items-center gap-2"
-            >
-              <Sparkles className="w-4 h-4" />
-              Enrichir la sélection
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={onEnrichSelected}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1.5 rounded text-sm flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Enrichir la sélection
+              </button>
+              {onDeleteSelected && (
+                <button
+                  onClick={onDeleteSelected}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-1.5 rounded text-sm flex items-center gap-2"
+                  title="Supprimer les titres sélectionnés"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Supprimer
+                </button>
+              )}
+            </div>
           )}
         </div>
       )}

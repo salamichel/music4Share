@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Plus, ChevronDown, ChevronUp, Sparkles, CheckSquare, Square } from 'lucide-react';
+import { Users, Plus, ChevronDown, ChevronUp, Sparkles, CheckSquare, Square, Trash2 } from 'lucide-react';
 import SongAddForm from './SongAddForm';
 import SongCard from './SongCard';
 
@@ -21,6 +21,7 @@ const MyGroupsView = ({
   selectedSongs,
   onToggleSongSelection,
   onEnrichSelected,
+  onDeleteSelected,
   onSelectAllUnenriched,
   onDeselectAll
 }) => {
@@ -128,13 +129,25 @@ const MyGroupsView = ({
                             )}
                           </div>
                           {selectedSongs && selectedSongs.size > 0 && (
-                            <button
-                              onClick={onEnrichSelected}
-                              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1.5 rounded text-sm flex items-center gap-2"
-                            >
-                              <Sparkles className="w-4 h-4" />
-                              Enrichir la sélection
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={onEnrichSelected}
+                                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1.5 rounded text-sm flex items-center gap-2"
+                              >
+                                <Sparkles className="w-4 h-4" />
+                                Enrichir la sélection
+                              </button>
+                              {onDeleteSelected && (
+                                <button
+                                  onClick={onDeleteSelected}
+                                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-1.5 rounded text-sm flex items-center gap-2"
+                                  title="Supprimer les titres sélectionnés"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  Supprimer
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       )}
