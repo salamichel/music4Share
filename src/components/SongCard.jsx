@@ -79,7 +79,7 @@ const SongCard = ({
       
       {/* Emplacements d'instruments */}
       <div className="flex flex-wrap gap-2 mt-3">
-        {instrumentSlots.map(slot => {
+        {[...instrumentSlots].sort((a, b) => a.name.localeCompare(b.name)).map(slot => {
           const slotParticipants = songParticipations.filter(p => p.slotId === slot.id);
           const userInSlot = slotParticipants.find(p => p.userId === currentUser.id);
           
@@ -116,7 +116,7 @@ const SongCard = ({
       {/* Liste des participants */}
       {songParticipations.length > 0 && (
         <div className="mt-2 text-xs text-gray-600">
-          {instrumentSlots.map(slot => {
+          {[...instrumentSlots].sort((a, b) => a.name.localeCompare(b.name)).map(slot => {
             const slotParts = songParticipations.filter(p => p.slotId === slot.id);
             if (slotParts.length === 0) return null;
             return (

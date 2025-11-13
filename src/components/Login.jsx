@@ -75,7 +75,7 @@ const Login = ({ onLogin, onSignup, instrumentSlots }) => {
               required
             >
               <option value="">Sélectionner un instrument</option>
-              {instrumentSlots.map(slot => (
+              {[...instrumentSlots].sort((a, b) => a.name.localeCompare(b.name)).map(slot => (
                 <option key={slot.id} value={slot.id}>
                   {slot.icon} {slot.name}
                 </option>
