@@ -1,7 +1,21 @@
 import React, { useState } from 'react';
-import { useAppState } from './hooks/useAppState';
+import { useFirebaseState } from './hooks/useFirebaseState';
 import { parseBulkImportText } from './utils/helpers';
 import { enrichSongWithGemini, enrichMultipleSongs } from './services/geminiService';
+import {
+  addUser,
+  updateUser,
+  addGroup,
+  updateGroup,
+  addSong,
+  updateSong,
+  addParticipation,
+  deleteParticipation,
+  addInstrumentSlot,
+  deleteInstrumentSlot,
+  addMultipleSongs,
+  addMultipleParticipations
+} from './firebase/firebaseHelpers';
 import Login from './components/Login';
 import Header from './components/Header';
 import RepertoireView from './components/RepertoireView';
@@ -29,8 +43,9 @@ export default function App() {
     searchTerm,
     setSearchTerm,
     showSlotManager,
-    setShowSlotManager
-  } = useAppState();
+    setShowSlotManager,
+    isFirebaseReady
+  } = useFirebaseState();
 
   const [newGroup, setNewGroup] = useState({ name: '', style: '' });
   const [activeTab, setActiveTab] = useState('repertoire'); // repertoire, mygroups, allgroups
@@ -77,7 +92,7 @@ export default function App() {
   };
 
   // Inscription
-  const handleSignup = (signupForm) => {
+  const handleSignup = async (signupForm) => {
     if (users.find(u => u.username === signupForm.username)) {
       alert('Ce pseudo existe déjà');
       return;
@@ -89,9 +104,17 @@ export default function App() {
       instrument: signupForm.instrument,
       groupIds: []
     };
-    setUsers([...users, newUser]);
-    setCurrentUser(newUser);
-    setView('repertoire');
+
+    try {
+      await addUser(newUser);
+      setCurrentUser(newUser);
+      setView('repertoire');
+    } catch (error) {
+      // En cas d'erreur Firebase, utiliser le mode local
+      setUsers([...users, newUser]);
+      setCurrentUser(newUser);
+      setView('repertoire');
+    }
   };
 
   // Créer un groupe
@@ -99,7 +122,7 @@ export default function App() {
     setView('create-group');
   };
 
-  const handleSubmitGroup = (e) => {
+  const handleSubmitGroup = async (e) => {
     e.preventDefault();
     const group = {
       id: Date.now().toString(),
@@ -108,49 +131,84 @@ export default function App() {
       creatorId: currentUser.id,
       memberIds: [currentUser.id]
     };
-    setGroups([...groups, group]);
-    
-    const updatedUser = { ...currentUser, groupIds: [...currentUser.groupIds, group.id] };
-    setUsers(users.map(u => u.id === currentUser.id ? updatedUser : u));
-    setCurrentUser(updatedUser);
-    
-    setNewGroup({ name: '', style: '' });
-    setView('repertoire');
-    alert('Groupe créé !');
+
+    try {
+      await addGroup(group);
+
+      const updatedUser = { ...currentUser, groupIds: [...currentUser.groupIds, group.id] };
+      await updateUser(currentUser.id, { groupIds: updatedUser.groupIds });
+      setCurrentUser(updatedUser);
+
+      setNewGroup({ name: '', style: '' });
+      setView('repertoire');
+      alert('Groupe créé !');
+    } catch (error) {
+      // Fallback mode local
+      setGroups([...groups, group]);
+      const updatedUser = { ...currentUser, groupIds: [...currentUser.groupIds, group.id] };
+      setUsers(users.map(u => u.id === currentUser.id ? updatedUser : u));
+      setCurrentUser(updatedUser);
+      setNewGroup({ name: '', style: '' });
+      setView('repertoire');
+      alert('Groupe créé !');
+    }
   };
 
   // Rejoindre un groupe
-  const handleJoinGroup = (groupId) => {
+  const handleJoinGroup = async (groupId) => {
     const group = groups.find(g => g.id === groupId);
     if (group.memberIds.includes(currentUser.id)) {
       alert('Vous êtes déjà membre de ce groupe');
       return;
     }
-    
-    setGroups(groups.map(g => 
-      g.id === groupId ? { ...g, memberIds: [...g.memberIds, currentUser.id] } : g
-    ));
-    
-    const updatedUser = { ...currentUser, groupIds: [...currentUser.groupIds, groupId] };
-    setUsers(users.map(u => u.id === currentUser.id ? updatedUser : u));
-    setCurrentUser(updatedUser);
-    
-    // Auto-inscrire l'utilisateur sur tous les titres du groupe
-    const groupSongs = songs.filter(s => s.ownerGroupId === groupId);
-    const userSlot = findUserSlotForInstrument(currentUser.instrument);
-    
-    if (userSlot && groupSongs.length > 0) {
-      const newParticipations = groupSongs.map((song, index) => ({
-        id: Date.now().toString() + '_join_' + index,
-        songId: song.id,
-        userId: currentUser.id,
-        slotId: userSlot,
-        comment: ''
-      }));
-      setParticipations([...participations, ...newParticipations]);
+
+    try {
+      // Mettre à jour le groupe
+      await updateGroup(groupId, { memberIds: [...group.memberIds, currentUser.id] });
+
+      // Mettre à jour l'utilisateur
+      const updatedUser = { ...currentUser, groupIds: [...currentUser.groupIds, groupId] };
+      await updateUser(currentUser.id, { groupIds: updatedUser.groupIds });
+      setCurrentUser(updatedUser);
+
+      // Auto-inscrire l'utilisateur sur tous les titres du groupe
+      const groupSongs = songs.filter(s => s.ownerGroupId === groupId);
+      const userSlot = findUserSlotForInstrument(currentUser.instrument);
+
+      if (userSlot && groupSongs.length > 0) {
+        const newParticipations = groupSongs.map((song, index) => ({
+          id: Date.now().toString() + '_join_' + index,
+          songId: song.id,
+          userId: currentUser.id,
+          slotId: userSlot,
+          comment: ''
+        }));
+        await addMultipleParticipations(newParticipations);
+      }
+
+      alert(`Vous avez rejoint le groupe ! Vous êtes inscrit(e) sur ${groupSongs.length} titre(s).`);
+    } catch (error) {
+      // Fallback mode local
+      setGroups(groups.map(g =>
+        g.id === groupId ? { ...g, memberIds: [...g.memberIds, currentUser.id] } : g
+      ));
+      const updatedUser = { ...currentUser, groupIds: [...currentUser.groupIds, groupId] };
+      setUsers(users.map(u => u.id === currentUser.id ? updatedUser : u));
+      setCurrentUser(updatedUser);
+      const groupSongs = songs.filter(s => s.ownerGroupId === groupId);
+      const userSlot = findUserSlotForInstrument(currentUser.instrument);
+      if (userSlot && groupSongs.length > 0) {
+        const newParticipations = groupSongs.map((song, index) => ({
+          id: Date.now().toString() + '_join_' + index,
+          songId: song.id,
+          userId: currentUser.id,
+          slotId: userSlot,
+          comment: ''
+        }));
+        setParticipations([...participations, ...newParticipations]);
+      }
+      alert(`Vous avez rejoint le groupe ! Vous êtes inscrit(e) sur ${groupSongs.length} titre(s).`);
     }
-    
-    alert(`Vous avez rejoint le groupe ! Vous êtes inscrit(e) sur ${groupSongs.length} titre(s).`);
   };
 
   // Ajouter un titre
@@ -172,24 +230,45 @@ export default function App() {
       genre: enrichedData.genre,
       enriched: enrichedData.enriched
     };
-    setSongs([...songs, song]);
 
-    // Si ajouté dans un groupe, inscrire automatiquement le créateur
-    if (groupId) {
-      const participation = {
-        id: Date.now().toString() + '_auto',
-        songId: song.id,
-        userId: currentUser.id,
-        slotId: findUserSlotForInstrument(currentUser.instrument),
-        comment: ''
-      };
-      setParticipations([...participations, participation]);
-    }
+    try {
+      await addSong(song);
 
-    if (enrichedData.enriched) {
-      alert('Titre ajouté et enrichi avec succès ! 🎵');
-    } else {
-      alert('Titre ajouté (enrichissement non disponible)');
+      // Si ajouté dans un groupe, inscrire automatiquement le créateur
+      if (groupId) {
+        const participation = {
+          id: Date.now().toString() + '_auto',
+          songId: song.id,
+          userId: currentUser.id,
+          slotId: findUserSlotForInstrument(currentUser.instrument),
+          comment: ''
+        };
+        await addParticipation(participation);
+      }
+
+      if (enrichedData.enriched) {
+        alert('Titre ajouté et enrichi avec succès ! 🎵');
+      } else {
+        alert('Titre ajouté (enrichissement non disponible)');
+      }
+    } catch (error) {
+      // Fallback mode local
+      setSongs([...songs, song]);
+      if (groupId) {
+        const participation = {
+          id: Date.now().toString() + '_auto',
+          songId: song.id,
+          userId: currentUser.id,
+          slotId: findUserSlotForInstrument(currentUser.instrument),
+          comment: ''
+        };
+        setParticipations([...participations, participation]);
+      }
+      if (enrichedData.enriched) {
+        alert('Titre ajouté et enrichi avec succès ! 🎵');
+      } else {
+        alert('Titre ajouté (enrichissement non disponible)');
+      }
     }
   };
 
@@ -242,11 +321,21 @@ export default function App() {
       }
     });
 
-    setSongs([...songs, ...newSongs]);
-    setParticipations([...participations, ...newParticipations]);
+    try {
+      await addMultipleSongs(newSongs);
+      if (newParticipations.length > 0) {
+        await addMultipleParticipations(newParticipations);
+      }
 
-    const enrichedCount = enrichedSongs.filter(s => s.enriched).length;
-    alert(`${parsedSongs.length} titre(s) importé(s) avec succès ! (${enrichedCount} enrichis) 🎵`);
+      const enrichedCount = enrichedSongs.filter(s => s.enriched).length;
+      alert(`${parsedSongs.length} titre(s) importé(s) avec succès ! (${enrichedCount} enrichis) 🎵`);
+    } catch (error) {
+      // Fallback mode local
+      setSongs([...songs, ...newSongs]);
+      setParticipations([...participations, ...newParticipations]);
+      const enrichedCount = enrichedSongs.filter(s => s.enriched).length;
+      alert(`${parsedSongs.length} titre(s) importé(s) avec succès ! (${enrichedCount} enrichis) 🎵`);
+    }
   };
 
   // Re-enrichir un titre existant
@@ -262,26 +351,29 @@ export default function App() {
       const enrichedData = await enrichSongWithGemini(song.title, song.artist);
 
       // Mettre à jour le titre avec les nouvelles données
-      const updatedSongs = songs.map(s => {
-        if (s.id === songId) {
-          return {
-            ...s,
-            duration: enrichedData.duration,
-            chords: enrichedData.chords,
-            lyrics: enrichedData.lyrics,
-            genre: enrichedData.genre,
-            enriched: enrichedData.enriched
-          };
+      const updates = {
+        duration: enrichedData.duration,
+        chords: enrichedData.chords,
+        lyrics: enrichedData.lyrics,
+        genre: enrichedData.genre,
+        enriched: enrichedData.enriched
+      };
+
+      try {
+        await updateSong(songId, updates);
+        if (enrichedData.enriched) {
+          alert(`Titre "${song.title}" enrichi avec succès ! 🎵`);
+        } else {
+          alert(`Impossible d'enrichir le titre "${song.title}". Veuillez réessayer plus tard.`);
         }
-        return s;
-      });
-
-      setSongs(updatedSongs);
-
-      if (enrichedData.enriched) {
-        alert(`Titre "${song.title}" enrichi avec succès ! 🎵`);
-      } else {
-        alert(`Impossible d'enrichir le titre "${song.title}". Veuillez réessayer plus tard.`);
+      } catch (error) {
+        // Fallback mode local
+        setSongs(songs.map(s => s.id === songId ? { ...s, ...updates } : s));
+        if (enrichedData.enriched) {
+          alert(`Titre "${song.title}" enrichi avec succès ! 🎵`);
+        } else {
+          alert(`Impossible d'enrichir le titre "${song.title}". Veuillez réessayer plus tard.`);
+        }
       }
     } catch (error) {
       console.error('Erreur lors du re-enrichissement:', error);
@@ -297,7 +389,7 @@ export default function App() {
   };
 
   // Rejoindre un emplacement
-  const handleJoinSlot = (songId, slotId) => {
+  const handleJoinSlot = async (songId, slotId) => {
     const participation = {
       id: Date.now().toString() + '_' + Math.random(),
       songId: songId,
@@ -305,32 +397,64 @@ export default function App() {
       slotId: slotId,
       comment: ''
     };
-    setParticipations([...participations, participation]);
+
+    try {
+      await addParticipation(participation);
+    } catch (error) {
+      // Fallback mode local
+      setParticipations([...participations, participation]);
+    }
   };
 
   // Quitter un emplacement
-  const handleLeaveSlot = (songId, slotId) => {
-    setParticipations(participations.filter(p => 
-      !(p.songId === songId && p.userId === currentUser.id && p.slotId === slotId)
-    ));
+  const handleLeaveSlot = async (songId, slotId) => {
+    const participationToDelete = participations.find(p =>
+      p.songId === songId && p.userId === currentUser.id && p.slotId === slotId
+    );
+
+    if (participationToDelete) {
+      try {
+        await deleteParticipation(participationToDelete.id);
+      } catch (error) {
+        // Fallback mode local
+        setParticipations(participations.filter(p => p.id !== participationToDelete.id));
+      }
+    }
   };
 
   // Ajouter un emplacement personnalisé
-  const handleAddSlot = (newSlotData) => {
+  const handleAddSlot = async (newSlotData) => {
     const slot = {
       id: 'custom_' + Date.now(),
       name: newSlotData.name,
       icon: newSlotData.icon || '🎼'
     };
-    setInstrumentSlots([...instrumentSlots, slot]);
-    alert('Emplacement ajouté !');
+
+    try {
+      await addInstrumentSlot(slot);
+      alert('Emplacement ajouté !');
+    } catch (error) {
+      // Fallback mode local
+      setInstrumentSlots([...instrumentSlots, slot]);
+      alert('Emplacement ajouté !');
+    }
   };
 
   // Supprimer un emplacement
-  const handleDeleteSlot = (slotId) => {
+  const handleDeleteSlot = async (slotId) => {
     if (window.confirm('Supprimer cet emplacement ? Les participations associées seront perdues.')) {
-      setInstrumentSlots(instrumentSlots.filter(s => s.id !== slotId));
-      setParticipations(participations.filter(p => p.slotId !== slotId));
+      try {
+        await deleteInstrumentSlot(slotId);
+        // Supprimer les participations associées
+        const participationsToDelete = participations.filter(p => p.slotId === slotId);
+        for (const part of participationsToDelete) {
+          await deleteParticipation(part.id);
+        }
+      } catch (error) {
+        // Fallback mode local
+        setInstrumentSlots(instrumentSlots.filter(s => s.id !== slotId));
+        setParticipations(participations.filter(p => p.slotId !== slotId));
+      }
     }
   };
 

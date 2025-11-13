@@ -31,8 +31,8 @@ export const enrichSongWithGemini = async (title, artist) => {
       };
     }
 
-    // Utiliser le modèle Gemini 1.5 Flash (rapide et économique)
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    // Utiliser le modèle Gemini (version stable)
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
 
     const prompt = `
 Tu es un assistant musical expert. Pour la chanson "${title}" de "${artist}", fournis les informations suivantes au format JSON strict :
