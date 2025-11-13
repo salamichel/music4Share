@@ -54,7 +54,21 @@ IMPORTANT:
       contents: prompt
     });
 
-    const text = response.text;
+    console.log('🔍 Réponse complète de Gemini:', JSON.stringify(response, null, 2));
+
+    // Accéder au texte dans la structure de réponse
+    const text = response.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!text) {
+      console.error('❌ Aucun texte dans la réponse Gemini');
+      return {
+        duration: null,
+        chords: null,
+        lyrics: null,
+        genre: null,
+        enriched: false
+      };
+    }
 
     // Parser la réponse JSON
     // Nettoyer le texte en enlevant les balises markdown si présentes
