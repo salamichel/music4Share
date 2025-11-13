@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFirebaseState } from './hooks/useFirebaseState';
 import { parseBulkImportText } from './utils/helpers';
 import { enrichSongWithGemini, enrichMultipleSongs } from './services/geminiService';
@@ -22,6 +22,7 @@ import RepertoireView from './components/RepertoireView';
 import MyGroupsView from './components/MyGroupsView';
 import AllGroupsView from './components/AllGroupsView';
 import SlotManager from './components/SlotManager';
+import UserSettings from './components/UserSettings';
 import { Music, LogOut } from 'lucide-react';
 
 export default function App() {
@@ -50,6 +51,23 @@ export default function App() {
   const [newGroup, setNewGroup] = useState({ name: '', style: '' });
   const [activeTab, setActiveTab] = useState('repertoire'); // repertoire, mygroups, allgroups
   const [enrichingSongs, setEnrichingSongs] = useState(new Set()); // IDs des titres en cours d'enrichissement
+  const [showUserSettings, setShowUserSettings] = useState(false);
+
+  // Restaurer la session utilisateur au chargement
+  useEffect(() => {
+    const savedUserId = localStorage.getItem('currentUserId');
+    if (savedUserId && users.length > 0) {
+      const user = users.find(u => u.id === savedUserId);
+      if (user) {
+        setCurrentUser(user);
+        setView('repertoire');
+        console.log('✅ Session restaurée pour:', user.username);
+      } else {
+        // Utilisateur n'existe plus, nettoyer localStorage
+        localStorage.removeItem('currentUserId');
+      }
+    }
+  }, [users]); // Se déclenche quand les utilisateurs sont chargés depuis Firebase
 
   // Trouver le slot correspondant à un instrument
   const findUserSlotForInstrument = (instrumentName) => {
@@ -86,6 +104,9 @@ export default function App() {
     if (user) {
       setCurrentUser(user);
       setView('repertoire');
+      // Sauvegarder la session dans localStorage
+      localStorage.setItem('currentUserId', user.id);
+      console.log('✅ Session sauvegardée pour:', user.username);
     } else {
       alert('Pseudo ou mot de passe incorrect');
     }
@@ -109,11 +130,17 @@ export default function App() {
       await addUser(newUser);
       setCurrentUser(newUser);
       setView('repertoire');
+      // Sauvegarder la session dans localStorage
+      localStorage.setItem('currentUserId', newUser.id);
+      console.log('✅ Session sauvegardée pour:', newUser.username);
     } catch (error) {
       // En cas d'erreur Firebase, utiliser le mode local
       setUsers([...users, newUser]);
       setCurrentUser(newUser);
       setView('repertoire');
+      // Sauvegarder la session dans localStorage même en mode local
+      localStorage.setItem('currentUserId', newUser.id);
+      console.log('✅ Session sauvegardée pour:', newUser.username);
     }
   };
 
@@ -458,10 +485,34 @@ export default function App() {
     }
   };
 
+  // Mettre à jour l'instrument de l'utilisateur
+  const handleUpdateUserInstrument = async (newInstrumentId) => {
+    if (!currentUser) return;
+
+    const updatedUser = {
+      ...currentUser,
+      instrument: newInstrumentId
+    };
+
+    try {
+      await updateUser(currentUser.id, { instrument: newInstrumentId });
+      setCurrentUser(updatedUser);
+      alert('Instrument mis à jour avec succès ! 🎵');
+    } catch (error) {
+      // Mode local - mettre à jour directement le state
+      setUsers(users.map(u => u.id === currentUser.id ? updatedUser : u));
+      setCurrentUser(updatedUser);
+      alert('Instrument mis à jour avec succès ! 🎵');
+    }
+  };
+
   // Déconnexion
   const handleLogout = () => {
     setCurrentUser(null);
     setView('login');
+    // Nettoyer la session sauvegardée
+    localStorage.removeItem('currentUserId');
+    console.log('✅ Session supprimée');
   };
 
   // Page de connexion
@@ -544,6 +595,7 @@ export default function App() {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onOpenSlotManager={() => setShowSlotManager(true)}
+        onOpenUserSettings={() => setShowUserSettings(true)}
         instrumentSlots={instrumentSlots}
       />
 
@@ -638,6 +690,16 @@ export default function App() {
           onAddSlot={handleAddSlot}
           onDeleteSlot={handleDeleteSlot}
           onClose={() => setShowSlotManager(false)}
+        />
+      )}
+
+      {/* Modal des paramètres utilisateur */}
+      {showUserSettings && (
+        <UserSettings
+          currentUser={currentUser}
+          instrumentSlots={instrumentSlots}
+          onUpdateInstrument={handleUpdateUserInstrument}
+          onClose={() => setShowUserSettings(false)}
         />
       )}
     </div>

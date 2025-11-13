@@ -1,7 +1,7 @@
 import React from 'react';
-import { Music, LogOut, Search } from 'lucide-react';
+import { Music, LogOut, Search, Settings } from 'lucide-react';
 
-const Header = ({ currentUser, onLogout, searchTerm, onSearchChange, onOpenSlotManager, instrumentSlots }) => {
+const Header = ({ currentUser, onLogout, searchTerm, onSearchChange, onOpenSlotManager, onOpenUserSettings, instrumentSlots }) => {
   // Trouver le slot de l'utilisateur pour afficher le nom lisible
   const userSlot = instrumentSlots.find(slot => slot.id === currentUser.instrument);
   const instrumentDisplay = userSlot ? `${userSlot.icon} ${userSlot.name}` : currentUser.instrument;
@@ -20,6 +20,14 @@ const Header = ({ currentUser, onLogout, searchTerm, onSearchChange, onOpenSlotM
               className="bg-purple-700 px-3 py-2 rounded-lg hover:bg-purple-800 text-sm"
             >
               ⚙️ Emplacements
+            </button>
+            <button
+              onClick={onOpenUserSettings}
+              className="bg-purple-700 px-3 py-2 rounded-lg hover:bg-purple-800 flex items-center gap-2"
+              title="Paramètres du profil"
+            >
+              <Settings className="w-4 h-4" />
+              <span className="text-sm">Profil</span>
             </button>
             <span className="font-medium">{currentUser.username} ({instrumentDisplay})</span>
             <button onClick={onLogout} className="bg-purple-700 px-4 py-2 rounded-lg hover:bg-purple-800">
