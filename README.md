@@ -127,6 +127,69 @@ L'application sera accessible sur **http://localhost:3000**
 
 **Note** : Si la clé API n'est pas configurée, l'application fonctionnera normalement mais sans l'enrichissement automatique.
 
+### 🔥 Persistance des données avec Firebase
+
+L'application utilise maintenant **Firebase Firestore** pour la persistance des données en temps réel.
+
+#### Configuration de Firebase
+
+1. **Créer un projet Firebase**
+   - Visitez [Firebase Console](https://console.firebase.google.com/)
+   - Créez un nouveau projet
+   - Activez Firestore Database (mode production ou test)
+
+2. **Obtenir les identifiants**
+   - Dans votre projet Firebase, allez dans "Paramètres du projet" > "Général"
+   - Dans "Vos applications", cliquez sur "Web" (icône `</>`)
+   - Copiez les valeurs de configuration
+
+3. **Configurer l'application**
+   ```bash
+   # Le fichier .env.example contient déjà un modèle
+   # Éditez le fichier .env et ajoutez vos clés Firebase
+
+   REACT_APP_FIREBASE_API_KEY=AIzaSy...
+   REACT_APP_FIREBASE_AUTH_DOMAIN=votre-projet.firebaseapp.com
+   REACT_APP_FIREBASE_PROJECT_ID=votre-projet-id
+   REACT_APP_FIREBASE_STORAGE_BUCKET=votre-projet.appspot.com
+   REACT_APP_FIREBASE_MESSAGING_SENDER_ID=123456789
+   REACT_APP_FIREBASE_APP_ID=1:123456789:web:...
+   ```
+
+4. **Règles Firestore recommandées** (à configurer dans Firebase Console)
+   ```javascript
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /{document=**} {
+         allow read, write: if true;
+       }
+     }
+   }
+   ```
+   ⚠️ **Note** : Ces règles sont ouvertes pour le développement. En production, ajoutez une authentification appropriée.
+
+5. **Redémarrer l'application**
+   ```bash
+   npm start
+   # ou
+   docker-compose down && docker-compose up
+   ```
+
+#### Fonctionnalités Firebase
+
+- ✅ **Synchronisation en temps réel** : Les données sont mises à jour automatiquement sur tous les appareils connectés
+- ✅ **Persistance complète** : Les données (utilisateurs, groupes, titres, participations, slots) sont sauvegardées
+- ✅ **Mode fallback** : Si Firebase n'est pas configuré, l'application fonctionne en mode local (données perdues au rafraîchissement)
+- ✅ **Collections Firestore** :
+  - `users` : Utilisateurs inscrits
+  - `groups` : Groupes créés
+  - `songs` : Titres ajoutés
+  - `participations` : Inscriptions aux slots
+  - `instrumentSlots` : Emplacements d'instruments personnalisés
+
+**Note** : Sans configuration Firebase, l'application fonctionne normalement mais les données sont perdues au rafraîchissement de la page.
+
 ## Architecture
 
 ### Composants
@@ -149,13 +212,29 @@ L'application sera accessible sur **http://localhost:3000**
 
 ### Hooks
 
-**useAppState.js** : Hook personnalisé qui centralise tout l'état de l'application
+**useAppState.js** : Hook personnalisé qui centralise tout l'état de l'application (mode local - legacy)
+
+**useFirebaseState.js** : Hook Firebase avec synchronisation en temps réel via Firestore
+- Synchronise automatiquement les données entre clients
+- Fallback vers mode local si Firebase n'est pas configuré
 
 ### Services
 
 **geminiService.js** : Service d'intégration avec l'API Gemini
 - `enrichSongWithGemini()` : Enrichit un titre avec les données de l'API Gemini (durée, accords, paroles, genre)
 - `enrichMultipleSongs()` : Enrichit plusieurs titres en batch avec gestion du rate limiting
+
+### Firebase
+
+**firebase/config.js** : Configuration et initialisation de Firebase
+
+**firebase/firebaseHelpers.js** : Fonctions helpers pour Firestore
+- `addUser()`, `updateUser()` : Gestion des utilisateurs
+- `addGroup()`, `updateGroup()` : Gestion des groupes
+- `addSong()`, `updateSong()`, `deleteSong()` : Gestion des titres
+- `addParticipation()`, `deleteParticipation()` : Gestion des participations
+- `addInstrumentSlot()`, `deleteInstrumentSlot()` : Gestion des slots
+- `addMultipleSongs()`, `addMultipleParticipations()` : Opérations en batch
 
 ### Utils
 
