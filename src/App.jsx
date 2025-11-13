@@ -37,25 +37,27 @@ export default function App() {
 
   // Trouver le slot correspondant à un instrument
   const findUserSlotForInstrument = (instrumentName) => {
+    if (!instrumentName) return null;
+
     const lowerInstrument = instrumentName.toLowerCase();
 
-    // Mapping des instruments courants vers les slots
+    // Vérifier d'abord si c'est directement un ID de slot existant
+    const directSlot = instrumentSlots.find(slot => slot.id.toLowerCase() === lowerInstrument);
+    if (directSlot) {
+      return directSlot.id;
+    }
+
+    // Mapping de rétrocompatibilité pour les anciens noms d'instruments
     const mapping = {
       'batterie': 'drums',
-      'drums': 'drums',
       'chant': 'vocals',
       'chanteur': 'vocals',
       'chanteuse': 'vocals',
       'vocal': 'vocals',
-      'vocals': 'vocals',
       'basse': 'bass',
-      'bass': 'bass',
       'guitare': 'guitar',
-      'guitar': 'guitar',
       'choeur': 'choir',
       'chœur': 'choir',
-      'choir': 'choir',
-      'piano': 'piano',
       'clavier': 'piano'
     };
 
@@ -292,7 +294,7 @@ export default function App() {
 
   // Page de connexion
   if (view === 'login') {
-    return <Login onLogin={handleLogin} onSignup={handleSignup} />;
+    return <Login onLogin={handleLogin} onSignup={handleSignup} instrumentSlots={instrumentSlots} />;
   }
 
   // Page de création de groupe
@@ -370,6 +372,7 @@ export default function App() {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onOpenSlotManager={() => setShowSlotManager(true)}
+        instrumentSlots={instrumentSlots}
       />
 
       {/* Onglets */}

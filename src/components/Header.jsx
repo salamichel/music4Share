@@ -1,7 +1,11 @@
 import React from 'react';
 import { Music, LogOut, Search } from 'lucide-react';
 
-const Header = ({ currentUser, onLogout, searchTerm, onSearchChange, onOpenSlotManager }) => {
+const Header = ({ currentUser, onLogout, searchTerm, onSearchChange, onOpenSlotManager, instrumentSlots }) => {
+  // Trouver le slot de l'utilisateur pour afficher le nom lisible
+  const userSlot = instrumentSlots.find(slot => slot.id === currentUser.instrument);
+  const instrumentDisplay = userSlot ? `${userSlot.icon} ${userSlot.name}` : currentUser.instrument;
+
   return (
     <div className="bg-purple-600 text-white shadow-lg">
       <div className="container mx-auto px-4 py-4">
@@ -11,13 +15,13 @@ const Header = ({ currentUser, onLogout, searchTerm, onSearchChange, onOpenSlotM
             <h1 className="text-2xl font-bold">Music4Chalemine</h1>
           </div>
           <div className="flex items-center space-x-4">
-            <button 
+            <button
               onClick={onOpenSlotManager}
               className="bg-purple-700 px-3 py-2 rounded-lg hover:bg-purple-800 text-sm"
             >
               ⚙️ Emplacements
             </button>
-            <span className="font-medium">{currentUser.username} ({currentUser.instrument})</span>
+            <span className="font-medium">{currentUser.username} ({instrumentDisplay})</span>
             <button onClick={onLogout} className="bg-purple-700 px-4 py-2 rounded-lg hover:bg-purple-800">
               <LogOut className="w-4 h-4" />
             </button>

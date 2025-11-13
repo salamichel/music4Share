@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Music } from 'lucide-react';
 
-const Login = ({ onLogin, onSignup }) => {
+const Login = ({ onLogin, onSignup, instrumentSlots }) => {
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [signupForm, setSignupForm] = useState({ username: '', password: '', instrument: '' });
 
@@ -75,13 +75,11 @@ const Login = ({ onLogin, onSignup }) => {
               required
             >
               <option value="">Sélectionner un instrument</option>
-              <option value="batterie">🥁 Batterie</option>
-              <option value="chant">🎤 Chant</option>
-              <option value="basse">🎸 Basse</option>
-              <option value="guitare">🎸 Guitare</option>
-              <option value="choeur">🎵 Chœur</option>
-              <option value="piano">🎹 Piano</option>
-              <option value="clavier">🎹 Clavier</option>
+              {instrumentSlots.map(slot => (
+                <option key={slot.id} value={slot.id}>
+                  {slot.icon} {slot.name}
+                </option>
+              ))}
             </select>
             <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">
               S'inscrire
