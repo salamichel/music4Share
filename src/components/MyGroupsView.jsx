@@ -3,7 +3,7 @@ import { Users, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import SongAddForm from './SongAddForm';
 import SongCard from './SongCard';
 
-const MyGroupsView = ({ 
+const MyGroupsView = ({
   groups,
   songs,
   participations,
@@ -14,7 +14,9 @@ const MyGroupsView = ({
   onLeaveSlot,
   onAddSong,
   onBulkImport,
-  onCreateGroup
+  onCreateGroup,
+  onReenrichSong,
+  enrichingSongs
 }) => {
   const [expandedGroupId, setExpandedGroupId] = useState(null);
   const [showBulkImport, setShowBulkImport] = useState(false);
@@ -110,6 +112,8 @@ const MyGroupsView = ({
                                 currentUser={currentUser}
                                 onJoinSlot={onJoinSlot}
                                 onLeaveSlot={onLeaveSlot}
+                                onReenrichSong={onReenrichSong}
+                                isEnriching={enrichingSongs.has(song.id)}
                               />
                             ))}
                           </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Youtube, Info } from 'lucide-react';
+import { Youtube, Info, Sparkles, Loader2 } from 'lucide-react';
 import { isSongPlayable } from '../utils/helpers';
 import SongDetails from './SongDetails';
 
@@ -10,7 +10,9 @@ const SongCard = ({
   users,
   currentUser,
   onJoinSlot,
-  onLeaveSlot
+  onLeaveSlot,
+  onReenrichSong,
+  isEnriching = false
 }) => {
   const [showDetails, setShowDetails] = useState(false);
   const songParticipations = participations.filter(p => p.songId === song.id);
@@ -42,14 +44,32 @@ const SongCard = ({
                     )}
                   </div>
                 )}
+                {!song.enriched && !isEnriching && (
+                  <button
+                    onClick={() => onReenrichSong && onReenrichSong(song.id)}
+                    className="text-xs text-orange-600 hover:text-orange-700 font-medium mt-1 flex items-center"
+                    title="Enrichir avec l'API Gemini"
+                  >
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    Enrichir
+                  </button>
+                )}
+                {isEnriching && (
+                  <div className="flex items-center gap-1 mt-1 text-xs text-blue-600">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Enrichissement...
+                  </div>
+                )}
               </div>
-              <button
-                onClick={() => setShowDetails(true)}
-                className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 p-1.5 rounded transition"
-                title="Voir les détails"
-              >
-                <Info className="w-4 h-4" />
-              </button>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setShowDetails(true)}
+                  className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 p-1.5 rounded transition"
+                  title="Voir les détails"
+                >
+                  <Info className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
           {isPlayable && (

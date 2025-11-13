@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import { List, Filter } from 'lucide-react';
 import SongCard from './SongCard';
 
-const RepertoireView = ({ 
-  songs, 
+const RepertoireView = ({
+  songs,
   participations,
   instrumentSlots,
   users,
   currentUser,
   groups,
   onJoinSlot,
-  onLeaveSlot
+  onLeaveSlot,
+  onReenrichSong,
+  enrichingSongs
 }) => {
   const [filterGroup, setFilterGroup] = useState('all');
   const [filterPlayable, setFilterPlayable] = useState('all');
@@ -97,6 +99,8 @@ const RepertoireView = ({
                     currentUser={currentUser}
                     onJoinSlot={onJoinSlot}
                     onLeaveSlot={onLeaveSlot}
+                    onReenrichSong={onReenrichSong}
+                    isEnriching={enrichingSongs.has(song.id)}
                   />
                 </div>
               );

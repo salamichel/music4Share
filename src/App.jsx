@@ -34,6 +34,7 @@ export default function App() {
 
   const [newGroup, setNewGroup] = useState({ name: '', style: '' });
   const [activeTab, setActiveTab] = useState('repertoire'); // repertoire, mygroups, allgroups
+  const [enrichingSongs, setEnrichingSongs] = useState(new Set()); // IDs des titres en cours d'enrichissement
 
   // Trouver le slot correspondant à un instrument
   const findUserSlotForInstrument = (instrumentName) => {
@@ -248,6 +249,53 @@ export default function App() {
     alert(`${parsedSongs.length} titre(s) importé(s) avec succès ! (${enrichedCount} enrichis) 🎵`);
   };
 
+  // Re-enrichir un titre existant
+  const handleReenrichSong = async (songId) => {
+    const song = songs.find(s => s.id === songId);
+    if (!song) return;
+
+    // Marquer le titre comme en cours d'enrichissement
+    setEnrichingSongs(prev => new Set([...prev, songId]));
+
+    try {
+      // Enrichir le titre avec l'API Gemini
+      const enrichedData = await enrichSongWithGemini(song.title, song.artist);
+
+      // Mettre à jour le titre avec les nouvelles données
+      const updatedSongs = songs.map(s => {
+        if (s.id === songId) {
+          return {
+            ...s,
+            duration: enrichedData.duration,
+            chords: enrichedData.chords,
+            lyrics: enrichedData.lyrics,
+            genre: enrichedData.genre,
+            enriched: enrichedData.enriched
+          };
+        }
+        return s;
+      });
+
+      setSongs(updatedSongs);
+
+      if (enrichedData.enriched) {
+        alert(`Titre "${song.title}" enrichi avec succès ! 🎵`);
+      } else {
+        alert(`Impossible d'enrichir le titre "${song.title}". Veuillez réessayer plus tard.`);
+      }
+    } catch (error) {
+      console.error('Erreur lors du re-enrichissement:', error);
+      alert(`Erreur lors de l'enrichissement du titre "${song.title}".`);
+    } finally {
+      // Retirer le titre de la liste des enrichissements en cours
+      setEnrichingSongs(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(songId);
+        return newSet;
+      });
+    }
+  };
+
   // Rejoindre un emplacement
   const handleJoinSlot = (songId, slotId) => {
     const participation = {
@@ -426,6 +474,8 @@ export default function App() {
               groups={groups}
               onJoinSlot={handleJoinSlot}
               onLeaveSlot={handleLeaveSlot}
+              onReenrichSong={handleReenrichSong}
+              enrichingSongs={enrichingSongs}
             />
           )}
 
@@ -442,6 +492,8 @@ export default function App() {
               onAddSong={handleAddSong}
               onBulkImport={handleBulkImport}
               onCreateGroup={handleCreateGroup}
+              onReenrichSong={handleReenrichSong}
+              enrichingSongs={enrichingSongs}
             />
           )}
 
