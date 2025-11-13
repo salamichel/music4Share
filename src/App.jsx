@@ -303,7 +303,7 @@ export default function App() {
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <div className="flex items-center">
               <Music className="w-8 h-8 mr-2" />
-              <h1 className="text-2xl font-bold">MusicShare</h1>
+              <h1 className="text-2xl font-bold">Music4Chalemine</h1>
             </div>
             <button onClick={handleLogout} className="flex items-center bg-purple-700 px-4 py-2 rounded-lg hover:bg-purple-800">
               <LogOut className="w-4 h-4 mr-2" />

@@ -21,7 +21,7 @@ const Login = ({ onLogin, onSignup }) => {
       <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
         <div className="flex items-center justify-center mb-6">
           <Music className="w-12 h-12 text-purple-600 mr-2" />
-          <h1 className="text-3xl font-bold text-gray-800">MusicShare</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Music4Chalemine</h1>
         </div>
         
         <div className="mb-6">
@@ -68,14 +68,21 @@ const Login = ({ onLogin, onSignup }) => {
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               required
             />
-            <input
-              type="text"
-              placeholder="Instrument principal"
+            <select
               value={signupForm.instrument}
               onChange={(e) => setSignupForm({...signupForm, instrument: e.target.value})}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               required
-            />
+            >
+              <option value="">Sélectionner un instrument</option>
+              <option value="batterie">🥁 Batterie</option>
+              <option value="chant">🎤 Chant</option>
+              <option value="basse">🎸 Basse</option>
+              <option value="guitare">🎸 Guitare</option>
+              <option value="choeur">🎵 Chœur</option>
+              <option value="piano">🎹 Piano</option>
+              <option value="clavier">🎹 Clavier</option>
+            </select>
             <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">
               S'inscrire
             </button>

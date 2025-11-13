@@ -1,4 +1,4 @@
-# MusicShare - Version organisée
+# Music4Chalemine - Version organisée
 
 Application collaborative pour musiciens - Partagez vos répertoires et trouvez des musiciens qui maîtrisent les mêmes morceaux.
 

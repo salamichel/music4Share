@@ -8,7 +8,7 @@ const Header = ({ currentUser, onLogout, searchTerm, onSearchChange, onOpenSlotM
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
             <Music className="w-8 h-8 mr-2" />
-            <h1 className="text-2xl font-bold">MusicShare</h1>
+            <h1 className="text-2xl font-bold">Music4Chalemine</h1>
           </div>
           <div className="flex items-center space-x-4">
             <button 
