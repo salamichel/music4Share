@@ -134,7 +134,7 @@ export const enrichBatchSongs = async (songs) => {
 
     // Construire une liste des chansons pour le prompt
     const songsList = songs.map((song, index) =>
-      `${index + 1}. "${song.title}"${song.artist ? ` de "${song.artist}"` : ''}`
+      `${index + 1}. "${song.title}"}`
     ).join('\n');
 
     const prompt = `
@@ -145,11 +145,11 @@ ${songsList}
 
 Retourne un tableau JSON avec exactement ${songs.length} objets dans le même ordre, chaque objet ayant ce format :
 {
-  "artist": "nom de l'artiste ou du groupe",
-  "duration": "durée au format MM:SS (ex: 03:45)",
-  "chords": "grille d'accords simplifiée (ex: Intro: Am-F-C-G | Couplet: C-G-Am-F | Refrain: F-C-G-Am)",
-  "lyrics": "paroles complètes de la chanson",
-  "genre": "genre musical principal (ex: Rock, Pop, Jazz, etc.)"
+  "artist": "(nom de l'artiste ou du groupe)",
+  "duration": "(durée au format MM:SS (ex: 03:45))",
+  "chords": "(grille d'accords simplifiée (ex: Intro: Am-F-C-G | Couplet: C-G-Am-F | Refrain: F-C-G-Am))",
+  "lyrics": "(paroles complètes de la chanson)",
+  "genre": "(genre musical principal (ex: Rock, Pop, Jazz, etc.))"
 }
 
 IMPORTANT:
