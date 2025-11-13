@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useFirebaseState } from './hooks/useFirebaseState';
 import { parseBulkImportText } from './utils/helpers';
-import { enrichSongWithGemini, enrichMultipleSongs } from './services/geminiService';
+import { enrichSongWithGemini, enrichMultipleSongs, enrichBatchSongs } from './services/geminiService';
 import {
   addUser,
   updateUser,
@@ -53,6 +53,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('repertoire'); // repertoire, mygroups, allgroups
   const [enrichingSongs, setEnrichingSongs] = useState(new Set()); // IDs des titres en cours d'enrichissement
   const [showUserSettings, setShowUserSettings] = useState(false);
+  const [selectedSongs, setSelectedSongs] = useState(new Set()); // IDs des titres sélectionnés pour enrichissement
 
   // Restaurer la session utilisateur au chargement
   useEffect(() => {
@@ -456,6 +457,81 @@ export default function App() {
     }
   };
 
+  // Toggle sélection d'un titre
+  const handleToggleSongSelection = (songId) => {
+    setSelectedSongs(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(songId)) {
+        newSet.delete(songId);
+      } else {
+        newSet.add(songId);
+      }
+      return newSet;
+    });
+  };
+
+  // Sélectionner tous les titres non enrichis
+  const handleSelectAllUnenriched = () => {
+    const unenrichedSongIds = songs.filter(s => !s.enriched).map(s => s.id);
+    setSelectedSongs(new Set(unenrichedSongIds));
+  };
+
+  // Désélectionner tous
+  const handleDeselectAll = () => {
+    setSelectedSongs(new Set());
+  };
+
+  // Enrichir les titres sélectionnés en masse
+  const handleEnrichSelected = async () => {
+    if (selectedSongs.size === 0) {
+      alert('Aucun titre sélectionné');
+      return;
+    }
+
+    const songsToEnrich = songs.filter(s => selectedSongs.has(s.id));
+
+    // Marquer tous comme en cours d'enrichissement
+    setEnrichingSongs(prev => new Set([...prev, ...selectedSongs]));
+
+    try {
+      // Enrichir en UNE SEULE requête
+      const enrichedResults = await enrichBatchSongs(songsToEnrich);
+
+      // Mettre à jour chaque titre avec les données enrichies
+      for (const enrichedData of enrichedResults) {
+        const updates = {
+          artist: enrichedData.artist,
+          duration: enrichedData.duration,
+          chords: enrichedData.chords,
+          lyrics: enrichedData.lyrics,
+          genre: enrichedData.genre,
+          enriched: enrichedData.enriched
+        };
+
+        try {
+          await updateSong(enrichedData.id, updates);
+        } catch (error) {
+          // Fallback mode local
+          setSongs(prevSongs => prevSongs.map(s =>
+            s.id === enrichedData.id ? { ...s, ...updates } : s
+          ));
+        }
+      }
+
+      const enrichedCount = enrichedResults.filter(r => r.enriched).length;
+      alert(`${enrichedCount}/${selectedSongs.size} titre(s) enrichi(s) avec succès ! 🎵`);
+
+      // Désélectionner après enrichissement
+      setSelectedSongs(new Set());
+    } catch (error) {
+      console.error('Erreur lors de l\'enrichissement en masse:', error);
+      alert('Erreur lors de l\'enrichissement. Veuillez réessayer.');
+    } finally {
+      // Retirer tous de la liste des enrichissements en cours
+      setEnrichingSongs(new Set());
+    }
+  };
+
   // Rejoindre un emplacement
   const handleJoinSlot = async (songId, slotId) => {
     const participation = {
@@ -694,6 +770,11 @@ export default function App() {
               onReenrichSong={handleReenrichSong}
               onDeleteSong={handleDeleteSong}
               enrichingSongs={enrichingSongs}
+              selectedSongs={selectedSongs}
+              onToggleSongSelection={handleToggleSongSelection}
+              onEnrichSelected={handleEnrichSelected}
+              onSelectAllUnenriched={handleSelectAllUnenriched}
+              onDeselectAll={handleDeselectAll}
             />
           )}
 
@@ -713,6 +794,11 @@ export default function App() {
               onReenrichSong={handleReenrichSong}
               onDeleteSong={handleDeleteSong}
               enrichingSongs={enrichingSongs}
+              selectedSongs={selectedSongs}
+              onToggleSongSelection={handleToggleSongSelection}
+              onEnrichSelected={handleEnrichSelected}
+              onSelectAllUnenriched={handleSelectAllUnenriched}
+              onDeselectAll={handleDeselectAll}
             />
           )}
 

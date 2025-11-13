@@ -14,7 +14,9 @@ const SongCard = ({
   onLeaveSlot,
   onReenrichSong,
   onDeleteSong,
-  isEnriching = false
+  isEnriching = false,
+  isSelected = false,
+  onToggleSelection
 }) => {
   const [showDetails, setShowDetails] = useState(false);
   const songParticipations = participations.filter(p => p.songId === song.id);
@@ -31,10 +33,20 @@ const SongCard = ({
 
   return (
     <>
-      <div className={`border-b last:border-b-0 py-3 px-2 ${isPlayable ? 'bg-green-50 border-l-4 border-l-green-500' : ''}`}>
+      <div className={`border-b last:border-b-0 py-3 px-2 ${isPlayable ? 'bg-green-50 border-l-4 border-l-green-500' : ''} ${isSelected ? 'bg-orange-50' : ''}`}>
         <div className="flex justify-between items-start mb-2">
           <div className="flex-1">
             <div className="flex items-start gap-2">
+              {/* Checkbox de sélection */}
+              {onToggleSelection && (
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => onToggleSelection(song.id)}
+                  className="mt-1 w-4 h-4 text-purple-600 focus:ring-purple-500 rounded"
+                  title="Sélectionner pour enrichissement"
+                />
+              )}
               <div className="flex-1">
                 <h4 className="font-semibold">{song.title}</h4>
                 <p className="text-sm text-gray-600">{song.artist}</p>
