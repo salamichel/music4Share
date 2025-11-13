@@ -240,68 +240,65 @@ export default function App() {
     }
   };
 
-  // Ajouter un titre
+  // Ajouter un titre (SANS enrichissement automatique)
   const handleAddSong = async (newSongData, groupId) => {
-    // Enrichir le titre avec l'API Gemini
-    const enrichedData = await enrichSongWithGemini(newSongData.title, newSongData.artist);
-
     const song = {
       id: Date.now().toString(),
       title: newSongData.title,
-      artist: enrichedData.artist || newSongData.artist || 'Artiste inconnu', // Utiliser l'artiste enrichi si disponible
+      artist: newSongData.artist || 'Artiste inconnu',
       youtubeLink: newSongData.youtubeLink,
       ownerGroupId: groupId, // null si personnel
       addedBy: currentUser.id,
-      // Nouvelles données enrichies par Gemini
-      duration: enrichedData.duration,
-      chords: enrichedData.chords,
-      lyrics: enrichedData.lyrics,
-      genre: enrichedData.genre,
-      enriched: enrichedData.enriched
+      // Pas d'enrichissement automatique - sera fait manuellement
+      duration: null,
+      chords: null,
+      lyrics: null,
+      genre: null,
+      enriched: false
     };
 
     try {
       await addSong(song);
 
-      // Si ajouté dans un groupe, inscrire automatiquement le créateur
+      // Si ajouté dans un groupe, inscrire automatiquement le créateur sur son instrument
       if (groupId) {
-        const participation = {
-          id: Date.now().toString() + '_auto',
-          songId: song.id,
-          userId: currentUser.id,
-          slotId: findUserSlotForInstrument(currentUser.instrument),
-          comment: ''
-        };
-        await addParticipation(participation);
+        const userSlotId = findUserSlotForInstrument(currentUser.instrument);
+        console.log('🎸 Auto-inscription:', { instrument: currentUser.instrument, slotId: userSlotId });
+
+        if (userSlotId) {
+          const participation = {
+            id: Date.now().toString() + '_auto',
+            songId: song.id,
+            userId: currentUser.id,
+            slotId: userSlotId,
+            comment: ''
+          };
+          await addParticipation(participation);
+        }
       }
 
-      if (enrichedData.enriched) {
-        alert('Titre ajouté et enrichi avec succès ! 🎵');
-      } else {
-        alert('Titre ajouté (enrichissement non disponible)');
-      }
+      alert('Titre ajouté avec succès ! 🎵 (Utilisez la sélection pour l\'enrichir)');
     } catch (error) {
       // Fallback mode local
       setSongs([...songs, song]);
       if (groupId) {
-        const participation = {
-          id: Date.now().toString() + '_auto',
-          songId: song.id,
-          userId: currentUser.id,
-          slotId: findUserSlotForInstrument(currentUser.instrument),
-          comment: ''
-        };
-        setParticipations([...participations, participation]);
+        const userSlotId = findUserSlotForInstrument(currentUser.instrument);
+        if (userSlotId) {
+          const participation = {
+            id: Date.now().toString() + '_auto',
+            songId: song.id,
+            userId: currentUser.id,
+            slotId: userSlotId,
+            comment: ''
+          };
+          setParticipations([...participations, participation]);
+        }
       }
-      if (enrichedData.enriched) {
-        alert('Titre ajouté et enrichi avec succès ! 🎵');
-      } else {
-        alert('Titre ajouté (enrichissement non disponible)');
-      }
+      alert('Titre ajouté avec succès ! 🎵 (Utilisez la sélection pour l\'enrichir)');
     }
   };
 
-  // Import en masse
+  // Import en masse (SANS enrichissement automatique)
   const handleBulkImport = async (text, groupId) => {
     const parsedSongs = parseBulkImportText(text);
     if (parsedSongs.length === 0) {
@@ -309,41 +306,36 @@ export default function App() {
       return;
     }
 
-    // Afficher un message d'attente
-    alert(`Import de ${parsedSongs.length} titre(s) en cours... Enrichissement avec l'API Gemini.`);
-
     const newSongs = [];
     const newParticipations = [];
-    const userSlot = findUserSlotForInstrument(currentUser.instrument);
+    const userSlotId = findUserSlotForInstrument(currentUser.instrument);
 
-    // Enrichir tous les titres avec l'API Gemini
-    const enrichedSongs = await enrichMultipleSongs(parsedSongs, 1000); // 1 seconde entre chaque requête
-
-    enrichedSongs.forEach((enrichedData, index) => {
+    // Créer les titres SANS enrichissement (sera fait manuellement après)
+    parsedSongs.forEach((parsedSong, index) => {
       const songId = Date.now().toString() + '_' + index;
       const song = {
         id: songId,
-        title: enrichedData.title,
-        artist: enrichedData.artist,
+        title: parsedSong.title,
+        artist: parsedSong.artist || 'Artiste inconnu',
         youtubeLink: '',
         ownerGroupId: groupId,
         addedBy: currentUser.id,
-        // Données enrichies par Gemini
-        duration: enrichedData.duration,
-        chords: enrichedData.chords,
-        lyrics: enrichedData.lyrics,
-        genre: enrichedData.genre,
-        enriched: enrichedData.enriched
+        // Pas d'enrichissement automatique
+        duration: null,
+        chords: null,
+        lyrics: null,
+        genre: null,
+        enriched: false
       };
       newSongs.push(song);
 
-      // Si titre de groupe ET slot trouvé, auto-inscrire
-      if (groupId && userSlot) {
+      // Si titre de groupe ET slot trouvé, auto-inscrire l'utilisateur
+      if (groupId && userSlotId) {
         const participation = {
           id: songId + '_auto',
           songId: songId,
           userId: currentUser.id,
-          slotId: userSlot,
+          slotId: userSlotId,
           comment: ''
         };
         newParticipations.push(participation);
@@ -356,14 +348,12 @@ export default function App() {
         await addMultipleParticipations(newParticipations);
       }
 
-      const enrichedCount = enrichedSongs.filter(s => s.enriched).length;
-      alert(`${parsedSongs.length} titre(s) importé(s) avec succès ! (${enrichedCount} enrichis) 🎵`);
+      alert(`${parsedSongs.length} titre(s) importé(s) avec succès ! 🎵\nUtilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir tous les titres en une seule fois.`);
     } catch (error) {
       // Fallback mode local
       setSongs([...songs, ...newSongs]);
       setParticipations([...participations, ...newParticipations]);
-      const enrichedCount = enrichedSongs.filter(s => s.enriched).length;
-      alert(`${parsedSongs.length} titre(s) importé(s) avec succès ! (${enrichedCount} enrichis) 🎵`);
+      alert(`${parsedSongs.length} titre(s) importé(s) avec succès ! 🎵\nUtilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir tous les titres en une seule fois.`);
     }
   };
 
