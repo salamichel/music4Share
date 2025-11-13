@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Users, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Users, Plus, ChevronDown, ChevronUp, Sparkles, CheckSquare, Square, Trash2 } from 'lucide-react';
 import SongAddForm from './SongAddForm';
 import SongCard from './SongCard';
 
-const MyGroupsView = ({ 
+const MyGroupsView = ({
   groups,
   songs,
   participations,
@@ -14,7 +14,16 @@ const MyGroupsView = ({
   onLeaveSlot,
   onAddSong,
   onBulkImport,
-  onCreateGroup
+  onCreateGroup,
+  onReenrichSong,
+  onDeleteSong,
+  enrichingSongs,
+  selectedSongs,
+  onToggleSongSelection,
+  onEnrichSelected,
+  onDeleteSelected,
+  onSelectAllUnenriched,
+  onDeselectAll
 }) => {
   const [expandedGroupId, setExpandedGroupId] = useState(null);
   const [showBulkImport, setShowBulkImport] = useState(false);
@@ -92,6 +101,57 @@ const MyGroupsView = ({
                         onToggleBulkImport={() => setShowBulkImport(!showBulkImport)}
                       />
 
+                      {/* Barre d'actions pour l'enrichissement en masse */}
+                      {onEnrichSelected && groupSongs.length > 0 && (
+                        <div className="p-3 border-b bg-orange-50 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={onSelectAllUnenriched}
+                              className="text-xs bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded flex items-center gap-1"
+                              title="Sélectionner tous les titres non enrichis"
+                            >
+                              <CheckSquare className="w-3 h-3" />
+                              Tout sélectionner
+                            </button>
+                            {selectedSongs && selectedSongs.size > 0 && (
+                              <>
+                                <button
+                                  onClick={onDeselectAll}
+                                  className="text-xs bg-gray-500 hover:bg-gray-600 text-white px-3 py-1.5 rounded flex items-center gap-1"
+                                >
+                                  <Square className="w-3 h-3" />
+                                  Désélectionner
+                                </button>
+                                <span className="text-sm text-gray-600 ml-2">
+                                  {selectedSongs.size} titre{selectedSongs.size > 1 ? 's' : ''} sélectionné{selectedSongs.size > 1 ? 's' : ''}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                          {selectedSongs && selectedSongs.size > 0 && (
+                            <div className="flex gap-2">
+                              <button
+                                onClick={onEnrichSelected}
+                                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1.5 rounded text-sm flex items-center gap-2"
+                              >
+                                <Sparkles className="w-4 h-4" />
+                                Enrichir la sélection
+                              </button>
+                              {onDeleteSelected && (
+                                <button
+                                  onClick={onDeleteSelected}
+                                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-1.5 rounded text-sm flex items-center gap-2"
+                                  title="Supprimer les titres sélectionnés"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  Supprimer
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {/* Liste des titres du groupe */}
                       <div className="p-4">
                         {groupSongs.length === 0 ? (
@@ -108,8 +168,14 @@ const MyGroupsView = ({
                                 instrumentSlots={instrumentSlots}
                                 users={users}
                                 currentUser={currentUser}
+                                groups={groups}
                                 onJoinSlot={onJoinSlot}
                                 onLeaveSlot={onLeaveSlot}
+                                onReenrichSong={onReenrichSong}
+                                onDeleteSong={onDeleteSong}
+                                isEnriching={enrichingSongs.has(song.id)}
+                                isSelected={selectedSongs && selectedSongs.has(song.id)}
+                                onToggleSelection={onToggleSongSelection}
                               />
                             ))}
                           </div>

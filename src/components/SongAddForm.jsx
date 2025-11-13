@@ -46,11 +46,10 @@ const SongAddForm = ({
             />
             <input
               type="text"
-              placeholder="Artiste"
+              placeholder="Artiste (optionnel - sera détecté par Gemini)"
               value={newSong.artist}
               onChange={(e) => setNewSong({...newSong, artist: e.target.value})}
               className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-              required
             />
             <input
               type="url"

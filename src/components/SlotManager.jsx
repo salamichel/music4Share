@@ -18,7 +18,7 @@ const SlotManager = ({ instrumentSlots, onAddSlot, onDeleteSlot, onClose }) => {
         <div className="mb-6">
           <h4 className="font-semibold mb-3">Emplacements disponibles</h4>
           <div className="space-y-2">
-            {instrumentSlots.map(slot => (
+            {[...instrumentSlots].sort((a, b) => a.name.localeCompare(b.name)).map(slot => (
               <div key={slot.id} className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center">
                   <span className="text-2xl mr-3">{slot.icon}</span>

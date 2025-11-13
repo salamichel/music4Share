@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
-import { List, Filter } from 'lucide-react';
+import { List, Filter, Sparkles, CheckSquare, Square, Trash2 } from 'lucide-react';
 import SongCard from './SongCard';
 
-const RepertoireView = ({ 
-  songs, 
+const RepertoireView = ({
+  songs,
   participations,
   instrumentSlots,
   users,
   currentUser,
   groups,
   onJoinSlot,
-  onLeaveSlot
+  onLeaveSlot,
+  onReenrichSong,
+  onDeleteSong,
+  enrichingSongs,
+  selectedSongs,
+  onToggleSongSelection,
+  onEnrichSelected,
+  onDeleteSelected,
+  onSelectAllUnenriched,
+  onDeselectAll
 }) => {
   const [filterGroup, setFilterGroup] = useState('all');
   const [filterPlayable, setFilterPlayable] = useState('all');
@@ -18,7 +27,7 @@ const RepertoireView = ({
   const filteredSongs = songs.filter(song => {
     // Filtre par groupe
     if (filterGroup !== 'all' && song.ownerGroupId !== filterGroup) return false;
-    
+
     // Filtre par jouabilité
     if (filterPlayable === 'playable') {
       const songParts = participations.filter(p => p.songId === song.id);
@@ -28,9 +37,11 @@ const RepertoireView = ({
       const hasVocals = filledSlots.has('vocals');
       if (!(hasDrums && hasString && hasVocals)) return false;
     }
-    
+
     return true;
   });
+
+  const unenrichedCount = songs.filter(s => !s.enriched).length;
 
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
@@ -44,6 +55,7 @@ const RepertoireView = ({
             </h2>
             <p className="text-sm text-purple-100 mt-1">
               {filteredSongs.length} titre{filteredSongs.length > 1 ? 's' : ''}
+              {unenrichedCount > 0 && ` · ${unenrichedCount} non enrichi${unenrichedCount > 1 ? 's' : ''}`}
             </p>
           </div>
           <Filter className="w-5 h-5" />
@@ -74,6 +86,57 @@ const RepertoireView = ({
         </div>
       </div>
 
+      {/* Barre d'actions pour l'enrichissement en masse */}
+      {onEnrichSelected && (
+        <div className="p-3 border-b bg-orange-50 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onSelectAllUnenriched}
+              className="text-xs bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded flex items-center gap-1"
+              title="Sélectionner tous les titres non enrichis"
+            >
+              <CheckSquare className="w-3 h-3" />
+              Tout sélectionner
+            </button>
+            {selectedSongs && selectedSongs.size > 0 && (
+              <>
+                <button
+                  onClick={onDeselectAll}
+                  className="text-xs bg-gray-500 hover:bg-gray-600 text-white px-3 py-1.5 rounded flex items-center gap-1"
+                >
+                  <Square className="w-3 h-3" />
+                  Désélectionner
+                </button>
+                <span className="text-sm text-gray-600 ml-2">
+                  {selectedSongs.size} titre{selectedSongs.size > 1 ? 's' : ''} sélectionné{selectedSongs.size > 1 ? 's' : ''}
+                </span>
+              </>
+            )}
+          </div>
+          {selectedSongs && selectedSongs.size > 0 && (
+            <div className="flex gap-2">
+              <button
+                onClick={onEnrichSelected}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1.5 rounded text-sm flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Enrichir la sélection
+              </button>
+              {onDeleteSelected && (
+                <button
+                  onClick={onDeleteSelected}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-1.5 rounded text-sm flex items-center gap-2"
+                  title="Supprimer les titres sélectionnés"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Supprimer
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Liste des titres */}
       <div className="flex-1 overflow-y-auto p-4">
         {filteredSongs.length === 0 ? (
@@ -95,8 +158,14 @@ const RepertoireView = ({
                     instrumentSlots={instrumentSlots}
                     users={users}
                     currentUser={currentUser}
+                    groups={groups}
                     onJoinSlot={onJoinSlot}
                     onLeaveSlot={onLeaveSlot}
+                    onReenrichSong={onReenrichSong}
+                    onDeleteSong={onDeleteSong}
+                    isEnriching={enrichingSongs.has(song.id)}
+                    isSelected={selectedSongs && selectedSongs.has(song.id)}
+                    onToggleSelection={onToggleSongSelection}
                   />
                 </div>
               );
