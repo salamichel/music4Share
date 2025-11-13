@@ -1,36 +1,61 @@
-import React from 'react';
-import { Youtube } from 'lucide-react';
+import React, { useState } from 'react';
+import { Youtube, Info } from 'lucide-react';
 import { isSongPlayable } from '../utils/helpers';
+import SongDetails from './SongDetails';
 
-const SongCard = ({ 
-  song, 
-  participations, 
-  instrumentSlots, 
-  users, 
-  currentUser, 
-  onJoinSlot, 
-  onLeaveSlot 
+const SongCard = ({
+  song,
+  participations,
+  instrumentSlots,
+  users,
+  currentUser,
+  onJoinSlot,
+  onLeaveSlot
 }) => {
+  const [showDetails, setShowDetails] = useState(false);
   const songParticipations = participations.filter(p => p.songId === song.id);
   const isPlayable = isSongPlayable(song.id, participations);
-  
+
   return (
-    <div className={`border-b last:border-b-0 py-3 px-2 ${isPlayable ? 'bg-green-50 border-l-4 border-l-green-500' : ''}`}>
-      <div className="flex justify-between items-start mb-2">
-        <div className="flex-1">
-          <h4 className="font-semibold">{song.title}</h4>
-          <p className="text-sm text-gray-600">{song.artist}</p>
-          {song.youtubeLink && (
-            <a href={song.youtubeLink} target="_blank" rel="noopener noreferrer" className="text-red-600 text-xs flex items-center mt-1 hover:underline">
-              <Youtube className="w-3 h-3 mr-1" />
-              YouTube
-            </a>
+    <>
+      <div className={`border-b last:border-b-0 py-3 px-2 ${isPlayable ? 'bg-green-50 border-l-4 border-l-green-500' : ''}`}>
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex-1">
+            <div className="flex items-start gap-2">
+              <div className="flex-1">
+                <h4 className="font-semibold">{song.title}</h4>
+                <p className="text-sm text-gray-600">{song.artist}</p>
+                {song.youtubeLink && (
+                  <a href={song.youtubeLink} target="_blank" rel="noopener noreferrer" className="text-red-600 text-xs flex items-center mt-1 hover:underline">
+                    <Youtube className="w-3 h-3 mr-1" />
+                    YouTube
+                  </a>
+                )}
+                {song.enriched && (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs text-purple-600 font-medium">✨ Enrichi</span>
+                    {song.duration && (
+                      <span className="text-xs text-gray-500">⏱️ {song.duration}</span>
+                    )}
+                    {song.genre && (
+                      <span className="text-xs text-gray-500">🎵 {song.genre}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => setShowDetails(true)}
+                className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 p-1.5 rounded transition"
+                title="Voir les détails"
+              >
+                <Info className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          {isPlayable && (
+            <span className="bg-green-600 text-white text-xs px-2 py-1 rounded">✓ Jouable</span>
           )}
         </div>
-        {isPlayable && (
-          <span className="bg-green-600 text-white text-xs px-2 py-1 rounded">✓ Jouable</span>
-        )}
-      </div>
       
       {/* Emplacements d'instruments */}
       <div className="flex flex-wrap gap-2 mt-3">
@@ -83,6 +108,12 @@ const SongCard = ({
         </div>
       )}
     </div>
+
+      {/* Modal de détails */}
+      {showDetails && (
+        <SongDetails song={song} onClose={() => setShowDetails(false)} />
+      )}
+    </>
   );
 };
 

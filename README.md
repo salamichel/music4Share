@@ -88,6 +88,45 @@ L'application sera accessible sur **http://localhost:3000**
 - ✅ Voir les membres de chaque groupe
 - ✅ Répertoires séparés par groupe
 
+### 🆕 Enrichissement automatique avec l'API Gemini
+- ✅ Récupération automatique de la durée du titre
+- ✅ Génération des grilles d'accords
+- ✅ Extraction des paroles complètes
+- ✅ Identification du genre musical
+- ✅ Interface détaillée pour chaque titre avec modal
+- ✅ Support de l'import en masse avec enrichissement automatique
+
+#### Configuration de l'API Gemini
+
+1. **Obtenir une clé API Gemini**
+   - Visitez [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Créez une nouvelle clé API gratuite
+
+2. **Configurer l'application**
+   ```bash
+   # Copier le fichier d'exemple
+   cp .env.example .env
+
+   # Éditer le fichier .env et ajouter votre clé
+   REACT_APP_GEMINI_API_KEY=votre_cle_api_ici
+   ```
+
+3. **Redémarrer l'application**
+   ```bash
+   # Avec Docker
+   docker-compose down && docker-compose up
+
+   # Ou avec npm
+   npm start
+   ```
+
+4. **Utilisation**
+   - Lors de l'ajout d'un titre (simple ou en masse), l'API Gemini enrichit automatiquement les informations
+   - Cliquez sur le bouton ℹ️ sur chaque titre pour voir les détails complets (accords, paroles, etc.)
+   - Les titres enrichis affichent un badge ✨ "Enrichi"
+
+**Note** : Si la clé API n'est pas configurée, l'application fonctionnera normalement mais sans l'enrichissement automatique.
+
 ## Architecture
 
 ### Composants
@@ -96,7 +135,9 @@ L'application sera accessible sur **http://localhost:3000**
 
 **Header.jsx** : En-tête avec le nom d'utilisateur, bouton de gestion des emplacements, recherche et déconnexion
 
-**SongCard.jsx** : Affiche un titre avec ses emplacements d'instruments cliquables et la liste des participants
+**SongCard.jsx** : Affiche un titre avec ses emplacements d'instruments cliquables, la liste des participants, et un bouton pour voir les détails enrichis
+
+**SongDetails.jsx** : Modal affichant les informations détaillées d'un titre (durée, genre, accords, paroles) récupérées via l'API Gemini
 
 **SongAddForm.jsx** : Formulaire avec bascule entre ajout simple et import en masse
 
@@ -109,6 +150,12 @@ L'application sera accessible sur **http://localhost:3000**
 ### Hooks
 
 **useAppState.js** : Hook personnalisé qui centralise tout l'état de l'application
+
+### Services
+
+**geminiService.js** : Service d'intégration avec l'API Gemini
+- `enrichSongWithGemini()` : Enrichit un titre avec les données de l'API Gemini (durée, accords, paroles, genre)
+- `enrichMultipleSongs()` : Enrichit plusieurs titres en batch avec gestion du rate limiting
 
 ### Utils
 
