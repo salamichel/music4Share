@@ -9,6 +9,7 @@ import {
   updateGroup,
   addSong,
   updateSong,
+  deleteSong,
   addParticipation,
   deleteParticipation,
   addInstrumentSlot,
@@ -246,7 +247,7 @@ export default function App() {
     const song = {
       id: Date.now().toString(),
       title: newSongData.title,
-      artist: newSongData.artist,
+      artist: enrichedData.artist || newSongData.artist || 'Artiste inconnu', // Utiliser l'artiste enrichi si disponible
       youtubeLink: newSongData.youtubeLink,
       ownerGroupId: groupId, // null si personnel
       addedBy: currentUser.id,
@@ -377,8 +378,9 @@ export default function App() {
       // Enrichir le titre avec l'API Gemini
       const enrichedData = await enrichSongWithGemini(song.title, song.artist);
 
-      // Mettre à jour le titre avec les nouvelles données
+      // Mettre à jour le titre avec les nouvelles données (inclut l'artiste si trouvé par Gemini)
       const updates = {
+        artist: enrichedData.artist || song.artist || 'Artiste inconnu',
         duration: enrichedData.duration,
         chords: enrichedData.chords,
         lyrics: enrichedData.lyrics,
@@ -412,6 +414,45 @@ export default function App() {
         newSet.delete(songId);
         return newSet;
       });
+    }
+  };
+
+  // Supprimer un titre (si membre du groupe propriétaire)
+  const handleDeleteSong = async (songId) => {
+    const song = songs.find(s => s.id === songId);
+    if (!song) return;
+
+    // Vérifier les permissions
+    if (song.ownerGroupId) {
+      const ownerGroup = groups.find(g => g.id === song.ownerGroupId);
+      if (!ownerGroup || !ownerGroup.memberIds.includes(currentUser.id)) {
+        alert("Vous devez être membre du groupe pour supprimer ce titre.");
+        return;
+      }
+    } else if (song.addedBy !== currentUser.id) {
+      // Pour les titres personnels, seul le créateur peut supprimer
+      alert("Seul le créateur peut supprimer ce titre.");
+      return;
+    }
+
+    // Confirmation
+    if (!window.confirm(`Êtes-vous sûr de vouloir supprimer "${song.title}" ?`)) {
+      return;
+    }
+
+    try {
+      await deleteSong(songId);
+      // Supprimer aussi les participations liées
+      const songParticipations = participations.filter(p => p.songId === songId);
+      for (const p of songParticipations) {
+        await deleteParticipation(p.id);
+      }
+      alert(`Titre "${song.title}" supprimé avec succès.`);
+    } catch (error) {
+      // Fallback mode local
+      setSongs(songs.filter(s => s.id !== songId));
+      setParticipations(participations.filter(p => p.songId !== songId));
+      alert(`Titre "${song.title}" supprimé avec succès.`);
     }
   };
 
@@ -651,6 +692,7 @@ export default function App() {
               onJoinSlot={handleJoinSlot}
               onLeaveSlot={handleLeaveSlot}
               onReenrichSong={handleReenrichSong}
+              onDeleteSong={handleDeleteSong}
               enrichingSongs={enrichingSongs}
             />
           )}
@@ -669,6 +711,7 @@ export default function App() {
               onBulkImport={handleBulkImport}
               onCreateGroup={handleCreateGroup}
               onReenrichSong={handleReenrichSong}
+              onDeleteSong={handleDeleteSong}
               enrichingSongs={enrichingSongs}
             />
           )}

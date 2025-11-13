@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Youtube, Info, Sparkles, Loader2 } from 'lucide-react';
+import { Youtube, Info, Sparkles, Loader2, Trash2 } from 'lucide-react';
 import { isSongPlayable } from '../utils/helpers';
 import SongDetails from './SongDetails';
 
@@ -9,14 +9,25 @@ const SongCard = ({
   instrumentSlots,
   users,
   currentUser,
+  groups = [],
   onJoinSlot,
   onLeaveSlot,
   onReenrichSong,
+  onDeleteSong,
   isEnriching = false
 }) => {
   const [showDetails, setShowDetails] = useState(false);
   const songParticipations = participations.filter(p => p.songId === song.id);
   const isPlayable = isSongPlayable(song.id, participations);
+
+  // Vérifier si l'utilisateur peut supprimer ce titre
+  const canDelete = () => {
+    if (song.ownerGroupId) {
+      const ownerGroup = groups.find(g => g.id === song.ownerGroupId);
+      return ownerGroup && ownerGroup.memberIds.includes(currentUser.id);
+    }
+    return song.addedBy === currentUser.id;
+  };
 
   return (
     <>
@@ -44,14 +55,18 @@ const SongCard = ({
                     )}
                   </div>
                 )}
-                {!song.enriched && !isEnriching && (
+                {!isEnriching && (
                   <button
                     onClick={() => onReenrichSong && onReenrichSong(song.id)}
-                    className="text-xs text-orange-600 hover:text-orange-700 font-medium mt-1 flex items-center"
-                    title="Enrichir avec l'API Gemini"
+                    className={`text-xs font-medium mt-1 flex items-center ${
+                      song.enriched
+                        ? 'text-purple-600 hover:text-purple-700'
+                        : 'text-orange-600 hover:text-orange-700'
+                    }`}
+                    title={song.enriched ? "Réenrichir avec l'API Gemini" : "Enrichir avec l'API Gemini"}
                   >
                     <Sparkles className="w-3 h-3 mr-1" />
-                    Enrichir
+                    {song.enriched ? 'Réenrichir' : 'Enrichir'}
                   </button>
                 )}
                 {isEnriching && (
@@ -69,6 +84,15 @@ const SongCard = ({
                 >
                   <Info className="w-4 h-4" />
                 </button>
+                {canDelete() && onDeleteSong && (
+                  <button
+                    onClick={() => onDeleteSong(song.id)}
+                    className="bg-red-100 hover:bg-red-200 text-red-700 p-1.5 rounded transition"
+                    title="Supprimer ce titre"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
           </div>

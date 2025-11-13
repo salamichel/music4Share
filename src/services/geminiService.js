@@ -13,16 +13,17 @@ const initGeminiAPI = () => {
 /**
  * Enrichit les informations d'un titre musical via l'API Gemini
  * @param {string} title - Titre de la chanson
- * @param {string} artist - Artiste/Groupe
- * @returns {Promise<Object>} Objet contenant: duration, chords, lyrics, genre
+ * @param {string} artist - Artiste/Groupe (optionnel)
+ * @returns {Promise<Object>} Objet contenant: artist, duration, chords, lyrics, genre
  */
-export const enrichSongWithGemini = async (title, artist) => {
+export const enrichSongWithGemini = async (title, artist = '') => {
   try {
     const ai = initGeminiAPI();
 
     // Si pas de clé API, retourner des données vides
     if (!ai) {
       return {
+        artist: artist || null,
         duration: null,
         chords: null,
         lyrics: null,
@@ -31,10 +32,16 @@ export const enrichSongWithGemini = async (title, artist) => {
       };
     }
 
+    // Construire le prompt en fonction de si l'artiste est fourni ou non
+    const songIdentifier = artist
+      ? `la chanson "${title}" de "${artist}"`
+      : `la chanson intitulée "${title}"`;
+
     const prompt = `
-Tu es un assistant musical expert. Pour la chanson "${title}" de "${artist}", fournis les informations suivantes au format JSON strict :
+Tu es un assistant musical expert. Pour ${songIdentifier}, fournis les informations suivantes au format JSON strict :
 
 {
+  "artist": "${artist || 'nom de l\'artiste ou du groupe'}",
   "duration": "durée au format MM:SS (ex: 03:45)",
   "chords": "grille d'accords simplifiée (ex: Intro: Am-F-C-G | Couplet: C-G-Am-F | Refrain: F-C-G-Am)",
   "lyrics": "paroles complètes de la chanson",
@@ -42,6 +49,7 @@ Tu es un assistant musical expert. Pour la chanson "${title}" de "${artist}", fo
 }
 
 IMPORTANT:
+${!artist ? '- Identifie d\'abord l\'artiste ou le groupe qui a interprété cette chanson' : ''}
 - Si tu ne trouves pas la chanson, retourne null pour chaque champ
 - Pour les accords, donne une grille simplifiée avec les sections principales
 - Pour les paroles, inclus les couplets et refrains
@@ -76,6 +84,7 @@ IMPORTANT:
     const songData = JSON.parse(cleanedText);
 
     return {
+      artist: songData.artist || artist || null,
       duration: songData.duration || null,
       chords: songData.chords || null,
       lyrics: songData.lyrics || null,
@@ -88,6 +97,7 @@ IMPORTANT:
 
     // En cas d'erreur, retourner des données vides
     return {
+      artist: artist || null,
       duration: null,
       chords: null,
       lyrics: null,

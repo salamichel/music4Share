@@ -16,6 +16,7 @@ const MyGroupsView = ({
   onBulkImport,
   onCreateGroup,
   onReenrichSong,
+  onDeleteSong,
   enrichingSongs
 }) => {
   const [expandedGroupId, setExpandedGroupId] = useState(null);
@@ -110,9 +111,11 @@ const MyGroupsView = ({
                                 instrumentSlots={instrumentSlots}
                                 users={users}
                                 currentUser={currentUser}
+                                groups={groups}
                                 onJoinSlot={onJoinSlot}
                                 onLeaveSlot={onLeaveSlot}
                                 onReenrichSong={onReenrichSong}
+                                onDeleteSong={onDeleteSong}
                                 isEnriching={enrichingSongs.has(song.id)}
                               />
                             ))}

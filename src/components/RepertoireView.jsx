@@ -12,6 +12,7 @@ const RepertoireView = ({
   onJoinSlot,
   onLeaveSlot,
   onReenrichSong,
+  onDeleteSong,
   enrichingSongs
 }) => {
   const [filterGroup, setFilterGroup] = useState('all');
@@ -97,9 +98,11 @@ const RepertoireView = ({
                     instrumentSlots={instrumentSlots}
                     users={users}
                     currentUser={currentUser}
+                    groups={groups}
                     onJoinSlot={onJoinSlot}
                     onLeaveSlot={onLeaveSlot}
                     onReenrichSong={onReenrichSong}
+                    onDeleteSong={onDeleteSong}
                     isEnriching={enrichingSongs.has(song.id)}
                   />
                 </div>
