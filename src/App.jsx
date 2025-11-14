@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { useFirebaseState } from './hooks/useFirebaseState';
 import { parseBulkImportText } from './utils/helpers';
-import { enrichSongWithGemini, enrichMultipleSongs, enrichBatchSongs } from './services/geminiService';
+import { enrichSongWithGemini, enrichBatchSongs } from './services/geminiService';
+import { enrichSongMultiAPI, enrichBatchMultiAPI } from './services/multiEnrichmentService';
 import {
   addUser,
   updateUser,
@@ -108,7 +111,7 @@ export default function App() {
       setView('repertoire');
       // Sauvegarder la session dans localStorage
       localStorage.setItem('currentUserId', user.id);
-      console.log('✅ Session sauvegardée pour:', user.username);
+      toast.success(`Bienvenue ${user.username} !`);
     } else {
       alert('Pseudo ou mot de passe incorrect');
     }
@@ -134,7 +137,7 @@ export default function App() {
       setView('repertoire');
       // Sauvegarder la session dans localStorage
       localStorage.setItem('currentUserId', newUser.id);
-      console.log('✅ Session sauvegardée pour:', newUser.username);
+      toast.success(`Compte créé avec succès ! Bienvenue ${newUser.username}`);
     } catch (error) {
       // En cas d'erreur Firebase, utiliser le mode local
       setUsers([...users, newUser]);
@@ -170,7 +173,7 @@ export default function App() {
 
       setNewGroup({ name: '', style: '' });
       setView('repertoire');
-      console.log('✅ Groupe créé !');
+      toast.success('Groupe créé avec succès !');
     } catch (error) {
       // Fallback mode local
       setGroups([...groups, group]);
@@ -179,7 +182,7 @@ export default function App() {
       setCurrentUser(updatedUser);
       setNewGroup({ name: '', style: '' });
       setView('repertoire');
-      console.log('✅ Groupe créé !');
+      toast.success('Groupe créé avec succès !');
     }
   };
 
@@ -215,7 +218,7 @@ export default function App() {
         await addMultipleParticipations(newParticipations);
       }
 
-      console.log(`✅ Vous avez rejoint le groupe ! Vous êtes inscrit(e) sur ${groupSongs.length} titre(s).`);
+      toast.success(`Groupe rejoint ! Inscrit(e) sur ${groupSongs.length} titre(s)`);
     } catch (error) {
       // Fallback mode local
       setGroups(groups.map(g =>
@@ -236,7 +239,7 @@ export default function App() {
         }));
         setParticipations([...participations, ...newParticipations]);
       }
-      console.log(`✅ Vous avez rejoint le groupe ! Vous êtes inscrit(e) sur ${groupSongs.length} titre(s).`);
+      toast.success(`Groupe rejoint ! Inscrit(e) sur ${groupSongs.length} titre(s)`);
     }
   };
 
@@ -277,8 +280,7 @@ export default function App() {
         }
       }
 
-      // Message dans la console uniquement (pas d'alert intempestif)
-      console.log('✅ Titre ajouté avec succès !');
+      toast.success('Titre ajouté avec succès !');
     } catch (error) {
       // Fallback mode local
       setSongs([...songs, song]);
@@ -295,7 +297,7 @@ export default function App() {
           setParticipations([...participations, participation]);
         }
       }
-      console.log('✅ Titre ajouté avec succès (mode local) !');
+      toast.success('Titre ajouté avec succès !');
     }
   };
 
@@ -349,12 +351,12 @@ export default function App() {
         await addMultipleParticipations(newParticipations);
       }
 
-      console.log(`✅ ${parsedSongs.length} titre(s) importé(s) avec succès ! Utilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir tous les titres en une seule fois.`);
+      toast.success(`${parsedSongs.length} titre(s) importé(s) avec succès ! Utilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir.`);
     } catch (error) {
       // Fallback mode local
       setSongs([...songs, ...newSongs]);
       setParticipations([...participations, ...newParticipations]);
-      console.log(`✅ ${parsedSongs.length} titre(s) importé(s) avec succès ! Utilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir tous les titres en une seule fois.`);
+      toast.success(`${parsedSongs.length} titre(s) importé(s) avec succès ! Utilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir.`);
     }
   };
 
@@ -367,8 +369,8 @@ export default function App() {
     setEnrichingSongs(prev => new Set([...prev, songId]));
 
     try {
-      // Enrichir le titre avec l'API Gemini
-      const enrichedData = await enrichSongWithGemini(song.title, song.artist);
+      // Enrichir le titre avec le service multi-API (MusicBrainz + Lyrics.ovh + Gemini fallback)
+      const enrichedData = await enrichSongMultiAPI(song.title, song.artist);
 
       // Mettre à jour le titre avec les nouvelles données (inclut l'artiste si trouvé par Gemini)
       const updates = {
@@ -383,22 +385,22 @@ export default function App() {
       try {
         await updateSong(songId, updates);
         if (enrichedData.enriched) {
-          console.log(`✅ Titre "${song.title}" enrichi avec succès !`);
+          toast.success(`"${song.title}" enrichi avec succès !`);
         } else {
-          console.error(`❌ Impossible d'enrichir le titre "${song.title}". Veuillez réessayer plus tard.`);
+          toast.error(`Impossible d'enrichir "${song.title}"`);
         }
       } catch (error) {
         // Fallback mode local
         setSongs(songs.map(s => s.id === songId ? { ...s, ...updates } : s));
         if (enrichedData.enriched) {
-          console.log(`✅ Titre "${song.title}" enrichi avec succès !`);
+          toast.success(`"${song.title}" enrichi avec succès !`);
         } else {
-          console.error(`❌ Impossible d'enrichir le titre "${song.title}". Veuillez réessayer plus tard.`);
+          toast.error(`Impossible d'enrichir "${song.title}"`);
         }
       }
     } catch (error) {
-      console.error('❌ Erreur lors du re-enrichissement:', error);
-      console.error(`❌ Erreur lors de l'enrichissement du titre "${song.title}".`);
+      console.error('Erreur lors du re-enrichissement:', error);
+      toast.error(`Erreur lors de l'enrichissement de "${song.title}"`);
     } finally {
       // Retirer le titre de la liste des enrichissements en cours
       setEnrichingSongs(prev => {
@@ -439,12 +441,12 @@ export default function App() {
       for (const p of songParticipations) {
         await deleteParticipation(p.id);
       }
-      console.log(`✅ Titre "${song.title}" supprimé avec succès.`);
+      toast.success(`"${song.title}" supprimé`);
     } catch (error) {
       // Fallback mode local
       setSongs(songs.filter(s => s.id !== songId));
       setParticipations(participations.filter(p => p.songId !== songId));
-      console.log(`✅ Titre "${song.title}" supprimé avec succès.`);
+      toast.success(`"${song.title}" supprimé`);
     }
   };
 
@@ -523,14 +525,14 @@ export default function App() {
       }
     }
 
-    console.log(`✅ ${successCount} titre(s) supprimé(s) avec succès`);
+    toast.success(`${successCount} titre(s) supprimé(s) avec succès`);
     setSelectedSongs(new Set());
   };
 
   // Enrichir les titres sélectionnés en masse
   const handleEnrichSelected = async () => {
     if (selectedSongs.size === 0) {
-      console.log('⚠️ Aucun titre sélectionné');
+      toast.warning('Aucun titre sélectionné');
       return;
     }
 
@@ -538,10 +540,11 @@ export default function App() {
 
     // Marquer tous comme en cours d'enrichissement
     setEnrichingSongs(prev => new Set([...prev, ...selectedSongs]));
+    toast.info(`Enrichissement de ${selectedSongs.size} titre(s) en cours...`);
 
     try {
-      // Enrichir en UNE SEULE requête
-      const enrichedResults = await enrichBatchSongs(songsToEnrich);
+      // Enrichir avec le service multi-API (MusicBrainz + Lyrics.ovh, puis Gemini pour accords)
+      const enrichedResults = await enrichBatchMultiAPI(songsToEnrich);
 
       // Mettre à jour chaque titre avec les données enrichies
       for (const enrichedData of enrichedResults) {
@@ -565,13 +568,13 @@ export default function App() {
       }
 
       const enrichedCount = enrichedResults.filter(r => r.enriched).length;
-      console.log(`✅ ${enrichedCount}/${selectedSongs.size} titre(s) enrichi(s) avec succès !`);
+      toast.success(`${enrichedCount}/${selectedSongs.size} titre(s) enrichi(s) avec succès !`);
 
       // Désélectionner après enrichissement
       setSelectedSongs(new Set());
     } catch (error) {
-      console.error('❌ Erreur lors de l\'enrichissement en masse:', error);
-      console.error('❌ Erreur lors de l\'enrichissement. Veuillez réessayer.');
+      console.error('Erreur lors de l\'enrichissement en masse:', error);
+      toast.error('Erreur lors de l\'enrichissement. Veuillez réessayer.');
     } finally {
       // Retirer tous de la liste des enrichissements en cours
       setEnrichingSongs(new Set());
@@ -622,11 +625,11 @@ export default function App() {
 
     try {
       await addInstrumentSlot(slot);
-      console.log('✅ Emplacement ajouté !');
+      toast.success('Emplacement ajouté !');
     } catch (error) {
       // Fallback mode local
       setInstrumentSlots([...instrumentSlots, slot]);
-      console.log('✅ Emplacement ajouté !');
+      toast.success('Emplacement ajouté !');
     }
   };
 
@@ -660,12 +663,12 @@ export default function App() {
     try {
       await updateUser(currentUser.id, { instrument: newInstrumentId });
       setCurrentUser(updatedUser);
-      console.log('✅ Instrument mis à jour avec succès !');
+      toast.success('Instrument mis à jour avec succès !');
     } catch (error) {
       // Mode local - mettre à jour directement le state
       setUsers(users.map(u => u.id === currentUser.id ? updatedUser : u));
       setCurrentUser(updatedUser);
-      console.log('✅ Instrument mis à jour avec succès !');
+      toast.success('Instrument mis à jour avec succès !');
     }
   };
 
@@ -879,6 +882,20 @@ export default function App() {
           onClose={() => setShowUserSettings(false)}
         />
       )}
+
+      {/* Toast Container pour les notifications */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
   );
 }
