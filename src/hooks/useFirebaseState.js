@@ -2,9 +2,6 @@ import { useState, useEffect } from 'react';
 import {
   collection,
   onSnapshot,
-  addDoc,
-  updateDoc,
-  deleteDoc,
   doc,
   setDoc
 } from 'firebase/firestore';
@@ -19,6 +16,8 @@ export const useFirebaseState = () => {
   const [songs, setSongs] = useState([]);
   const [participations, setParticipations] = useState([]);
   const [instrumentSlots, setInstrumentSlots] = useState(DEFAULT_INSTRUMENT_SLOTS);
+  const [setlists, setSetlists] = useState([]);
+  const [setlistSongs, setSetlistSongs] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSlotManager, setShowSlotManager] = useState(false);
   const [isFirebaseReady, setIsFirebaseReady] = useState(false);
@@ -148,6 +147,48 @@ export const useFirebaseState = () => {
     return () => unsubscribe();
   }, [isFirebaseReady]);
 
+  // Synchroniser les setlists avec Firestore
+  useEffect(() => {
+    if (!db) return;
+
+    const unsubscribe = onSnapshot(
+      collection(db, 'setlists'),
+      (snapshot) => {
+        const setlistsData = snapshot.docs.map(doc => ({
+          ...doc.data(),
+          id: doc.id
+        }));
+        setSetlists(setlistsData);
+      },
+      (error) => {
+        console.error('Erreur lors de la synchronisation des setlists:', error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [isFirebaseReady]);
+
+  // Synchroniser les setlistSongs avec Firestore
+  useEffect(() => {
+    if (!db) return;
+
+    const unsubscribe = onSnapshot(
+      collection(db, 'setlistSongs'),
+      (snapshot) => {
+        const setlistSongsData = snapshot.docs.map(doc => ({
+          ...doc.data(),
+          id: doc.id
+        }));
+        setSetlistSongs(setlistSongsData);
+      },
+      (error) => {
+        console.error('Erreur lors de la synchronisation des setlistSongs:', error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [isFirebaseReady]);
+
   // Fonctions de mise à jour (wrapper pour Firebase ou local)
   const updateUsers = async (newUsers) => {
     if (db && Array.isArray(newUsers)) {
@@ -190,6 +231,22 @@ export const useFirebaseState = () => {
     }
   };
 
+  const updateSetlists = async (newSetlists) => {
+    if (db && Array.isArray(newSetlists)) {
+      // onSnapshot gère la mise à jour
+    } else {
+      setSetlists(newSetlists);
+    }
+  };
+
+  const updateSetlistSongs = async (newSetlistSongs) => {
+    if (db && Array.isArray(newSetlistSongs)) {
+      // onSnapshot gère la mise à jour
+    } else {
+      setSetlistSongs(newSetlistSongs);
+    }
+  };
+
   return {
     currentUser,
     setCurrentUser,
@@ -205,6 +262,10 @@ export const useFirebaseState = () => {
     setParticipations: updateParticipations,
     instrumentSlots,
     setInstrumentSlots: updateInstrumentSlots,
+    setlists,
+    setSetlists: updateSetlists,
+    setlistSongs,
+    setSetlistSongs: updateSetlistSongs,
     searchTerm,
     setSearchTerm,
     showSlotManager,
