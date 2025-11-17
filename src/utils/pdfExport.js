@@ -1,5 +1,5 @@
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export const exportSetlistToPDF = (setlist, setlistSongs, allSongs, participations, instrumentSlots, users) => {
   const doc = new jsPDF();
@@ -90,8 +90,8 @@ export const exportSetlistToPDF = (setlist, setlistSongs, allSongs, participatio
     { content: '', styles: { fillColor: [240, 240, 240] } }
   ]);
 
-  // Create table
-  doc.autoTable({
+  // Create table using autoTable
+  autoTable(doc, {
     startY: setlist.description ? 45 : 30,
     head: [['#', 'Titre', 'Artiste', 'Durée', 'Participants']],
     body: tableData,
