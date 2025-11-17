@@ -1,6 +1,4 @@
 import {
-  collection,
-  addDoc,
   updateDoc,
   deleteDoc,
   doc,
@@ -192,4 +190,125 @@ export const addMultipleParticipations = async (participationsArray) => {
     console.error('Erreur lors de l\'ajout multiple de participations:', error);
     throw error;
   }
+};
+
+// ========== SETLISTS ==========
+
+export const addSetlist = async (setlistData) => {
+  if (!db) {
+    console.warn('Firebase non configuré - mode local');
+    return setlistData;
+  }
+
+  try {
+    await setDoc(doc(db, 'setlists', setlistData.id), setlistData);
+    return setlistData;
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout de la setlist:', error);
+    throw error;
+  }
+};
+
+export const updateSetlist = async (setlistId, updates) => {
+  if (!db) return;
+
+  try {
+    await updateDoc(doc(db, 'setlists', setlistId), updates);
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour de la setlist:', error);
+    throw error;
+  }
+};
+
+export const deleteSetlist = async (setlistId) => {
+  if (!db) return;
+
+  try {
+    await deleteDoc(doc(db, 'setlists', setlistId));
+  } catch (error) {
+    console.error('Erreur lors de la suppression de la setlist:', error);
+    throw error;
+  }
+};
+
+// ========== SETLIST SONGS ==========
+
+export const addSetlistSong = async (setlistSongData) => {
+  if (!db) {
+    console.warn('Firebase non configuré - mode local');
+    return setlistSongData;
+  }
+
+  try {
+    await setDoc(doc(db, 'setlistSongs', setlistSongData.id), setlistSongData);
+    return setlistSongData;
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout du titre à la setlist:', error);
+    throw error;
+  }
+};
+
+export const deleteSetlistSong = async (setlistSongId) => {
+  if (!db) return;
+
+  try {
+    await deleteDoc(doc(db, 'setlistSongs', setlistSongId));
+  } catch (error) {
+    console.error('Erreur lors de la suppression du titre de la setlist:', error);
+    throw error;
+  }
+};
+
+export const updateSetlistSongPosition = async (setlistSongId, newPosition) => {
+  if (!db) return;
+
+  try {
+    await updateDoc(doc(db, 'setlistSongs', setlistSongId), { position: newPosition });
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour de la position:', error);
+    throw error;
+  }
+};
+
+// Batch update positions after drag & drop
+export const updateSetlistSongPositions = async (positionUpdates) => {
+  if (!db) return;
+
+  try {
+    const promises = positionUpdates.map(({ id, position }) =>
+      updateSetlistSongPosition(id, position)
+    );
+    await Promise.all(promises);
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour des positions:', error);
+    throw error;
+  }
+};
+
+// Helper: Calculate total duration for a setlist
+export const calculateSetlistDuration = (setlistSongs, allSongs) => {
+  let totalSeconds = 0;
+
+  setlistSongs.forEach(setlistSong => {
+    const song = allSongs.find(s => s.id === setlistSong.songId);
+    if (song && song.duration) {
+      // Parse duration (format: "MM:SS" or "H:MM:SS")
+      const parts = song.duration.split(':').map(Number);
+      if (parts.length === 2) {
+        totalSeconds += parts[0] * 60 + parts[1]; // MM:SS
+      } else if (parts.length === 3) {
+        totalSeconds += parts[0] * 3600 + parts[1] * 60 + parts[2]; // H:MM:SS
+      }
+    }
+  });
+
+  // Convert back to MM:SS or H:MM:SS
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
 };

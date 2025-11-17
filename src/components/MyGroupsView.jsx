@@ -23,7 +23,9 @@ const MyGroupsView = ({
   onEnrichSelected,
   onDeleteSelected,
   onSelectAllUnenriched,
-  onDeselectAll
+  onDeselectAll,
+  setlists = [],
+  setlistSongs = []
 }) => {
   const [expandedGroupId, setExpandedGroupId] = useState(null);
   const [showBulkImport, setShowBulkImport] = useState(false);
@@ -176,6 +178,8 @@ const MyGroupsView = ({
                                 isEnriching={enrichingSongs.has(song.id)}
                                 isSelected={selectedSongs && selectedSongs.has(song.id)}
                                 onToggleSelection={onToggleSongSelection}
+                                setlists={setlists}
+                                setlistSongs={setlistSongs}
                               />
                             ))}
                           </div>

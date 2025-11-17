@@ -19,7 +19,9 @@ const RepertoireView = ({
   onEnrichSelected,
   onDeleteSelected,
   onSelectAllUnenriched,
-  onDeselectAll
+  onDeselectAll,
+  setlists = [],
+  setlistSongs = []
 }) => {
   const [filterGroup, setFilterGroup] = useState('all');
   const [filterPlayable, setFilterPlayable] = useState('all');
@@ -189,6 +191,8 @@ const RepertoireView = ({
                     isEnriching={enrichingSongs.has(song.id)}
                     isSelected={selectedSongs && selectedSongs.has(song.id)}
                     onToggleSelection={onToggleSongSelection}
+                    setlists={setlists}
+                    setlistSongs={setlistSongs}
                   />
                 </div>
               );
