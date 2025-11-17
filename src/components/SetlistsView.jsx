@@ -9,6 +9,7 @@ import {
   deleteSetlistSong,
   updateSetlistSongPositions
 } from '../firebase/firebaseHelpers';
+import { exportSetlistToPDF } from '../utils/pdfExport';
 
 const SetlistsView = ({
   setlists,
@@ -139,6 +140,18 @@ const SetlistsView = ({
     setEditingSetlist(null);
   };
 
+  const handleExportToPDF = () => {
+    if (!selectedSetlist) return;
+    exportSetlistToPDF(
+      selectedSetlist,
+      setlistSongs,
+      songs,
+      participations,
+      instrumentSlots,
+      users
+    );
+  };
+
   // Get songs for selected setlist
   const selectedSetlistSongs = selectedSetlist
     ? setlistSongs.filter(ss => ss.setlistId === selectedSetlist.id)
@@ -245,10 +258,22 @@ const SetlistsView = ({
               <div className="bg-white rounded-lg shadow-lg">
                 {/* Setlist Header */}
                 <div className="border-b border-gray-200 p-6">
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedSetlist.name}</h2>
-                  {selectedSetlist.description && (
-                    <p className="text-gray-600 mt-2">{selectedSetlist.description}</p>
-                  )}
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h2 className="text-2xl font-bold text-gray-900">{selectedSetlist.name}</h2>
+                      {selectedSetlist.description && (
+                        <p className="text-gray-600 mt-2">{selectedSetlist.description}</p>
+                      )}
+                    </div>
+                    <button
+                      onClick={handleExportToPDF}
+                      className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition flex items-center gap-2 ml-4"
+                      title="Exporter en PDF"
+                    >
+                      <span>📄</span>
+                      <span>Exporter PDF</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Add Songs Section */}
