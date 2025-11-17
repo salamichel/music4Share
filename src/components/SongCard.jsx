@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Youtube, Info, Sparkles, Loader2, Trash2 } from 'lucide-react';
 import { isSongPlayable } from '../utils/helpers';
 import SongDetails from './SongDetails';
+import AddToSetlistButton from './AddToSetlistButton';
 
 const SongCard = ({
   song,
@@ -16,7 +17,9 @@ const SongCard = ({
   onDeleteSong,
   isEnriching = false,
   isSelected = false,
-  onToggleSelection
+  onToggleSelection,
+  setlists = [],
+  setlistSongs = []
 }) => {
   const [showDetails, setShowDetails] = useState(false);
   const songParticipations = participations.filter(p => p.songId === song.id);
@@ -89,6 +92,13 @@ const SongCard = ({
                 )}
               </div>
               <div className="flex gap-1">
+                {setlists.length > 0 && (
+                  <AddToSetlistButton
+                    songId={song.id}
+                    setlists={setlists}
+                    setlistSongs={setlistSongs}
+                  />
+                )}
                 <button
                   onClick={() => setShowDetails(true)}
                   className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 p-1.5 rounded transition"

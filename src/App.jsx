@@ -25,6 +25,7 @@ import Header from './components/Header';
 import RepertoireView from './components/RepertoireView';
 import MyGroupsView from './components/MyGroupsView';
 import AllGroupsView from './components/AllGroupsView';
+import SetlistsView from './components/SetlistsView';
 import SlotManager from './components/SlotManager';
 import UserSettings from './components/UserSettings';
 import { Music, LogOut } from 'lucide-react';
@@ -45,6 +46,10 @@ export default function App() {
     setParticipations,
     instrumentSlots,
     setInstrumentSlots,
+    setlists,
+    setSetlists,
+    setlistSongs,
+    setSetlistSongs,
     searchTerm,
     setSearchTerm,
     showSlotManager,
@@ -799,6 +804,16 @@ export default function App() {
             >
               👥 Tous les Groupes ({otherGroups.length})
             </button>
+            <button
+              onClick={() => setActiveTab('setlists')}
+              className={`px-6 py-3 font-medium transition ${
+                activeTab === 'setlists'
+                  ? 'text-orange-600 border-b-2 border-orange-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              🎵 Setlists ({setlists.length})
+            </button>
           </div>
         </div>
       </div>
@@ -825,6 +840,8 @@ export default function App() {
               onDeleteSelected={handleDeleteSelected}
               onSelectAllUnenriched={handleSelectAllUnenriched}
               onDeselectAll={handleDeselectAll}
+              setlists={setlists}
+              setlistSongs={setlistSongs}
             />
           )}
 
@@ -850,6 +867,8 @@ export default function App() {
               onDeleteSelected={handleDeleteSelected}
               onSelectAllUnenriched={handleSelectAllUnenriched}
               onDeselectAll={handleDeselectAll}
+              setlists={setlists}
+              setlistSongs={setlistSongs}
             />
           )}
 
@@ -858,6 +877,18 @@ export default function App() {
               groups={otherGroups}
               songs={songs}
               onJoinGroup={handleJoinGroup}
+            />
+          )}
+
+          {activeTab === 'setlists' && (
+            <SetlistsView
+              setlists={setlists}
+              setlistSongs={setlistSongs}
+              songs={songs}
+              participations={participations}
+              instrumentSlots={instrumentSlots}
+              users={users}
+              currentUser={currentUser}
             />
           )}
         </div>
