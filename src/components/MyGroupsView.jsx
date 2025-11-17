@@ -14,6 +14,7 @@ const MyGroupsView = ({
   onLeaveSlot,
   onAddSong,
   onBulkImport,
+  onJsonImport,
   onCreateGroup,
   onReenrichSong,
   onDeleteSong,
@@ -99,6 +100,7 @@ const MyGroupsView = ({
                         groupId={group.id}
                         onAddSong={onAddSong}
                         onBulkImport={onBulkImport}
+                        onJsonImport={onJsonImport}
                         showBulkImport={showBulkImport}
                         onToggleBulkImport={() => setShowBulkImport(!showBulkImport)}
                       />
@@ -154,14 +156,14 @@ const MyGroupsView = ({
                         </div>
                       )}
 
-                      {/* Liste des titres du groupe */}
-                      <div className="p-4">
+                      {/* Grid de cards des titres du groupe */}
+                      <div className="p-4 bg-gray-50">
                         {groupSongs.length === 0 ? (
                           <p className="text-gray-500 text-center py-4 text-sm">
                             Aucun titre dans ce groupe
                           </p>
                         ) : (
-                          <div className="space-y-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                             {groupSongs.map(song => (
                               <SongCard
                                 key={song.id}

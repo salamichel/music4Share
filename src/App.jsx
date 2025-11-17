@@ -4,7 +4,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useFirebaseState } from './hooks/useFirebaseState';
 import { parseBulkImportText } from './utils/helpers';
 import { enrichSongWithGemini, enrichBatchSongs } from './services/geminiService';
-import { enrichSongMultiAPI, enrichBatchMultiAPI } from './services/multiEnrichmentService';
 import {
   addUser,
   updateUser,
@@ -365,6 +364,66 @@ export default function App() {
     }
   };
 
+  // Import JSON avec données enrichies
+  const handleJsonImport = async (jsonSongs, groupId) => {
+    if (!jsonSongs || jsonSongs.length === 0) {
+      toast.error('Aucun titre trouvé dans le JSON');
+      return;
+    }
+
+    const newSongs = [];
+    const newParticipations = [];
+    const userSlotId = findUserSlotForInstrument(currentUser.instrument);
+
+    // Créer les titres avec les données enrichies du JSON
+    jsonSongs.forEach((jsonSong, index) => {
+      const songId = Date.now().toString() + '_' + index;
+      const song = {
+        id: songId,
+        title: jsonSong.title,
+        artist: jsonSong.artist || 'Artiste inconnu',
+        youtubeLink: jsonSong.youtubeLink || '',
+        ownerGroupId: groupId,
+        addedBy: currentUser.id,
+        // Données enrichies depuis le JSON
+        duration: jsonSong.duration || null,
+        chords: jsonSong.chords || null,
+        lyrics: jsonSong.lyrics || null,
+        genre: jsonSong.genre || null,
+        enriched: !!(jsonSong.chords || jsonSong.lyrics || jsonSong.duration || jsonSong.genre)
+      };
+      newSongs.push(song);
+
+      // Si titre de groupe ET slot trouvé, auto-inscrire l'utilisateur
+      if (groupId && userSlotId) {
+        const participation = {
+          id: songId + '_auto',
+          songId: songId,
+          userId: currentUser.id,
+          slotId: userSlotId,
+          comment: ''
+        };
+        newParticipations.push(participation);
+      }
+    });
+
+    try {
+      await addMultipleSongs(newSongs);
+      if (newParticipations.length > 0) {
+        await addMultipleParticipations(newParticipations);
+      }
+
+      const enrichedCount = newSongs.filter(s => s.enriched).length;
+      toast.success(`${jsonSongs.length} titre(s) importé(s) avec succès ! ${enrichedCount} déjà enrichis.`);
+    } catch (error) {
+      // Fallback mode local
+      setSongs([...songs, ...newSongs]);
+      setParticipations([...participations, ...newParticipations]);
+      const enrichedCount = newSongs.filter(s => s.enriched).length;
+      toast.success(`${jsonSongs.length} titre(s) importé(s) avec succès ! ${enrichedCount} déjà enrichis.`);
+    }
+  };
+
   // Re-enrichir un titre existant
   const handleReenrichSong = async (songId) => {
     const song = songs.find(s => s.id === songId);
@@ -374,8 +433,8 @@ export default function App() {
     setEnrichingSongs(prev => new Set([...prev, songId]));
 
     try {
-      // Enrichir le titre avec le service multi-API (MusicBrainz + Lyrics.ovh + Gemini fallback)
-      const enrichedData = await enrichSongMultiAPI(song.title, song.artist);
+      // Enrichir le titre avec Gemini
+      const enrichedData = await enrichSongWithGemini(song.title, song.artist);
 
       // Mettre à jour le titre avec les nouvelles données (inclut l'artiste si trouvé par Gemini)
       const updates = {
@@ -548,8 +607,8 @@ export default function App() {
     toast.info(`Enrichissement de ${selectedSongs.size} titre(s) en cours...`);
 
     try {
-      // Enrichir avec le service multi-API (MusicBrainz + Lyrics.ovh, puis Gemini pour accords)
-      const enrichedResults = await enrichBatchMultiAPI(songsToEnrich);
+      // Enrichir avec Gemini
+      const enrichedResults = await enrichBatchSongs(songsToEnrich);
 
       // Mettre à jour chaque titre avec les données enrichies
       for (const enrichedData of enrichedResults) {
@@ -857,6 +916,7 @@ export default function App() {
               onLeaveSlot={handleLeaveSlot}
               onAddSong={handleAddSong}
               onBulkImport={handleBulkImport}
+              onJsonImport={handleJsonImport}
               onCreateGroup={handleCreateGroup}
               onReenrichSong={handleReenrichSong}
               onDeleteSong={handleDeleteSong}
