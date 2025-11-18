@@ -19,6 +19,7 @@ const SetlistsView = ({
   participations,
   instrumentSlots,
   users,
+  artists,
   currentUser
 }) => {
   const [selectedSetlist, setSelectedSetlist] = useState(null);
@@ -329,6 +330,7 @@ const SetlistsView = ({
                     participations={participations}
                     instrumentSlots={instrumentSlots}
                     users={users}
+                    artists={artists}
                     onReorder={handleReorder}
                     onRemoveSong={handleRemoveSong}
                   />
