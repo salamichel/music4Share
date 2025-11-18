@@ -25,7 +25,6 @@ import {
 import Header from './components/Header';
 import RepertoireView from './components/RepertoireView';
 import MyGroupsView from './components/MyGroupsView';
-import AllGroupsView from './components/AllGroupsView';
 import SetlistsView from './components/SetlistsView';
 import ArtistsView from './components/ArtistsView';
 import SlotManager from './components/SlotManager';
@@ -929,8 +928,7 @@ export default function App() {
 
   // Page principale - Répertoire avec onglets
   const myGroups = groups.filter(g => g.memberIds.includes(currentUser.id));
-  const otherGroups = groups.filter(g => !g.memberIds.includes(currentUser.id));
-  
+
   // Filtrer tous les titres par recherche
   const allFilteredSongs = songs.filter(song => {
     if (!searchTerm) return true;
@@ -973,16 +971,6 @@ export default function App() {
               }`}
             >
               🎸 Mes Groupes ({myGroups.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('allgroups')}
-              className={`px-3 py-2 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap ${
-                activeTab === 'allgroups'
-                  ? 'text-green-600 border-b-2 border-green-600'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              👥 Tous les Groupes ({otherGroups.length})
             </button>
             <button
               onClick={() => setActiveTab('setlists')}
@@ -1062,14 +1050,6 @@ export default function App() {
               onDeselectAll={handleDeselectAll}
               setlists={setlists}
               setlistSongs={setlistSongs}
-            />
-          )}
-
-          {activeTab === 'allgroups' && (
-            <AllGroupsView
-              groups={otherGroups}
-              songs={songs}
-              onJoinGroup={handleJoinGroup}
             />
           )}
 
