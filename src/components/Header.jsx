@@ -7,7 +7,7 @@ const Header = ({ currentUser, onLogout, searchTerm, onSearchChange, onOpenSlotM
   const instrumentDisplay = userSlot ? `${userSlot.icon} ${userSlot.name}` : currentUser.instrument;
 
   return (
-    <div className="bg-purple-600 text-white shadow-lg">
+    <div className="bg-gradient-to-r from-copper-600 to-carmin-600 text-white shadow-lg">
       <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
         <div className="flex justify-between items-center mb-3 sm:mb-4">
           <div className="flex items-center">
@@ -17,7 +17,7 @@ const Header = ({ currentUser, onLogout, searchTerm, onSearchChange, onOpenSlotM
           <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
             <button
               onClick={onOpenSlotManager}
-              className="bg-purple-700 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-purple-800 text-xs sm:text-sm"
+              className="bg-copper-700 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-copper-800 text-xs sm:text-sm"
               title="Emplacements"
             >
               <span className="hidden sm:inline">⚙️ Emplacements</span>
@@ -25,7 +25,7 @@ const Header = ({ currentUser, onLogout, searchTerm, onSearchChange, onOpenSlotM
             </button>
             <button
               onClick={onOpenUserSettings}
-              className="bg-purple-700 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-purple-800 flex items-center gap-1 sm:gap-2"
+              className="bg-copper-700 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg hover:bg-copper-800 flex items-center gap-1 sm:gap-2"
               title="Paramètres du profil"
             >
               <Settings className="w-4 h-4" />
@@ -34,7 +34,7 @@ const Header = ({ currentUser, onLogout, searchTerm, onSearchChange, onOpenSlotM
             <span className="font-medium text-xs sm:text-sm hidden lg:inline">{currentUser.username} ({instrumentDisplay})</span>
             <button
               onClick={onLogout}
-              className="bg-purple-700 px-2 py-1.5 sm:px-4 sm:py-2 rounded-lg hover:bg-purple-800"
+              className="bg-carmin-700 px-2 py-1.5 sm:px-4 sm:py-2 rounded-lg hover:bg-carmin-800"
               title="Déconnexion"
             >
               <LogOut className="w-4 h-4" />

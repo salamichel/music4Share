@@ -41,7 +41,7 @@ const SongDetails = ({ song, onClose, onSave }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 text-white p-4 sm:p-6">
+        <div className="bg-gradient-to-br from-copper-600 via-copper-500 to-carmin-600 text-white p-4 sm:p-6">
           <div className="flex justify-between items-start gap-4">
             <div className="flex-1 min-w-0">
               {isEditing ? (
@@ -163,7 +163,7 @@ const SongDetails = ({ song, onClose, onSave }) => {
 
           {/* Chords Section */}
           {(song.chords || isEditing) && (
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-blue-200">
+            <div className="bg-gradient-to-br from-copper-50 to-carmin-50 rounded-xl p-4 sm:p-6 border border-copper-200">
               <div className="flex items-center mb-4">
                 <div className="bg-blue-600 p-2 rounded-lg mr-3">
                   <Music2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
@@ -189,19 +189,19 @@ const SongDetails = ({ song, onClose, onSave }) => {
 
           {/* Lyrics Section */}
           {(song.lyrics || isEditing) && (
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 sm:p-6 border border-purple-200">
+            <div className="bg-gradient-to-br from-copper-50 to-carmin-50 rounded-xl p-4 sm:p-6 border border-copper-200">
               <div className="flex items-center mb-4">
-                <div className="bg-purple-600 p-2 rounded-lg mr-3">
+                <div className="bg-copper-600 p-2 rounded-lg mr-3">
                   <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-purple-900">Paroles</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-copper-900">Paroles</h3>
               </div>
-              <div className="bg-white rounded-lg p-3 sm:p-4 shadow-inner border border-purple-100 max-h-96 overflow-y-auto">
+              <div className="bg-white rounded-lg p-3 sm:p-4 shadow-inner border border-copper-100 max-h-96 overflow-y-auto">
                 {isEditing ? (
                   <textarea
                     value={editedSong.lyrics}
                     onChange={(e) => handleEditChange('lyrics', e.target.value)}
-                    className="w-full text-sm sm:text-base text-gray-800 border-2 border-purple-300 rounded-lg p-2 focus:outline-none focus:border-purple-500 min-h-[300px]"
+                    className="w-full text-sm sm:text-base text-gray-800 border-2 border-copper-300 rounded-lg p-2 focus:outline-none focus:border-copper-500 min-h-[300px]"
                     placeholder="Saisissez les paroles..."
                   />
                 ) : (

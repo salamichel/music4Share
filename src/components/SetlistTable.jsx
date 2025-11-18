@@ -87,7 +87,7 @@ const SetlistTable = ({
       <DragDropContext onDragEnd={handleDragEnd}>
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-purple-100 border-b-2 border-purple-200">
+            <tr className="bg-copper-100 border-b-2 border-copper-200">
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">#</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Titre</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Artiste</th>
@@ -118,8 +118,8 @@ const SetlistTable = ({
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className={`border-b border-gray-200 hover:bg-purple-50 transition ${
-                            snapshot.isDragging ? 'bg-purple-100 shadow-lg' : 'bg-white'
+                          className={`border-b border-gray-200 hover:bg-copper-50 transition ${
+                            snapshot.isDragging ? 'bg-copper-100 shadow-lg' : 'bg-white'
                           }`}
                         >
                           <td className="px-4 py-3 text-sm text-gray-600 font-medium">
@@ -181,7 +181,7 @@ const SetlistTable = ({
 
           {/* Total row */}
           <tfoot>
-            <tr className="bg-purple-50 font-semibold border-t-2 border-purple-200">
+            <tr className="bg-copper-50 font-semibold border-t-2 border-copper-200">
               <td className="px-4 py-3" colSpan="3">
                 Total
               </td>

@@ -17,10 +17,10 @@ const Login = ({ onLogin, onSignup, instrumentSlots }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-copper-900 via-carmin-900 to-carmin-800 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
         <div className="flex items-center justify-center mb-6">
-          <Music className="w-12 h-12 text-purple-600 mr-2" />
+          <Music className="w-12 h-12 text-copper-600 mr-2" />
           <h1 className="text-3xl font-bold text-gray-800">Music4Chalemine</h1>
         </div>
         
@@ -32,7 +32,7 @@ const Login = ({ onLogin, onSignup, instrumentSlots }) => {
               placeholder="Pseudo"
               value={loginForm.username}
               onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-copper-500"
               required
             />
             <input
@@ -40,10 +40,10 @@ const Login = ({ onLogin, onSignup, instrumentSlots }) => {
               placeholder="Mot de passe"
               value={loginForm.password}
               onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-copper-500"
               required
             />
-            <button type="submit" className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700">
+            <button type="submit" className="w-full bg-copper-600 text-white py-2 rounded-lg hover:bg-copper-700">
               Se connecter
             </button>
           </form>
@@ -57,7 +57,7 @@ const Login = ({ onLogin, onSignup, instrumentSlots }) => {
               placeholder="Pseudo"
               value={signupForm.username}
               onChange={(e) => setSignupForm({...signupForm, username: e.target.value})}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-copper-500"
               required
             />
             <input
@@ -65,13 +65,13 @@ const Login = ({ onLogin, onSignup, instrumentSlots }) => {
               placeholder="Mot de passe"
               value={signupForm.password}
               onChange={(e) => setSignupForm({...signupForm, password: e.target.value})}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-copper-500"
               required
             />
             <select
               value={signupForm.instrument}
               onChange={(e) => setSignupForm({...signupForm, instrument: e.target.value})}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-copper-500"
               required
             >
               <option value="">Sélectionner un instrument</option>
@@ -81,7 +81,7 @@ const Login = ({ onLogin, onSignup, instrumentSlots }) => {
                 </option>
               ))}
             </select>
-            <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">
+            <button type="submit" className="w-full bg-carmin-600 text-white py-2 rounded-lg hover:bg-carmin-700">
               S'inscrire
             </button>
           </form>

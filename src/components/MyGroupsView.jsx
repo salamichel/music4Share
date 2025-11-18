@@ -35,14 +35,14 @@ const MyGroupsView = ({
 
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
-      <div className="p-4 border-b bg-gradient-to-r from-indigo-500 to-indigo-600 text-white">
+      <div className="p-4 border-b bg-gradient-to-r from-carmin-500 to-copper-600 text-white">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-xl font-bold flex items-center">
               <Users className="w-5 h-5 mr-2" />
               Mes Groupes
             </h2>
-            <p className="text-sm text-indigo-100 mt-1">
+            <p className="text-sm text-carmin-100 mt-1">
               {groups.length} groupe{groups.length > 1 ? 's' : ''}
             </p>
           </div>
@@ -62,7 +62,7 @@ const MyGroupsView = ({
             <p className="text-gray-500 mb-4">Vous ne faites partie d'aucun groupe</p>
             <button
               onClick={onCreateGroup}
-              className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
+              className="bg-carmin-600 text-white px-6 py-2 rounded-lg hover:bg-carmin-700"
             >
               Créer mon premier groupe
             </button>
@@ -109,11 +109,11 @@ const MyGroupsView = ({
 
                       {/* Barre d'actions pour l'enrichissement en masse */}
                       {onEnrichSelected && groupSongs.length > 0 && (
-                        <div className="p-3 border-b bg-orange-50 flex items-center justify-between">
+                        <div className="p-3 border-b bg-copper-50 flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <button
                               onClick={onSelectAllUnenriched}
-                              className="text-xs bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded flex items-center gap-1"
+                              className="text-xs bg-copper-600 hover:bg-copper-700 text-white px-3 py-1.5 rounded flex items-center gap-1"
                               title="Sélectionner tous les titres non enrichis"
                             >
                               <CheckSquare className="w-3 h-3" />
@@ -138,7 +138,7 @@ const MyGroupsView = ({
                             <div className="flex gap-2">
                               <button
                                 onClick={onEnrichSelected}
-                                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1.5 rounded text-sm flex items-center gap-2"
+                                className="bg-carmin-600 hover:bg-carmin-700 text-white px-4 py-1.5 rounded text-sm flex items-center gap-2"
                               >
                                 <Sparkles className="w-4 h-4" />
                                 Enrichir la sélection

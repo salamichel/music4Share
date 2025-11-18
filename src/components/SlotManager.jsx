@@ -48,7 +48,7 @@ const SlotManager = ({ instrumentSlots, onAddSlot, onDeleteSlot, onClose }) => {
                 value={newSlot.name}
                 onChange={(e) => setNewSlot({...newSlot, name: e.target.value})}
                 placeholder="Ex: Saxophone, Violon..."
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-copper-500"
                 required
               />
             </div>
@@ -59,14 +59,14 @@ const SlotManager = ({ instrumentSlots, onAddSlot, onDeleteSlot, onClose }) => {
                 value={newSlot.icon}
                 onChange={(e) => setNewSlot({...newSlot, icon: e.target.value})}
                 placeholder="Ex: 🎷, 🎻, 🎺"
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-copper-500"
                 maxLength="2"
               />
             </div>
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+                className="flex-1 bg-copper-600 text-white py-2 rounded-lg hover:bg-copper-700"
               >
                 Ajouter
               </button>

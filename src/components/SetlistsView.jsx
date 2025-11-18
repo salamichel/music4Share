@@ -168,18 +168,18 @@ const SetlistsView = ({
     : [];
 
   return (
-    <div className="min-h-screen bg-purple-50 p-6">
+    <div className="min-h-screen bg-copper-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg shadow-lg p-6 mb-6">
+        <div className="bg-gradient-to-r from-copper-600 to-carmin-600 text-white rounded-lg shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2">📋 Setlists</h1>
-              <p className="text-purple-100">Créez et gérez vos setlists de concert</p>
+              <p className="text-copper-100">Créez et gérez vos setlists de concert</p>
             </div>
             <button
               onClick={openCreateForm}
-              className="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-purple-50 transition shadow-lg"
+              className="bg-white text-copper-600 px-6 py-3 rounded-lg font-semibold hover:bg-copper-50 transition shadow-lg"
             >
               + Nouvelle setlist
             </button>
@@ -207,8 +207,8 @@ const SetlistsView = ({
                         key={setlist.id}
                         className={`p-3 rounded-lg border-2 transition cursor-pointer ${
                           isSelected
-                            ? 'border-purple-500 bg-purple-50'
-                            : 'border-gray-200 hover:border-purple-300 hover:bg-gray-50'
+                            ? 'border-copper-500 bg-copper-50'
+                            : 'border-gray-200 hover:border-copper-300 hover:bg-gray-50'
                         }`}
                         onClick={() => setSelectedSetlist(setlist)}
                       >
@@ -305,7 +305,7 @@ const SetlistsView = ({
                             </div>
                             <button
                               onClick={() => handleAddSongToSetlist(song.id)}
-                              className="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 transition text-sm"
+                              className="bg-carmin-600 text-white px-3 py-1 rounded hover:bg-carmin-700 transition text-sm"
                             >
                               + Ajouter
                             </button>

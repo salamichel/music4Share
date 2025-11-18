@@ -50,7 +50,7 @@ const UserSettings = ({ currentUser, instrumentSlots, onUpdateInstrument, onClos
             <label className="block text-sm font-medium mb-1 text-gray-700">
               Instrument actuel
             </label>
-            <div className="px-3 py-2 border rounded-lg bg-purple-50 text-purple-800 font-medium">
+            <div className="px-3 py-2 border rounded-lg bg-copper-50 text-copper-800 font-medium">
               {currentSlot ? `${currentSlot.icon} ${currentSlot.name}` : currentUser.instrument}
             </div>
           </div>
@@ -63,7 +63,7 @@ const UserSettings = ({ currentUser, instrumentSlots, onUpdateInstrument, onClos
             <select
               value={selectedInstrument}
               onChange={(e) => setSelectedInstrument(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-copper-500"
               required
             >
               {[...instrumentSlots].sort((a, b) => a.name.localeCompare(b.name)).map(slot => (
@@ -78,7 +78,7 @@ const UserSettings = ({ currentUser, instrumentSlots, onUpdateInstrument, onClos
           <div className="flex gap-3 pt-2">
             <button
               type="submit"
-              className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition"
+              className="flex-1 bg-copper-600 text-white py-2 rounded-lg hover:bg-copper-700 transition"
             >
               Enregistrer
             </button>
