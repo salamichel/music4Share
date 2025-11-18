@@ -40,13 +40,13 @@ const SongCard = ({
       <div
         className={`
           bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300
-          flex flex-col h-full overflow-hidden
+          flex flex-col h-full
           ${isPlayable ? 'ring-2 ring-green-500' : ''}
           ${isSelected ? 'ring-2 ring-orange-500' : ''}
         `}
       >
         {/* Header with title and artist */}
-        <div className="bg-gradient-to-br from-purple-500 to-indigo-600 text-white p-4 relative">
+        <div className="bg-gradient-to-br from-purple-500 to-indigo-600 text-white p-4 relative rounded-t-xl">
           {/* Checkbox de sélection */}
           {onToggleSelection && (
             <input
