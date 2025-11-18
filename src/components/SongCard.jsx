@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Youtube, Info, Sparkles, Loader2, Trash2 } from 'lucide-react';
+import { Youtube, Info, Trash2, Music } from 'lucide-react';
 import { isSongPlayable } from '../utils/helpers';
 import SongDetails from './SongDetails';
 import AddToSetlistButton from './AddToSetlistButton';
@@ -61,154 +61,165 @@ const SongCard = ({
 
   return (
     <>
-      <div className={`border-b last:border-b-0 py-3 px-2 ${isPlayable ? 'bg-green-50 border-l-4 border-l-green-500' : ''} ${isSelected ? 'bg-orange-50' : ''}`}>
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex-1">
-            <div className="flex items-start gap-2">
-              {/* Checkbox de sélection */}
-              {onToggleSelection && (
-                <input
-                  type="checkbox"
-                  checked={isSelected}
-                  onChange={() => onToggleSelection(song.id)}
-                  className="mt-1 w-4 h-4 text-purple-600 focus:ring-purple-500 rounded"
-                  title="Sélectionner pour enrichissement"
-                />
-              )}
-              <div className="flex-1">
-                <h4 className="font-semibold">{song.title}</h4>
-                <p className="text-sm text-gray-600">{song.artist}</p>
-                {song.youtubeLink && (
-                  <a href={song.youtubeLink} target="_blank" rel="noopener noreferrer" className="text-red-600 text-xs flex items-center mt-1 hover:underline">
-                    <Youtube className="w-3 h-3 mr-1" />
-                    YouTube
-                  </a>
-                )}
-                {song.enriched && (
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-purple-600 font-medium">✨ Enrichi</span>
-                    {song.duration && (
-                      <span className="text-xs text-gray-500">⏱️ {song.duration}</span>
-                    )}
-                    {song.genre && (
-                      <span className="text-xs text-gray-500">🎵 {song.genre}</span>
-                    )}
-                  </div>
-                )}
-                {!isEnriching && (
-                  <button
-                    onClick={() => onReenrichSong && onReenrichSong(song.id)}
-                    className={`text-xs font-medium mt-1 flex items-center ${
-                      song.enriched
-                        ? 'text-purple-600 hover:text-purple-700'
-                        : 'text-orange-600 hover:text-orange-700'
-                    }`}
-                    title={song.enriched ? "Réenrichir avec l'API Gemini" : "Enrichir avec l'API Gemini"}
-                  >
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    {song.enriched ? 'Réenrichir' : 'Enrichir'}
-                  </button>
-                )}
-                {isEnriching && (
-                  <div className="flex items-center gap-1 mt-1 text-xs text-blue-600">
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    Enrichissement...
-                  </div>
-                )}
-              </div>
-              <div className="flex gap-1">
-                {setlists.length > 0 && (
-                  <AddToSetlistButton
-                    songId={song.id}
-                    setlists={setlists}
-                    setlistSongs={setlistSongs}
-                  />
-                )}
-                <button
-                  onClick={() => setShowDetails(true)}
-                  className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 p-1.5 rounded transition"
-                  title="Voir les détails"
-                >
-                  <Info className="w-4 h-4" />
-                </button>
-                {canDelete() && onDeleteSong && (
-                  <button
-                    onClick={() => onDeleteSong(song.id)}
-                    className="bg-red-100 hover:bg-red-200 text-red-700 p-1.5 rounded transition"
-                    title="Supprimer ce titre"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
+      {/* Material Design Card */}
+      <div
+        className={`
+          bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300
+          flex flex-col h-full
+          ${isPlayable ? 'ring-2 ring-green-500' : ''}
+          ${isSelected ? 'ring-2 ring-orange-500' : ''}
+        `}
+      >
+        {/* Header with title and artist */}
+        <div className="bg-gradient-to-br from-purple-500 to-indigo-600 text-white p-4 relative rounded-t-xl">
+          {/* Checkbox de sélection */}
+          {onToggleSelection && (
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => onToggleSelection(song.id)}
+              className="absolute top-3 left-3 w-5 h-5 text-purple-600 focus:ring-purple-500 rounded cursor-pointer z-10"
+              title="Sélectionner pour enrichissement"
+            />
+          )}
+
+          {/* Playable badge */}
           {isPlayable && (
-            <span className="bg-green-600 text-white text-xs px-2 py-1 rounded">✓ Jouable</span>
+            <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-semibold shadow-lg">
+              ✓ Jouable
+            </div>
+          )}
+
+          {/* Title and Artist - centered */}
+          <div className="text-center mt-6 mb-4">
+            <div className="flex items-center justify-center mb-2">
+              <Music className="w-5 h-5 mr-2 opacity-80" />
+              <h3 className="font-bold text-lg line-clamp-2">{song.title}</h3>
+            </div>
+            <p className="text-sm opacity-90 line-clamp-1">{song.artist}</p>
+          </div>
+
+          {/* YouTube link */}
+          {song.youtubeLink && (
+            <a
+              href={song.youtubeLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center text-xs bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full transition mx-auto w-fit"
+            >
+              <Youtube className="w-3 h-3 mr-1" />
+              YouTube
+            </a>
           )}
         </div>
-      
-      {/* Emplacements d'instruments */}
-      <div className="flex flex-wrap gap-2 mt-3">
-        {[...instrumentSlots].sort((a, b) => a.name.localeCompare(b.name)).map(slot => {
-          const slotParticipants = songParticipations.filter(p => p.slotId === slot.id);
-          const userInSlot = slotParticipants.find(p => p.artistId);
 
-          return (
-            <div key={slot.id} className="relative">
-              <button
-                onClick={() => {
-                  if (userInSlot) {
-                    onLeaveSlot(song.id, slot.id);
-                  } else {
-                    handleOpenArtistSelector(slot.id);
-                  }
-                }}
-                className={`text-xs px-2 py-1 rounded-full border transition ${
-                  userInSlot
-                    ? 'bg-purple-600 text-white border-purple-600'
-                    : slotParticipants.length > 0
-                    ? 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200'
-                    : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
-                }`}
-                title={slotParticipants.map(p => {
-                  if (p.artistId) {
-                    return artists.find(a => a.id === p.artistId)?.name || 'Artiste inconnu';
-                  }
-                  return users.find(u => u.id === p.userId)?.username || 'Utilisateur inconnu';
-                }).join(', ') || 'Libre'}
-              >
-                <span className="mr-1">{slot.icon}</span>
-                {slot.name}
-                {slotParticipants.length > 0 && (
-                  <span className="ml-1 font-semibold">({slotParticipants.length})</span>
-                )}
-              </button>
+        {/* Instruments section */}
+        <div className="p-4 flex-1 flex flex-col">
+          <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Instruments</h4>
+
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            {[...instrumentSlots].sort((a, b) => a.name.localeCompare(b.name)).map(slot => {
+              const slotParticipants = songParticipations.filter(p => p.slotId === slot.id);
+              const userInSlot = slotParticipants.find(p => p.artistId);
+
+              return (
+                <button
+                  key={slot.id}
+                  onClick={() => {
+                    if (userInSlot) {
+                      onLeaveSlot(song.id, slot.id);
+                    } else {
+                      handleOpenArtistSelector(slot.id);
+                    }
+                  }}
+                  className={`
+                    text-xs px-2 py-2 rounded-lg border transition-all font-medium
+                    ${userInSlot
+                      ? 'bg-purple-600 text-white border-purple-600 shadow-md'
+                      : slotParticipants.length > 0
+                      ? 'bg-blue-50 text-blue-800 border-blue-300 hover:bg-blue-100'
+                      : 'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100'
+                    }
+                  `}
+                  title={slotParticipants.map(p => {
+                    if (p.artistId) {
+                      return artists.find(a => a.id === p.artistId)?.name || 'Artiste inconnu';
+                    }
+                    return users.find(u => u.id === p.userId)?.username || 'Utilisateur inconnu';
+                  }).join(', ') || 'Libre'}
+                >
+                  <span className="mr-1">{slot.icon}</span>
+                  {slot.name}
+                  {slotParticipants.length > 0 && (
+                    <span className="ml-1 font-bold">({slotParticipants.length})</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Participants list */}
+          {songParticipations.length > 0 && (
+            <div className="mt-auto">
+              <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Participants</h4>
+              <div className="text-xs text-gray-700 space-y-1 max-h-20 overflow-y-auto">
+                {[...instrumentSlots].sort((a, b) => a.name.localeCompare(b.name)).map(slot => {
+                  const slotParts = songParticipations.filter(p => p.slotId === slot.id);
+                  if (slotParts.length === 0) return null;
+                  return (
+                    <div key={slot.id} className="flex items-start">
+                      <span className="mr-1">{slot.icon}</span>
+                      <span className="line-clamp-1">
+                        {slotParts.map(p => {
+                          if (p.artistId) {
+                            return artists.find(a => a.id === p.artistId)?.name || 'Artiste inconnu';
+                          }
+                          return users.find(u => u.id === p.userId)?.username || 'Utilisateur inconnu';
+                        }).join(', ')}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          );
-        })}
-      </div>
-      
-      {/* Liste des participants */}
-      {songParticipations.length > 0 && (
-        <div className="mt-2 text-xs text-gray-600">
-          {[...instrumentSlots].sort((a, b) => a.name.localeCompare(b.name)).map(slot => {
-            const slotParts = songParticipations.filter(p => p.slotId === slot.id);
-            if (slotParts.length === 0) return null;
-            return (
-              <span key={slot.id} className="mr-3">
-                {slot.icon} {slotParts.map(p => {
-                  if (p.artistId) {
-                    return artists.find(a => a.id === p.artistId)?.name || 'Artiste inconnu';
-                  }
-                  return users.find(u => u.id === p.userId)?.username || 'Utilisateur inconnu';
-                }).join(', ')}
-              </span>
-            );
-          })}
+          )}
         </div>
-      )}
-    </div>
+
+        {/* Action buttons at bottom */}
+        <div className="p-3 bg-gray-50 border-t flex gap-2">
+          {/* Bouton Setlist (si des setlists existent) */}
+          {setlists.length > 0 && (
+            <AddToSetlistButton
+              songId={song.id}
+              setlists={setlists}
+              setlistSongs={setlistSongs}
+            />
+          )}
+
+          <button
+            onClick={() => setShowDetails(true)}
+            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg transition font-medium text-sm flex items-center justify-center shadow-sm"
+            title="Voir les détails"
+          >
+            <Info className="w-4 h-4 mr-1" />
+            Détails
+          </button>
+
+          {canDelete() && onDeleteSong && (
+            <button
+              onClick={() => {
+                if (window.confirm(`Supprimer "${song.title}" ?`)) {
+                  onDeleteSong(song.id);
+                }
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg transition font-medium text-sm flex items-center justify-center shadow-sm"
+              title="Supprimer ce titre"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Modal de détails */}
       {showDetails && (

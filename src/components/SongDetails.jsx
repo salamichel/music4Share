@@ -1,119 +1,138 @@
 import React from 'react';
-import { X, Clock, Music2, FileText, Tag } from 'lucide-react';
+import { X, Clock, Music2, FileText, Tag, Youtube, Sparkles } from 'lucide-react';
 
 const SongDetails = ({ song, onClose }) => {
   if (!song) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 sticky top-0 z-10">
-          <div className="flex justify-between items-start">
-            <div className="flex-1">
-              <h2 className="text-3xl font-bold mb-2">{song.title}</h2>
-              <p className="text-xl opacity-90">{song.artist}</p>
+        <div className="bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 text-white p-4 sm:p-6">
+          <div className="flex justify-between items-start gap-4">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2 break-words">{song.title}</h2>
+              <p className="text-lg sm:text-xl opacity-90 break-words">{song.artist}</p>
             </div>
             <button
               onClick={onClose}
-              className="bg-white bg-opacity-20 hover:bg-opacity-30 p-2 rounded-full transition"
+              className="flex-shrink-0 bg-white bg-opacity-20 hover:bg-opacity-30 p-2 rounded-full transition"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
 
           {/* Quick Info Tags */}
-          <div className="flex flex-wrap gap-3 mt-4">
+          <div className="flex flex-wrap gap-2 sm:gap-3 mt-4">
+            {song.enriched && (
+              <div className="flex items-center bg-green-500 bg-opacity-90 px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Enrichi par Gemini
+              </div>
+            )}
             {song.duration && (
-              <div className="flex items-center bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
+              <div className="flex items-center bg-white bg-opacity-20 px-3 py-1.5 rounded-full text-sm">
                 <Clock className="w-4 h-4 mr-2" />
                 {song.duration}
               </div>
             )}
             {song.genre && (
-              <div className="flex items-center bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
+              <div className="flex items-center bg-white bg-opacity-20 px-3 py-1.5 rounded-full text-sm">
                 <Tag className="w-4 h-4 mr-2" />
                 {song.genre}
-              </div>
-            )}
-            {song.enriched && (
-              <div className="flex items-center bg-green-500 bg-opacity-90 px-3 py-1 rounded-full text-sm font-semibold">
-                ✨ Enrichi par Gemini
               </div>
             )}
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
           {/* Message si pas enrichi */}
           {!song.enriched && (
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-              <p className="text-yellow-800">
-                ℹ️ Ce titre n'a pas été enrichi automatiquement. Les informations détaillées ne sont pas disponibles.
-              </p>
-            </div>
-          )}
-
-          {/* Chords Section */}
-          {song.chords && (
-            <div className="bg-blue-50 rounded-lg p-6">
-              <div className="flex items-center mb-4">
-                <Music2 className="w-6 h-6 text-blue-600 mr-3" />
-                <h3 className="text-xl font-bold text-blue-900">Grille d'Accords</h3>
-              </div>
-              <div className="bg-white rounded p-4 font-mono text-sm whitespace-pre-wrap">
-                {song.chords}
-              </div>
-            </div>
-          )}
-
-          {/* Lyrics Section */}
-          {song.lyrics && (
-            <div className="bg-purple-50 rounded-lg p-6">
-              <div className="flex items-center mb-4">
-                <FileText className="w-6 h-6 text-purple-600 mr-3" />
-                <h3 className="text-xl font-bold text-purple-900">Paroles</h3>
-              </div>
-              <div className="bg-white rounded p-4 whitespace-pre-wrap text-gray-800 leading-relaxed">
-                {song.lyrics}
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-yellow-800">
+                    Ce titre n'a pas été enrichi automatiquement. Les informations détaillées (accords, paroles) ne sont pas disponibles.
+                  </p>
+                </div>
               </div>
             </div>
           )}
 
           {/* YouTube Link */}
           {song.youtubeLink && (
-            <div className="bg-red-50 rounded-lg p-4">
+            <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-4 border border-red-200">
               <a
                 href={song.youtubeLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition"
+                className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-md hover:shadow-lg"
               >
-                <svg className="w-6 h-6 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                </svg>
+                <Youtube className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
                 Voir sur YouTube
               </a>
             </div>
           )}
 
+          {/* Chords Section */}
+          {song.chords && (
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-blue-200">
+              <div className="flex items-center mb-4">
+                <div className="bg-blue-600 p-2 rounded-lg mr-3">
+                  <Music2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-blue-900">Grille d'Accords</h3>
+              </div>
+              <div className="bg-white rounded-lg p-3 sm:p-4 shadow-inner border border-blue-100">
+                <pre className="font-mono text-xs sm:text-sm whitespace-pre-wrap overflow-x-auto text-gray-800">
+                  {song.chords}
+                </pre>
+              </div>
+            </div>
+          )}
+
+          {/* Lyrics Section */}
+          {song.lyrics && (
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 sm:p-6 border border-purple-200">
+              <div className="flex items-center mb-4">
+                <div className="bg-purple-600 p-2 rounded-lg mr-3">
+                  <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-purple-900">Paroles</h3>
+              </div>
+              <div className="bg-white rounded-lg p-3 sm:p-4 shadow-inner border border-purple-100 max-h-96 overflow-y-auto">
+                <div className="whitespace-pre-wrap text-sm sm:text-base text-gray-800 leading-relaxed">
+                  {song.lyrics}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* No enrichment data message */}
-          {!song.chords && !song.lyrics && song.enriched === false && (
-            <div className="text-center py-8 text-gray-500">
-              <p className="text-lg">Aucune donnée enrichie disponible pour ce titre.</p>
-              <p className="text-sm mt-2">
-                L'enrichissement automatique n'était pas disponible lors de l'ajout de ce titre.
+          {!song.chords && !song.lyrics && !song.enriched && (
+            <div className="text-center py-8 sm:py-12 text-gray-500">
+              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full mb-4">
+                <Music2 className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+              </div>
+              <p className="text-base sm:text-lg font-medium mb-2">Aucune donnée enrichie disponible</p>
+              <p className="text-sm text-gray-400 max-w-md mx-auto px-4">
+                Ce titre n'a pas encore été enrichi avec l'API Gemini. Les accords et paroles ne sont pas disponibles pour le moment.
               </p>
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="bg-gray-50 px-6 py-4 flex justify-end sticky bottom-0">
+        {/* Footer - Sticky */}
+        <div className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 flex justify-end border-t">
           <button
             onClick={onClose}
-            className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium transition"
+            className="bg-gray-600 hover:bg-gray-700 text-white px-5 sm:px-6 py-2 rounded-lg font-medium transition shadow-sm hover:shadow-md"
           >
             Fermer
           </button>
