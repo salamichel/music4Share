@@ -19,6 +19,7 @@ const MyGroupsView = ({
   onCreateGroup,
   onReenrichSong,
   onDeleteSong,
+  onSaveSong,
   enrichingSongs,
   selectedSongs,
   onToggleSongSelection,
@@ -179,6 +180,7 @@ const MyGroupsView = ({
                                 onLeaveSlot={onLeaveSlot}
                                 onReenrichSong={onReenrichSong}
                                 onDeleteSong={onDeleteSong}
+                                onSaveSong={onSaveSong}
                                 isEnriching={enrichingSongs.has(song.id)}
                                 isSelected={selectedSongs && selectedSongs.has(song.id)}
                                 onToggleSelection={onToggleSongSelection}

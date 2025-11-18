@@ -1,8 +1,41 @@
-import React from 'react';
-import { X, Clock, Music2, FileText, Tag, Youtube, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Clock, Music2, FileText, Tag, Youtube, Sparkles, Edit2, Save } from 'lucide-react';
 
-const SongDetails = ({ song, onClose }) => {
+const SongDetails = ({ song, onClose, onSave }) => {
   if (!song) return null;
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedSong, setEditedSong] = useState({
+    title: song.title || '',
+    artist: song.artist || '',
+    duration: song.duration || '',
+    genre: song.genre || '',
+    chords: song.chords || '',
+    lyrics: song.lyrics || '',
+  });
+
+  const handleEditChange = (field, value) => {
+    setEditedSong(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSave = async () => {
+    if (onSave) {
+      await onSave(song.id, editedSong);
+      setIsEditing(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditedSong({
+      title: song.title || '',
+      artist: song.artist || '',
+      duration: song.duration || '',
+      genre: song.genre || '',
+      chords: song.chords || '',
+      lyrics: song.lyrics || '',
+    });
+    setIsEditing(false);
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
@@ -11,8 +44,29 @@ const SongDetails = ({ song, onClose }) => {
         <div className="bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 text-white p-4 sm:p-6">
           <div className="flex justify-between items-start gap-4">
             <div className="flex-1 min-w-0">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-2 break-words">{song.title}</h2>
-              <p className="text-lg sm:text-xl opacity-90 break-words">{song.artist}</p>
+              {isEditing ? (
+                <>
+                  <input
+                    type="text"
+                    value={editedSong.title}
+                    onChange={(e) => handleEditChange('title', e.target.value)}
+                    className="w-full text-2xl sm:text-3xl font-bold mb-2 bg-white bg-opacity-20 border-2 border-white border-opacity-40 rounded-lg px-3 py-2 text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:border-opacity-100"
+                    placeholder="Titre"
+                  />
+                  <input
+                    type="text"
+                    value={editedSong.artist}
+                    onChange={(e) => handleEditChange('artist', e.target.value)}
+                    className="w-full text-lg sm:text-xl bg-white bg-opacity-20 border-2 border-white border-opacity-40 rounded-lg px-3 py-2 text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:border-opacity-100"
+                    placeholder="Artiste"
+                  />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-2xl sm:text-3xl font-bold mb-2 break-words">{song.title}</h2>
+                  <p className="text-lg sm:text-xl opacity-90 break-words">{song.artist}</p>
+                </>
+              )}
             </div>
             <button
               onClick={onClose}
@@ -30,17 +84,44 @@ const SongDetails = ({ song, onClose }) => {
                 Enrichi par Gemini
               </div>
             )}
-            {song.duration && (
-              <div className="flex items-center bg-white bg-opacity-20 px-3 py-1.5 rounded-full text-sm">
-                <Clock className="w-4 h-4 mr-2" />
-                {song.duration}
-              </div>
-            )}
-            {song.genre && (
-              <div className="flex items-center bg-white bg-opacity-20 px-3 py-1.5 rounded-full text-sm">
-                <Tag className="w-4 h-4 mr-2" />
-                {song.genre}
-              </div>
+            {isEditing ? (
+              <>
+                <div className="flex items-center bg-white bg-opacity-20 px-3 py-1.5 rounded-full text-sm">
+                  <Clock className="w-4 h-4 mr-2" />
+                  <input
+                    type="text"
+                    value={editedSong.duration}
+                    onChange={(e) => handleEditChange('duration', e.target.value)}
+                    className="bg-transparent border-b border-white border-opacity-40 text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:border-opacity-100 w-20"
+                    placeholder="MM:SS"
+                  />
+                </div>
+                <div className="flex items-center bg-white bg-opacity-20 px-3 py-1.5 rounded-full text-sm">
+                  <Tag className="w-4 h-4 mr-2" />
+                  <input
+                    type="text"
+                    value={editedSong.genre}
+                    onChange={(e) => handleEditChange('genre', e.target.value)}
+                    className="bg-transparent border-b border-white border-opacity-40 text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:border-opacity-100 w-24"
+                    placeholder="Genre"
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                {song.duration && (
+                  <div className="flex items-center bg-white bg-opacity-20 px-3 py-1.5 rounded-full text-sm">
+                    <Clock className="w-4 h-4 mr-2" />
+                    {song.duration}
+                  </div>
+                )}
+                {song.genre && (
+                  <div className="flex items-center bg-white bg-opacity-20 px-3 py-1.5 rounded-full text-sm">
+                    <Tag className="w-4 h-4 mr-2" />
+                    {song.genre}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -81,7 +162,7 @@ const SongDetails = ({ song, onClose }) => {
           )}
 
           {/* Chords Section */}
-          {song.chords && (
+          {(song.chords || isEditing) && (
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-blue-200">
               <div className="flex items-center mb-4">
                 <div className="bg-blue-600 p-2 rounded-lg mr-3">
@@ -90,15 +171,24 @@ const SongDetails = ({ song, onClose }) => {
                 <h3 className="text-lg sm:text-xl font-bold text-blue-900">Grille d'Accords</h3>
               </div>
               <div className="bg-white rounded-lg p-3 sm:p-4 shadow-inner border border-blue-100">
-                <pre className="font-mono text-xs sm:text-sm whitespace-pre-wrap overflow-x-auto text-gray-800">
-                  {song.chords}
-                </pre>
+                {isEditing ? (
+                  <textarea
+                    value={editedSong.chords}
+                    onChange={(e) => handleEditChange('chords', e.target.value)}
+                    className="w-full font-mono text-xs sm:text-sm text-gray-800 border-2 border-blue-300 rounded-lg p-2 focus:outline-none focus:border-blue-500 min-h-[200px]"
+                    placeholder="Saisissez les accords..."
+                  />
+                ) : (
+                  <pre className="font-mono text-xs sm:text-sm whitespace-pre-wrap overflow-x-auto text-gray-800">
+                    {song.chords}
+                  </pre>
+                )}
               </div>
             </div>
           )}
 
           {/* Lyrics Section */}
-          {song.lyrics && (
+          {(song.lyrics || isEditing) && (
             <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 sm:p-6 border border-purple-200">
               <div className="flex items-center mb-4">
                 <div className="bg-purple-600 p-2 rounded-lg mr-3">
@@ -107,9 +197,18 @@ const SongDetails = ({ song, onClose }) => {
                 <h3 className="text-lg sm:text-xl font-bold text-purple-900">Paroles</h3>
               </div>
               <div className="bg-white rounded-lg p-3 sm:p-4 shadow-inner border border-purple-100 max-h-96 overflow-y-auto">
-                <div className="whitespace-pre-wrap text-sm sm:text-base text-gray-800 leading-relaxed">
-                  {song.lyrics}
-                </div>
+                {isEditing ? (
+                  <textarea
+                    value={editedSong.lyrics}
+                    onChange={(e) => handleEditChange('lyrics', e.target.value)}
+                    className="w-full text-sm sm:text-base text-gray-800 border-2 border-purple-300 rounded-lg p-2 focus:outline-none focus:border-purple-500 min-h-[300px]"
+                    placeholder="Saisissez les paroles..."
+                  />
+                ) : (
+                  <div className="whitespace-pre-wrap text-sm sm:text-base text-gray-800 leading-relaxed">
+                    {song.lyrics}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -129,13 +228,40 @@ const SongDetails = ({ song, onClose }) => {
         </div>
 
         {/* Footer - Sticky */}
-        <div className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 flex justify-end border-t">
-          <button
-            onClick={onClose}
-            className="bg-gray-600 hover:bg-gray-700 text-white px-5 sm:px-6 py-2 rounded-lg font-medium transition shadow-sm hover:shadow-md"
-          >
-            Fermer
-          </button>
+        <div className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center border-t">
+          {isEditing ? (
+            <>
+              <button
+                onClick={handleCancel}
+                className="bg-gray-500 hover:bg-gray-600 text-white px-5 sm:px-6 py-2 rounded-lg font-medium transition shadow-sm hover:shadow-md"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleSave}
+                className="bg-green-600 hover:bg-green-700 text-white px-5 sm:px-6 py-2 rounded-lg font-medium transition shadow-sm hover:shadow-md flex items-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                Sauvegarder
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-5 sm:px-6 py-2 rounded-lg font-medium transition shadow-sm hover:shadow-md flex items-center gap-2"
+              >
+                <Edit2 className="w-4 h-4" />
+                Éditer
+              </button>
+              <button
+                onClick={onClose}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-5 sm:px-6 py-2 rounded-lg font-medium transition shadow-sm hover:shadow-md"
+              >
+                Fermer
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

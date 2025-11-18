@@ -17,6 +17,7 @@ const SongCard = ({
   onLeaveSlot,
   onReenrichSong,
   onDeleteSong,
+  onSaveSong,
   isEnriching = false,
   isSelected = false,
   onToggleSelection,
@@ -236,7 +237,11 @@ const SongCard = ({
 
       {/* Modal de détails */}
       {showDetails && (
-        <SongDetails song={song} onClose={() => setShowDetails(false)} />
+        <SongDetails
+          song={song}
+          onClose={() => setShowDetails(false)}
+          onSave={onSaveSong}
+        />
       )}
 
       {/* Modal de sélection d'artiste */}

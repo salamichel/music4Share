@@ -14,6 +14,7 @@ const RepertoireView = ({
   onLeaveSlot,
   onReenrichSong,
   onDeleteSong,
+  onSaveSong,
   enrichingSongs,
   selectedSongs,
   onToggleSongSelection,
@@ -212,6 +213,7 @@ const RepertoireView = ({
                     onLeaveSlot={onLeaveSlot}
                     onReenrichSong={onReenrichSong}
                     onDeleteSong={onDeleteSong}
+                    onSaveSong={onSaveSong}
                     isEnriching={enrichingSongs.has(song.id)}
                     isSelected={selectedSongs && selectedSongs.has(song.id)}
                     onToggleSelection={onToggleSongSelection}
