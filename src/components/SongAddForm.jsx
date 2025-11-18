@@ -52,7 +52,7 @@ const SongAddForm = ({
   };
 
   return (
-    <div className="p-4 bg-purple-50 border-b">
+    <div className="p-4 bg-copper-50 border-b">
       {importMode === 'simple' ? (
         <>
           <div className="flex justify-between items-center mb-3">
@@ -60,13 +60,13 @@ const SongAddForm = ({
             <div className="flex gap-2">
               <button
                 onClick={() => setImportMode('bulk')}
-                className="text-xs text-purple-600 hover:underline"
+                className="text-xs text-copper-600 hover:underline"
               >
                 Import texte →
               </button>
               <button
                 onClick={() => setImportMode('json')}
-                className="text-xs text-purple-600 hover:underline flex items-center gap-1"
+                className="text-xs text-copper-600 hover:underline flex items-center gap-1"
               >
                 <FileJson className="w-3 h-3" />
                 Import JSON →
@@ -79,7 +79,7 @@ const SongAddForm = ({
               placeholder="Titre"
               value={newSong.title}
               onChange={(e) => setNewSong({...newSong, title: e.target.value})}
-              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-copper-500"
               required
             />
             <input
@@ -87,16 +87,16 @@ const SongAddForm = ({
               placeholder="Artiste (optionnel - sera détecté par Gemini)"
               value={newSong.artist}
               onChange={(e) => setNewSong({...newSong, artist: e.target.value})}
-              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-copper-500"
             />
             <input
               type="url"
               placeholder="Lien YouTube (optionnel)"
               value={newSong.youtubeLink}
               onChange={(e) => setNewSong({...newSong, youtubeLink: e.target.value})}
-              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-copper-500"
             />
-            <button type="submit" className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 text-sm">
+            <button type="submit" className="w-full bg-copper-600 text-white py-2 rounded-lg hover:bg-copper-700 text-sm">
               <Plus className="w-4 h-4 inline mr-1" />
               Ajouter
             </button>
@@ -109,13 +109,13 @@ const SongAddForm = ({
             <div className="flex gap-2">
               <button
                 onClick={() => setImportMode('simple')}
-                className="text-xs text-purple-600 hover:underline"
+                className="text-xs text-copper-600 hover:underline"
               >
                 ← Simple
               </button>
               <button
                 onClick={() => setImportMode('json')}
-                className="text-xs text-purple-600 hover:underline flex items-center gap-1"
+                className="text-xs text-copper-600 hover:underline flex items-center gap-1"
               >
                 <FileJson className="w-3 h-3" />
                 JSON →
@@ -129,13 +129,13 @@ const SongAddForm = ({
             placeholder="Highway to Hell - AC/DC&#10;Smoke on the Water - Deep Purple"
             value={bulkText}
             onChange={(e) => setBulkText(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-copper-500"
             rows="6"
           />
           <div className="flex gap-2 mt-2">
             <button
               onClick={handleBulkImport}
-              className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 text-sm"
+              className="flex-1 bg-copper-600 text-white py-2 rounded-lg hover:bg-copper-700 text-sm"
             >
               Importer
             </button>
@@ -160,13 +160,13 @@ const SongAddForm = ({
             <div className="flex gap-2">
               <button
                 onClick={() => setImportMode('simple')}
-                className="text-xs text-purple-600 hover:underline"
+                className="text-xs text-copper-600 hover:underline"
               >
                 ← Simple
               </button>
               <button
                 onClick={() => setImportMode('bulk')}
-                className="text-xs text-purple-600 hover:underline"
+                className="text-xs text-copper-600 hover:underline"
               >
                 Texte →
               </button>
@@ -178,7 +178,7 @@ const SongAddForm = ({
             Match par nom de titre + artiste. Collez un JSON avec vos données enrichies.
           </p>
           <details className="mb-2 text-xs text-gray-600">
-            <summary className="cursor-pointer hover:text-purple-600">📖 Format JSON attendu</summary>
+            <summary className="cursor-pointer hover:text-copper-600">📖 Format JSON attendu</summary>
             <pre className="mt-2 bg-white p-2 rounded border overflow-x-auto">
 {`[
   {
@@ -207,13 +207,13 @@ const SongAddForm = ({
               setJsonText(e.target.value);
               setJsonError('');
             }}
-            className="w-full px-3 py-2 border rounded-lg text-xs font-mono focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full px-3 py-2 border rounded-lg text-xs font-mono focus:outline-none focus:ring-2 focus:ring-copper-500"
             rows="8"
           />
           <div className="flex gap-2 mt-2">
             <button
               onClick={handleJsonImport}
-              className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 text-sm flex items-center justify-center gap-2"
+              className="flex-1 bg-copper-600 text-white py-2 rounded-lg hover:bg-copper-700 text-sm flex items-center justify-center gap-2"
             >
               <FileJson className="w-4 h-4" />
               Importer et Enrichir

@@ -59,14 +59,14 @@ const RepertoireView = ({
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
       {/* Header */}
-      <div className="p-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+      <div className="p-4 bg-white border-l-4 border-copper-500">
         <div className="flex justify-between items-center mb-2">
           <div>
-            <h2 className="text-xl font-bold flex items-center">
-              <List className="w-5 h-5 mr-2" />
+            <h2 className="text-xl font-bold flex items-center text-gray-800">
+              <List className="w-5 h-5 mr-2 text-copper-600" />
               Répertoire Global
             </h2>
-            <p className="text-sm text-purple-100 mt-1">
+            <p className="text-sm text-gray-600 mt-1">
               {filteredSongs.length} titre{filteredSongs.length > 1 ? 's' : ''}
               {unenrichedCount > 0 && ` · ${unenrichedCount} non enrichi${unenrichedCount > 1 ? 's' : ''}`}
             </p>
@@ -75,7 +75,7 @@ const RepertoireView = ({
           {/* Filter toggle button for mobile */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition md:hidden"
+            className="flex items-center gap-2 border-2 border-copper-400 text-copper-700 hover:bg-white border-t-2 border-copper-500 px-3 py-2 rounded-lg transition md:hidden"
           >
             <Filter className="w-5 h-5" />
             {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -89,11 +89,11 @@ const RepertoireView = ({
         `}>
           <div className="flex flex-col sm:flex-row gap-3 mt-3">
             <div className="flex-1">
-              <label className="text-xs text-purple-100 mb-1 block">Groupe</label>
+              <label className="text-xs text-gray-700 font-medium mb-1 block">Groupe</label>
               <select
                 value={filterGroup}
                 onChange={(e) => setFilterGroup(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-white/20 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm"
+                className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-300 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-copper-400 focus:border-copper-400"
               >
                 <option value="all" className="text-gray-900">Tous les groupes</option>
                 <option value="null" className="text-gray-900">Personnel</option>
@@ -104,11 +104,11 @@ const RepertoireView = ({
             </div>
 
             <div className="flex-1">
-              <label className="text-xs text-purple-100 mb-1 block">Artiste</label>
+              <label className="text-xs text-gray-700 font-medium mb-1 block">Artiste</label>
               <select
                 value={filterArtist}
                 onChange={(e) => setFilterArtist(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-white/20 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm"
+                className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-300 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-copper-400 focus:border-copper-400"
               >
                 <option value="all" className="text-gray-900">Tous les artistes</option>
                 {artists.sort((a, b) => a.name.localeCompare(b.name)).map(a => (
@@ -118,11 +118,11 @@ const RepertoireView = ({
             </div>
 
             <div className="flex-1">
-              <label className="text-xs text-purple-100 mb-1 block">Jouabilité</label>
+              <label className="text-xs text-gray-700 font-medium mb-1 block">Jouabilité</label>
               <select
                 value={filterPlayable}
                 onChange={(e) => setFilterPlayable(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-white/20 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm"
+                className="w-full px-3 py-2 rounded-lg bg-white border-2 border-gray-300 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-copper-400 focus:border-copper-400"
               >
                 <option value="all" className="text-gray-900">Tous les titres</option>
                 <option value="playable" className="text-gray-900">Jouables uniquement</option>
@@ -134,11 +134,11 @@ const RepertoireView = ({
 
       {/* Barre d'actions pour l'enrichissement en masse */}
       {onEnrichSelected && (
-        <div className="p-3 border-b bg-orange-50 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="p-3 border-b bg-white border-t-2 border-copper-500 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={onSelectAllUnenriched}
-              className="text-xs bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg flex items-center gap-1 transition shadow-sm"
+              className="text-xs bg-copper-600 hover:bg-copper-700 text-white px-3 py-2 rounded-lg flex items-center gap-1 transition shadow-sm"
               title="Sélectionner tous les titres non enrichis"
             >
               <CheckSquare className="w-3 h-3" />
@@ -163,7 +163,7 @@ const RepertoireView = ({
             <div className="flex gap-2">
               <button
                 onClick={onEnrichSelected}
-                className="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm flex items-center justify-center gap-2 transition shadow-sm"
+                className="flex-1 sm:flex-none bg-carmin-600 hover:bg-carmin-700 text-white px-4 py-2 rounded-lg text-sm flex items-center justify-center gap-2 transition shadow-sm"
               >
                 <Sparkles className="w-4 h-4" />
                 Enrichir
@@ -197,7 +197,7 @@ const RepertoireView = ({
                 <div key={song.id} className="flex flex-col">
                   {/* Group label */}
                   {ownerGroup && (
-                    <div className="text-xs text-indigo-600 font-medium mb-2 flex items-center px-1">
+                    <div className="text-xs text-carmin-600 font-medium mb-2 flex items-center px-1">
                       📁 {ownerGroup.name}
                     </div>
                   )}

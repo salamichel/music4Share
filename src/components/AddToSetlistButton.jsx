@@ -64,7 +64,7 @@ const AddToSetlistButton = ({ songId, setlists, setlistSongs }) => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 transition text-sm flex items-center gap-1"
+        className="bg-white border-2 border-carmin-400 text-carmin-700 hover:bg-carmin-50 px-3 py-1.5 rounded-lg font-medium transition text-sm flex items-center gap-1"
         title="Ajouter à une setlist"
       >
         <span>📋</span>
@@ -87,7 +87,7 @@ const AddToSetlistButton = ({ songId, setlists, setlistSongs }) => {
                   className={`w-full text-left px-4 py-2 text-sm transition ${
                     isInSetlist
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'hover:bg-purple-50 text-gray-700'
+                      : 'hover:bg-copper-50 text-gray-700'
                   }`}
                 >
                   <div className="font-medium">{setlist.name}</div>

@@ -25,7 +25,7 @@ const SetlistForm = ({ onSubmit, onClose, initialSetlist = null }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-4 rounded-t-lg">
+        <div className="bg-gradient-to-r from-white via-copper-50/30 to-white border-l-4 border-copper-500 px-6 py-4 rounded-t-lg">
           <h2 className="text-xl font-bold">
             {initialSetlist ? 'Modifier la setlist' : 'Nouvelle setlist'}
           </h2>
@@ -42,7 +42,7 @@ const SetlistForm = ({ onSubmit, onClose, initialSetlist = null }) => {
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-copper-500"
               placeholder="ex: Concert d'été 2024"
               autoFocus
             />
@@ -56,7 +56,7 @@ const SetlistForm = ({ onSubmit, onClose, initialSetlist = null }) => {
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-copper-500 resize-none"
               rows="3"
               placeholder="Optionnel : Ajouter une description..."
             />
@@ -73,7 +73,7 @@ const SetlistForm = ({ onSubmit, onClose, initialSetlist = null }) => {
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 bg-copper-600 text-white rounded-lg hover:bg-copper-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
               disabled={!name.trim()}
             >
               {initialSetlist ? 'Enregistrer' : 'Créer'}

@@ -63,39 +63,39 @@ const SongCard = ({
 
   return (
     <>
-      {/* Material Design Card */}
+      {/* Elegant Minimalist Card */}
       <div
         className={`
-          bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300
-          flex flex-col h-full
-          ${isPlayable ? 'ring-2 ring-green-500' : ''}
-          ${isSelected ? 'ring-2 ring-orange-500' : ''}
+          bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300
+          flex flex-col h-full border-2
+          ${isPlayable ? 'border-green-400' : 'border-gray-200'}
+          ${isSelected ? 'ring-2 ring-copper-400 border-copper-400' : ''}
         `}
       >
-        {/* Header with title and artist */}
-        <div className="bg-gradient-to-br from-purple-500 to-indigo-600 text-white p-3 relative rounded-t-xl">
+        {/* Header with title and artist - Clean design */}
+        <div className="bg-gradient-to-r from-white via-copper-50/30 to-white p-4 relative rounded-t-xl border-l-4 border-copper-500">
           {/* Checkbox de sélection */}
           {onToggleSelection && (
             <input
               type="checkbox"
               checked={isSelected}
               onChange={() => onToggleSelection(song.id)}
-              className="absolute top-2 left-2 w-4 h-4 text-purple-600 focus:ring-purple-500 rounded cursor-pointer z-10"
+              className="absolute top-3 left-3 w-4 h-4 text-copper-600 focus:ring-copper-500 rounded cursor-pointer z-10"
               title="Sélectionner pour enrichissement"
             />
           )}
 
           {/* Playable badge */}
           {isPlayable && (
-            <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold shadow-lg">
+            <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold shadow-sm">
               ✓
             </div>
           )}
 
-          {/* Title and Artist - compact */}
-          <div className="text-center">
-            <h3 className="font-bold text-base line-clamp-1">{song.title}</h3>
-            <p className="text-xs opacity-90 line-clamp-1">{song.artist}</p>
+          {/* Title and Artist - elegant */}
+          <div className="text-left pl-6">
+            <h3 className="font-bold text-lg text-gray-800 line-clamp-1">{song.title}</h3>
+            <p className="text-sm text-gray-500 line-clamp-1 mt-0.5">{song.artist}</p>
           </div>
 
           {/* YouTube link */}
@@ -104,10 +104,10 @@ const SongCard = ({
               href={song.youtubeLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center text-xs bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-full transition mx-auto w-fit mt-2"
+              className="inline-flex items-center text-xs text-copper-600 hover:text-copper-700 mt-2 pl-6 font-medium"
             >
-              <Youtube className="w-3 h-3 mr-1" />
-              YouTube
+              <Youtube className="w-3.5 h-3.5 mr-1" />
+              Voir sur YouTube
             </a>
           )}
         </div>
@@ -142,10 +142,10 @@ const SongCard = ({
                   key={slot.id}
                   onClick={() => handleOpenArtistSelector(slot.id)}
                   className={`
-                    text-xs px-2 py-1.5 rounded-lg border transition-all font-medium
+                    text-xs px-3 py-2 rounded-lg border-2 transition-all font-medium
                     ${assignedArtists.length > 0
-                      ? 'bg-purple-600 text-white border-purple-600 shadow-md hover:bg-purple-700'
-                      : 'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100'
+                      ? 'bg-copper-50 text-copper-700 border-copper-400 hover:bg-copper-100'
+                      : 'bg-white text-gray-600 border-gray-300 hover:border-copper-300 hover:bg-gray-50'
                     }
                   `}
                   title={assignedArtists.map(a => a.name).join(', ') || 'Ajouter un artiste'}
@@ -153,7 +153,7 @@ const SongCard = ({
                   <span className="mr-1">{slot.icon}</span>
                   {slot.name}
                   {assignedArtists.length > 0 && (
-                    <span className="ml-1 font-bold">({assignedArtists.length})</span>
+                    <span className="ml-1 font-bold text-copper-600">({assignedArtists.length})</span>
                   )}
                 </button>
               );
@@ -184,7 +184,7 @@ const SongCard = ({
                             onLeaveSlot(song.id, slot.id);
                           }
                         }}
-                        className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full hover:bg-red-100 hover:text-red-800 transition flex items-center gap-1"
+                        className="text-xs bg-white border border-copper-300 text-copper-700 px-2 py-1 rounded-full hover:bg-red-50 hover:border-red-400 hover:text-red-700 transition flex items-center gap-1"
                         title={`${slot.icon} ${slot.name} - Retirer ${artistName}`}
                       >
                         <span>{slot.icon}</span>
@@ -200,7 +200,7 @@ const SongCard = ({
         </div>
 
         {/* Action buttons at bottom */}
-        <div className="p-2 bg-gray-50 border-t flex gap-2">
+        <div className="p-3 bg-gray-50 border-t border-gray-200 flex gap-2">
           {/* Bouton Setlist (si des setlists existent) */}
           {setlists.length > 0 && (
             <AddToSetlistButton
@@ -212,7 +212,7 @@ const SongCard = ({
 
           <button
             onClick={() => setShowDetails(true)}
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1.5 rounded-lg transition font-medium text-xs flex items-center justify-center shadow-sm"
+            className="flex-1 bg-white border-2 border-copper-400 text-copper-700 hover:bg-copper-50 px-3 py-2 rounded-lg transition font-medium text-xs flex items-center justify-center"
             title="Voir les détails"
           >
             <Info className="w-3.5 h-3.5 mr-1" />
@@ -226,7 +226,7 @@ const SongCard = ({
                   onDeleteSong(song.id);
                 }
               }}
-              className="bg-red-600 hover:bg-red-700 text-white px-2 py-1.5 rounded-lg transition font-medium text-xs flex items-center justify-center shadow-sm"
+              className="bg-white border-2 border-red-400 text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg transition font-medium text-xs flex items-center justify-center"
               title="Supprimer ce titre"
             >
               <Trash2 className="w-3.5 h-3.5" />

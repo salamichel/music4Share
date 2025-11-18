@@ -75,7 +75,7 @@ const ArtistSelector = ({
               <select
                 value={selectedArtistId}
                 onChange={(e) => setSelectedArtistId(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-copper-500 focus:border-transparent"
                 required
               >
                 <option value="">-- Sélectionner un artiste --</option>
@@ -100,7 +100,7 @@ const ArtistSelector = ({
               <button
                 type="submit"
                 disabled={!selectedArtistId}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-copper-600 text-white rounded-lg hover:bg-copper-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 Affecter
               </button>

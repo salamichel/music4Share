@@ -85,14 +85,14 @@ const ArtistsView = ({ artists, instrumentSlots, onAddArtist, onUpdateArtist, on
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+      <div className="p-4 border-b bg-gradient-to-r from-white via-copper-50/20 to-white border-l-4 border-copper-500">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-xl font-bold flex items-center">
               <Users className="w-5 h-5 mr-2" />
               Artistes
             </h2>
-            <p className="text-sm text-purple-100 mt-1">
+            <p className="text-sm text-copper-100 mt-1">
               {artists.length} artiste{artists.length > 1 ? 's' : ''}
             </p>
           </div>
@@ -113,7 +113,7 @@ const ArtistsView = ({ artists, instrumentSlots, onAddArtist, onUpdateArtist, on
             <p className="text-gray-500 mb-4">Aucun artiste enregistré</p>
             <button
               onClick={() => handleOpenForm()}
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700"
+              className="bg-copper-600 text-white px-6 py-2 rounded-lg hover:bg-copper-700"
             >
               Ajouter mon premier artiste
             </button>
@@ -150,7 +150,7 @@ const ArtistsView = ({ artists, instrumentSlots, onAddArtist, onUpdateArtist, on
                     return slot ? (
                       <span
                         key={inst.slotId}
-                        className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800"
+                        className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-copper-100 text-copper-800"
                       >
                         <span className="mr-1">{slot.icon}</span>
                         {slot.name}
@@ -189,7 +189,7 @@ const ArtistsView = ({ artists, instrumentSlots, onAddArtist, onUpdateArtist, on
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-copper-500 focus:border-transparent"
                   placeholder="Ex: John Doe"
                   required
                 />
@@ -209,7 +209,7 @@ const ArtistsView = ({ artists, instrumentSlots, onAddArtist, onUpdateArtist, on
                         type="checkbox"
                         checked={formData.selectedInstruments.includes(slot.id)}
                         onChange={() => handleToggleInstrument(slot.id)}
-                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                        className="w-4 h-4 text-copper-600 rounded focus:ring-copper-500"
                       />
                       <span className="ml-3 flex items-center">
                         <span className="mr-2">{slot.icon}</span>
@@ -230,7 +230,7 @@ const ArtistsView = ({ artists, instrumentSlots, onAddArtist, onUpdateArtist, on
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  className="px-4 py-2 bg-copper-600 text-white rounded-lg hover:bg-copper-700"
                 >
                   {editingArtist ? 'Mettre à jour' : 'Ajouter'}
                 </button>
