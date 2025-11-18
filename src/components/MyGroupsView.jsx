@@ -69,7 +69,7 @@ const MyGroupsView = ({
         ) : (
           <div>
             {groups.map(group => {
-              const groupSongs = songs.filter(s => s.ownerGroupId === group.id);
+              const groupSongs = songs.filter(s => s.ownerGroupId === group.id).sort((a, b) => a.title.localeCompare(b.title));
               const isExpanded = expandedGroupId === group.id;
               
               return (
