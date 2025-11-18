@@ -10,6 +10,7 @@ import {
   updateSetlistSongPositions
 } from '../firebase/firebaseHelpers';
 import { exportSetlistToPDF } from '../utils/pdfExport';
+import { isSongPlayable } from '../utils/helpers';
 
 const SetlistsView = ({
   setlists,
@@ -282,23 +283,33 @@ const SetlistsView = ({
 
                   {availableSongs.length > 0 ? (
                     <div className="max-h-60 overflow-y-auto space-y-2">
-                      {availableSongs.slice(0, 20).map(song => (
-                        <div
-                          key={song.id}
-                          className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200"
-                        >
-                          <div>
-                            <div className="font-medium text-gray-900">{song.title}</div>
-                            <div className="text-sm text-gray-600">{song.artist || '-'}</div>
-                          </div>
-                          <button
-                            onClick={() => handleAddSongToSetlist(song.id)}
-                            className="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 transition text-sm"
+                      {availableSongs.slice(0, 20).map(song => {
+                        const isPlayable = isSongPlayable(song.id, participations);
+                        return (
+                          <div
+                            key={song.id}
+                            className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200"
                           >
-                            + Ajouter
-                          </button>
-                        </div>
-                      ))}
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <div className="font-medium text-gray-900">{song.title}</div>
+                                {isPlayable && (
+                                  <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold whitespace-nowrap">
+                                    ✓ Jouable
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-sm text-gray-600">{song.artist || '-'}</div>
+                            </div>
+                            <button
+                              onClick={() => handleAddSongToSetlist(song.id)}
+                              className="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 transition text-sm"
+                            >
+                              + Ajouter
+                            </button>
+                          </div>
+                        );
+                      })}
                       {availableSongs.length > 20 && (
                         <p className="text-xs text-gray-500 text-center pt-2">
                           ... et {availableSongs.length - 20} titre(s) de plus
