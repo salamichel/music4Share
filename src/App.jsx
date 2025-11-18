@@ -553,11 +553,12 @@ export default function App() {
         alert("Vous devez être membre du groupe pour supprimer ce titre.");
         return;
       }
-    } else if (song.addedBy !== currentUser.id) {
-      // Pour les titres personnels, seul le créateur peut supprimer
+    } else if (song.addedBy && song.addedBy !== currentUser.id) {
+      // Pour les titres personnels, seul le créateur peut supprimer (si addedBy est défini)
       alert("Seul le créateur peut supprimer ce titre.");
       return;
     }
+    // Si addedBy est undefined/null, on autorise la suppression (anciens titres)
 
     // Confirmation
     if (!window.confirm(`Êtes-vous sûr de vouloir supprimer "${song.title}" ?`)) {
@@ -619,7 +620,8 @@ export default function App() {
         const ownerGroup = groups.find(g => g.id === song.ownerGroupId);
         return ownerGroup && ownerGroup.memberIds.includes(currentUser.id);
       }
-      return song.addedBy === currentUser.id;
+      // Pour les titres personnels: vérifier addedBy ou accepter si addedBy est manquant (anciens titres)
+      return !song.addedBy || song.addedBy === currentUser.id;
     });
 
     if (deletableSongs.length === 0) {
