@@ -26,6 +26,7 @@ const RepertoireView = ({
 }) => {
   const [filterGroup, setFilterGroup] = useState('all');
   const [filterPlayable, setFilterPlayable] = useState('all');
+  const [filterArtist, setFilterArtist] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
 
   const filteredSongs = songs.filter(song => {
@@ -40,6 +41,13 @@ const RepertoireView = ({
       const hasString = filledSlots.has('guitar') || filledSlots.has('bass');
       const hasVocals = filledSlots.has('vocals');
       if (!(hasDrums && hasString && hasVocals)) return false;
+    }
+
+    // Filtre par artiste
+    if (filterArtist !== 'all') {
+      const songParts = participations.filter(p => p.songId === song.id);
+      const hasArtist = songParts.some(p => p.artistId === filterArtist);
+      if (!hasArtist) return false;
     }
 
     return true;
@@ -90,6 +98,20 @@ const RepertoireView = ({
                 <option value="null" className="text-gray-900">Personnel</option>
                 {groups.map(g => (
                   <option key={g.id} value={g.id} className="text-gray-900">{g.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex-1">
+              <label className="text-xs text-purple-100 mb-1 block">Artiste</label>
+              <select
+                value={filterArtist}
+                onChange={(e) => setFilterArtist(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-white/20 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm"
+              >
+                <option value="all" className="text-gray-900">Tous les artistes</option>
+                {artists.map(a => (
+                  <option key={a.id} value={a.id} className="text-gray-900">{a.name}</option>
                 ))}
               </select>
             </div>

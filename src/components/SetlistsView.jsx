@@ -150,7 +150,8 @@ const SetlistsView = ({
       songs,
       participations,
       instrumentSlots,
-      users
+      users,
+      artists
     );
   };
 

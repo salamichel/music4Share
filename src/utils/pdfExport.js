@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-export const exportSetlistToPDF = (setlist, setlistSongs, allSongs, participations, instrumentSlots, users) => {
+export const exportSetlistToPDF = (setlist, setlistSongs, allSongs, participations, instrumentSlots, users, artists) => {
   const doc = new jsPDF();
 
   // Title
@@ -48,16 +48,24 @@ export const exportSetlistToPDF = (setlist, setlistSongs, allSongs, participatio
     const slotMap = {};
     songParticipations.forEach(participation => {
       const slot = instrumentSlots.find(s => s.id === participation.slotId);
-      const user = users.find(u => u.id === participation.userId);
 
-      if (slot && user) {
+      let participantName = null;
+      if (participation.artistId) {
+        const artist = artists.find(a => a.id === participation.artistId);
+        if (artist) participantName = artist.name;
+      } else if (participation.userId) {
+        const user = users.find(u => u.id === participation.userId);
+        if (user) participantName = user.username;
+      }
+
+      if (slot && participantName) {
         if (!slotMap[slot.id]) {
           slotMap[slot.id] = {
             slotName: slot.name,
             users: []
           };
         }
-        slotMap[slot.id].users.push(user.username);
+        slotMap[slot.id].users.push(participantName);
       }
     });
 
