@@ -367,32 +367,12 @@ export default function App() {
       };
       newSongs.push(song);
 
-      // Auto-assignation des artistes : chercher un artiste correspondant au nom
-      const normalizedArtistName = (parsedSong.artist || '').toLowerCase().trim();
-      const matchingArtist = artists.find(a =>
-        a.name.toLowerCase().trim() === normalizedArtistName
-      );
-
-      if (matchingArtist && matchingArtist.instruments && matchingArtist.instruments.length > 0) {
-        // Auto-assigner l'artiste sur tous ses instruments pour ce titre
-        matchingArtist.instruments.forEach((instrument, instIndex) => {
-          const participation = {
-            id: `${songId}_artist_${matchingArtist.id}_${instIndex}`,
-            songId: songId,
-            userId: null,
-            artistId: matchingArtist.id,
-            slotId: instrument.slotId,
-            comment: ''
-          };
-          newParticipations.push(participation);
-        });
-      } else if (groupId && userSlotId) {
-        // Sinon, si titre de groupe ET slot trouvé, auto-inscrire l'utilisateur
+      // Si titre de groupe ET slot trouvé, auto-inscrire l'utilisateur
+      if (groupId && userSlotId) {
         const participation = {
           id: songId + '_auto',
           songId: songId,
           userId: currentUser.id,
-          artistId: null,
           slotId: userSlotId,
           comment: ''
         };
@@ -400,24 +380,18 @@ export default function App() {
       }
     });
 
-    // Compter les auto-assignations d'artistes
-    const artistParticipations = newParticipations.filter(p => p.artistId);
-    const successMessage = artistParticipations.length > 0
-      ? `${parsedSongs.length} titre(s) importé(s) avec ${artistParticipations.length} artiste(s) auto-assigné(s) ! Utilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir.`
-      : `${parsedSongs.length} titre(s) importé(s) avec succès ! Utilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir.`;
-
     try {
       await addMultipleSongs(newSongs);
       if (newParticipations.length > 0) {
         await addMultipleParticipations(newParticipations);
       }
 
-      toast.success(successMessage);
+      toast.success(`${parsedSongs.length} titre(s) importé(s) avec succès ! Utilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir.`);
     } catch (error) {
       // Fallback mode local
       setSongs([...songs, ...newSongs]);
       setParticipations([...participations, ...newParticipations]);
-      toast.success(successMessage);
+      toast.success(`${parsedSongs.length} titre(s) importé(s) avec succès ! Utilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir.`);
     }
   };
 
