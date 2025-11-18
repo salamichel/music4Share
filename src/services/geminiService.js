@@ -139,7 +139,9 @@ export const enrichBatchSongs = async (songs) => {
 
     // Construire une liste des chansons pour le prompt
     const songsList = songs.map((song, index) =>
-      `${index + 1}. "${song.title}"}`
+      song.artist
+        ? `${index + 1}. "${song.title}" de "${song.artist}"`
+        : `${index + 1}. "${song.title}"`
     ).join('\n');
 
     const prompt = `
@@ -160,9 +162,10 @@ Retourne un tableau JSON avec exactement ${songs.length} objets dans le même or
 
 IMPORTANT:
 - Retourne UNIQUEMENT un tableau JSON valide, sans texte avant ou après
+- Si l'artiste est déjà fourni dans la liste, utilise-le pour identifier la chanson
 - Si l'artiste n'est pas fourni, identifie-le à partir du titre
 - Si tu ne trouves pas une chanson, mets null pour tous ses champs
-- Pour le lien YouTube, fournis le lien de la version officielle ou la plus populaire
+- Pour le lien YouTube, utilise l'artiste fourni pour trouver la version officielle ou la plus populaire
 - Pour les accords, donne une grille simplifiée avec les sections principales
 - Pour les paroles, inclus les couplets et refrains
 - Respecte STRICTEMENT l'ordre de la liste
