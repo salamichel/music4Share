@@ -17,14 +17,17 @@ import {
   addInstrumentSlot,
   deleteInstrumentSlot,
   addMultipleSongs,
-  addMultipleParticipations
+  addMultipleParticipations,
+  addArtist,
+  updateArtist,
+  deleteArtist
 } from './firebase/firebaseHelpers';
-import Login from './components/Login';
 import Header from './components/Header';
 import RepertoireView from './components/RepertoireView';
 import MyGroupsView from './components/MyGroupsView';
 import AllGroupsView from './components/AllGroupsView';
 import SetlistsView from './components/SetlistsView';
+import ArtistsView from './components/ArtistsView';
 import SlotManager from './components/SlotManager';
 import UserSettings from './components/UserSettings';
 import { Music, LogOut } from 'lucide-react';
@@ -49,6 +52,8 @@ export default function App() {
     setSetlists,
     setlistSongs,
     setSetlistSongs,
+    artists,
+    setArtists,
     searchTerm,
     setSearchTerm,
     showSlotManager,
@@ -62,21 +67,47 @@ export default function App() {
   const [showUserSettings, setShowUserSettings] = useState(false);
   const [selectedSongs, setSelectedSongs] = useState(new Set()); // IDs des titres sélectionnés pour enrichissement
 
-  // Restaurer la session utilisateur au chargement
+  // Auto-connexion avec utilisateur par défaut (pas d'authentification)
   useEffect(() => {
-    const savedUserId = localStorage.getItem('currentUserId');
-    if (savedUserId && users.length > 0) {
-      const user = users.find(u => u.id === savedUserId);
-      if (user) {
-        setCurrentUser(user);
+    if (!isFirebaseReady) return;
+    if (currentUser) return; // Déjà connecté
+
+    const DEFAULT_USER_ID = 'default_user';
+    const DEFAULT_USER = {
+      id: DEFAULT_USER_ID,
+      username: 'Utilisateur',
+      password: '',
+      instrument: 'guitar',
+      groupIds: []
+    };
+
+    // Chercher ou créer l'utilisateur par défaut
+    const initDefaultUser = async () => {
+      const defaultUser = users.find(u => u.id === DEFAULT_USER_ID);
+
+      if (!defaultUser && users.length >= 0) {
+        // Créer l'utilisateur par défaut s'il n'existe pas
+        console.log('🔧 Création utilisateur par défaut...');
+        try {
+          await addUser(DEFAULT_USER);
+          // Ne pas set currentUser ici, Firebase va trigger un update
+        } catch (error) {
+          console.error('Erreur création utilisateur:', error);
+          // Mode local - set directement
+          setCurrentUser(DEFAULT_USER);
+          setView('repertoire');
+        }
+      } else if (defaultUser) {
+        // Utilisateur existe, connexion
+        setCurrentUser(defaultUser);
         setView('repertoire');
-        console.log('✅ Session restaurée pour:', user.username);
-      } else {
-        // Utilisateur n'existe plus, nettoyer localStorage
-        localStorage.removeItem('currentUserId');
+        localStorage.setItem('currentUserId', DEFAULT_USER_ID);
+        console.log('✅ Connexion automatique');
       }
-    }
-  }, [users]); // Se déclenche quand les utilisateurs sont chargés depuis Firebase
+    };
+
+    initDefaultUser();
+  }, [users, isFirebaseReady, currentUser]); // Se déclenche quand les utilisateurs sont chargés depuis Firebase
 
   // Trouver le slot correspondant à un instrument
   const findUserSlotForInstrument = (instrumentName) => {
@@ -681,11 +712,12 @@ export default function App() {
   };
 
   // Rejoindre un emplacement
-  const handleJoinSlot = async (songId, slotId) => {
+  const handleJoinSlot = async (songId, slotId, artistId = null) => {
     const participation = {
       id: Date.now().toString() + '_' + Math.random(),
       songId: songId,
-      userId: currentUser.id,
+      userId: artistId ? null : currentUser.id,
+      artistId: artistId || null,
       slotId: slotId,
       comment: ''
     };
@@ -701,7 +733,7 @@ export default function App() {
   // Quitter un emplacement
   const handleLeaveSlot = async (songId, slotId) => {
     const participationToDelete = participations.find(p =>
-      p.songId === songId && p.userId === currentUser.id && p.slotId === slotId
+      p.songId === songId && p.slotId === slotId && (p.artistId || p.userId === currentUser.id)
     );
 
     if (participationToDelete) {
@@ -771,18 +803,67 @@ export default function App() {
     }
   };
 
-  // Déconnexion
-  const handleLogout = () => {
-    setCurrentUser(null);
-    setView('login');
-    // Nettoyer la session sauvegardée
-    localStorage.removeItem('currentUserId');
-    console.log('✅ Session supprimée');
+  // ========== ARTISTES ==========
+
+  // Ajouter un artiste
+  const handleAddArtist = async (artistData) => {
+    try {
+      await addArtist(artistData);
+      toast.success('Artiste ajouté avec succès !');
+    } catch (error) {
+      // Fallback mode local
+      setArtists([...artists, artistData]);
+      toast.success('Artiste ajouté avec succès !');
+    }
   };
 
-  // Page de connexion
-  if (view === 'login') {
-    return <Login onLogin={handleLogin} onSignup={handleSignup} instrumentSlots={instrumentSlots} />;
+  // Mettre à jour un artiste
+  const handleUpdateArtist = async (artistId, updates) => {
+    try {
+      await updateArtist(artistId, updates);
+      toast.success('Artiste mis à jour !');
+    } catch (error) {
+      // Fallback mode local
+      setArtists(artists.map(a => a.id === artistId ? { ...a, ...updates } : a));
+      toast.success('Artiste mis à jour !');
+    }
+  };
+
+  // Supprimer un artiste
+  const handleDeleteArtist = async (artistId) => {
+    try {
+      await deleteArtist(artistId);
+      // Supprimer les participations associées
+      const participationsToDelete = participations.filter(p => p.artistId === artistId);
+      for (const part of participationsToDelete) {
+        await deleteParticipation(part.id);
+      }
+      toast.success('Artiste supprimé !');
+    } catch (error) {
+      // Fallback mode local
+      setArtists(artists.filter(a => a.id !== artistId));
+      setParticipations(participations.filter(p => p.artistId !== artistId));
+      toast.success('Artiste supprimé !');
+    }
+  };
+
+  // Déconnexion (désactivée - auto-reconnexion automatique)
+  const handleLogout = () => {
+    // Rechargement de la page pour réinitialiser l'état
+    window.location.reload();
+  };
+
+  // Affichage du loader pendant le chargement initial
+  if (!currentUser || !isFirebaseReady) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-white text-center">
+          <Music className="w-16 h-16 mx-auto mb-4 animate-pulse" />
+          <h1 className="text-2xl font-bold">Music4Chalemine</h1>
+          <p className="text-purple-200 mt-2">Chargement...</p>
+        </div>
+      </div>
+    );
   }
 
   // Page de création de groupe
@@ -908,6 +989,16 @@ export default function App() {
             >
               🎵 Setlists ({setlists.length})
             </button>
+            <button
+              onClick={() => setActiveTab('artists')}
+              className={`px-6 py-3 font-medium transition ${
+                activeTab === 'artists'
+                  ? 'text-purple-600 border-b-2 border-purple-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              👥 Artistes ({artists.length})
+            </button>
           </div>
         </div>
       </div>
@@ -923,6 +1014,7 @@ export default function App() {
               users={users}
               currentUser={currentUser}
               groups={groups}
+              artists={artists}
               onJoinSlot={handleJoinSlot}
               onLeaveSlot={handleLeaveSlot}
               onReenrichSong={handleReenrichSong}
@@ -947,6 +1039,7 @@ export default function App() {
               instrumentSlots={instrumentSlots}
               users={users}
               currentUser={currentUser}
+              artists={artists}
               onJoinSlot={handleJoinSlot}
               onLeaveSlot={handleLeaveSlot}
               onAddSong={handleAddSong}
@@ -984,6 +1077,16 @@ export default function App() {
               instrumentSlots={instrumentSlots}
               users={users}
               currentUser={currentUser}
+            />
+          )}
+
+          {activeTab === 'artists' && (
+            <ArtistsView
+              artists={artists}
+              instrumentSlots={instrumentSlots}
+              onAddArtist={handleAddArtist}
+              onUpdateArtist={handleUpdateArtist}
+              onDeleteArtist={handleDeleteArtist}
             />
           )}
         </div>

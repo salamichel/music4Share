@@ -6,6 +6,45 @@ import {
 } from 'firebase/firestore';
 import { db } from './config';
 
+// ========== ARTISTS ==========
+
+export const addArtist = async (artistData) => {
+  if (!db) {
+    console.warn('Firebase non configuré - mode local');
+    return artistData;
+  }
+
+  try {
+    await setDoc(doc(db, 'artists', artistData.id), artistData);
+    return artistData;
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout de l\'artiste:', error);
+    throw error;
+  }
+};
+
+export const updateArtist = async (artistId, updates) => {
+  if (!db) return;
+
+  try {
+    await updateDoc(doc(db, 'artists', artistId), updates);
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour de l\'artiste:', error);
+    throw error;
+  }
+};
+
+export const deleteArtist = async (artistId) => {
+  if (!db) return;
+
+  try {
+    await deleteDoc(doc(db, 'artists', artistId));
+  } catch (error) {
+    console.error('Erreur lors de la suppression de l\'artiste:', error);
+    throw error;
+  }
+};
+
 // ========== USERS ==========
 
 export const addUser = async (userData) => {
