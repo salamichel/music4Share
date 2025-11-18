@@ -2,17 +2,18 @@ import React, { useState } from 'react';
 import { X, Clock, Music2, FileText, Tag, Youtube, Sparkles, Edit2, Save } from 'lucide-react';
 
 const SongDetails = ({ song, onClose, onSave }) => {
-  if (!song) return null;
-
   const [isEditing, setIsEditing] = useState(false);
   const [editedSong, setEditedSong] = useState({
-    title: song.title || '',
-    artist: song.artist || '',
-    duration: song.duration || '',
-    genre: song.genre || '',
-    chords: song.chords || '',
-    lyrics: song.lyrics || '',
+    title: song?.title || '',
+    artist: song?.artist || '',
+    duration: song?.duration || '',
+    genre: song?.genre || '',
+    chords: song?.chords || '',
+    lyrics: song?.lyrics || '',
+    youtubeLink: song?.youtubeLink || '',
   });
+
+  if (!song) return null;
 
   const handleEditChange = (field, value) => {
     setEditedSong(prev => ({ ...prev, [field]: value }));
@@ -33,6 +34,7 @@ const SongDetails = ({ song, onClose, onSave }) => {
       genre: song.genre || '',
       chords: song.chords || '',
       lyrics: song.lyrics || '',
+      youtubeLink: song.youtubeLink || '',
     });
     setIsEditing(false);
   };
@@ -147,17 +149,33 @@ const SongDetails = ({ song, onClose, onSave }) => {
           )}
 
           {/* YouTube Link */}
-          {song.youtubeLink && (
+          {(song.youtubeLink || isEditing) && (
             <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-4 border border-red-200">
-              <a
-                href={song.youtubeLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-md hover:shadow-lg"
-              >
-                <Youtube className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
-                Voir sur YouTube
-              </a>
+              {isEditing ? (
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-red-900 flex items-center">
+                    <Youtube className="w-4 h-4 mr-2" />
+                    Lien YouTube
+                  </label>
+                  <input
+                    type="url"
+                    value={editedSong.youtubeLink}
+                    onChange={(e) => handleEditChange('youtubeLink', e.target.value)}
+                    className="w-full px-3 py-2 border-2 border-red-300 rounded-lg focus:outline-none focus:border-red-500"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                  />
+                </div>
+              ) : (
+                <a
+                  href={song.youtubeLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-md hover:shadow-lg"
+                >
+                  <Youtube className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
+                  Voir sur YouTube
+                </a>
+              )}
             </div>
           )}
 

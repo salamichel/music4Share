@@ -451,14 +451,15 @@ export default function App() {
       // Enrichir le titre avec Gemini
       const enrichedData = await enrichSongWithGemini(song.title, song.artist);
 
-      // Mettre à jour le titre avec les nouvelles données (inclut l'artiste si trouvé par Gemini)
+      // Mettre à jour le titre avec les nouvelles données UNIQUEMENT si les champs n'existent pas déjà
       const updates = {
         artist: enrichedData.artist || song.artist || 'Artiste inconnu',
-        duration: enrichedData.duration,
-        chords: enrichedData.chords,
-        lyrics: enrichedData.lyrics,
-        genre: enrichedData.genre,
-        enriched: enrichedData.enriched
+        duration: song.duration || enrichedData.duration,
+        chords: song.chords || enrichedData.chords,
+        lyrics: song.lyrics || enrichedData.lyrics,
+        genre: song.genre || enrichedData.genre,
+        youtubeLink: song.youtubeLink || enrichedData.youtubeLink,
+        enriched: enrichedData.enriched || song.enriched
       };
 
       try {
@@ -504,6 +505,7 @@ export default function App() {
         chords: editedData.chords,
         lyrics: editedData.lyrics,
         genre: editedData.genre,
+        youtubeLink: editedData.youtubeLink,
         // Marquer comme enrichi si au moins un champ enrichi est rempli
         enriched: Boolean(editedData.chords || editedData.lyrics || editedData.genre || editedData.duration)
       };
@@ -661,13 +663,18 @@ export default function App() {
 
       // Mettre à jour chaque titre avec les données enrichies
       for (const enrichedData of enrichedResults) {
+        const song = songs.find(s => s.id === enrichedData.id);
+        if (!song) continue;
+
+        // Ne mettre à jour que les champs qui n'existent pas déjà
         const updates = {
-          artist: enrichedData.artist,
-          duration: enrichedData.duration,
-          chords: enrichedData.chords,
-          lyrics: enrichedData.lyrics,
-          genre: enrichedData.genre,
-          enriched: enrichedData.enriched
+          artist: song.artist || enrichedData.artist,
+          duration: song.duration || enrichedData.duration,
+          chords: song.chords || enrichedData.chords,
+          lyrics: song.lyrics || enrichedData.lyrics,
+          genre: song.genre || enrichedData.genre,
+          youtubeLink: song.youtubeLink || enrichedData.youtubeLink,
+          enriched: enrichedData.enriched || song.enriched
         };
 
         try {

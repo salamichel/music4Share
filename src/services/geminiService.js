@@ -45,12 +45,14 @@ Tu es un assistant musical expert. Pour ${songIdentifier}, fournis les informati
   "duration": "durée au format MM:SS (ex: 03:45)",
   "chords": "grille d'accords simplifiée (ex: Intro: Am-F-C-G | Couplet: C-G-Am-F | Refrain: F-C-G-Am)",
   "lyrics": "paroles complètes de la chanson",
-  "genre": "genre musical principal (ex: Rock, Pop, Jazz, etc.)"
+  "genre": "genre musical principal (ex: Rock, Pop, Jazz, etc.)",
+  "youtubeLink": "lien YouTube officiel ou populaire de la chanson (format: https://www.youtube.com/watch?v=VIDEO_ID)"
 }
 
 IMPORTANT:
 ${!artist ? '- Identifie d\'abord l\'artiste ou le groupe qui a interprété cette chanson' : ''}
 - Si tu ne trouves pas la chanson, retourne null pour chaque champ
+- Pour le lien YouTube, fournis le lien de la version officielle ou la plus populaire
 - Pour les accords, donne une grille simplifiée avec les sections principales
 - Pour les paroles, inclus les couplets et refrains
 - Retourne UNIQUEMENT le JSON, sans texte supplémentaire
@@ -89,6 +91,7 @@ ${!artist ? '- Identifie d\'abord l\'artiste ou le groupe qui a interprété cet
       chords: songData.chords || null,
       lyrics: songData.lyrics || null,
       genre: songData.genre || null,
+      youtubeLink: songData.youtubeLink || null,
       enriched: true
     };
 
@@ -102,6 +105,7 @@ ${!artist ? '- Identifie d\'abord l\'artiste ou le groupe qui a interprété cet
       chords: null,
       lyrics: null,
       genre: null,
+      youtubeLink: null,
       enriched: false,
       error: error.message
     };
@@ -126,6 +130,7 @@ export const enrichBatchSongs = async (songs) => {
         chords: null,
         lyrics: null,
         genre: null,
+        youtubeLink: null,
         enriched: false
       }));
     }
@@ -149,13 +154,15 @@ Retourne un tableau JSON avec exactement ${songs.length} objets dans le même or
   "duration": "(durée au format MM:SS (ex: 03:45))",
   "chords": "(grille d'accords simplifiée (ex: Intro: Am-F-C-G | Couplet: C-G-Am-F | Refrain: F-C-G-Am))",
   "lyrics": "(paroles complètes de la chanson)",
-  "genre": "(genre musical principal (ex: Rock, Pop, Jazz, etc.))"
+  "genre": "(genre musical principal (ex: Rock, Pop, Jazz, etc.))",
+  "youtubeLink": "(lien YouTube officiel ou populaire de la chanson (format: https://www.youtube.com/watch?v=VIDEO_ID))"
 }
 
 IMPORTANT:
 - Retourne UNIQUEMENT un tableau JSON valide, sans texte avant ou après
 - Si l'artiste n'est pas fourni, identifie-le à partir du titre
 - Si tu ne trouves pas une chanson, mets null pour tous ses champs
+- Pour le lien YouTube, fournis le lien de la version officielle ou la plus populaire
 - Pour les accords, donne une grille simplifiée avec les sections principales
 - Pour les paroles, inclus les couplets et refrains
 - Respecte STRICTEMENT l'ordre de la liste
@@ -178,6 +185,7 @@ IMPORTANT:
         chords: null,
         lyrics: null,
         genre: null,
+        youtubeLink: null,
         enriched: false
       }));
     }
@@ -202,6 +210,7 @@ IMPORTANT:
         chords: enrichedData.chords || null,
         lyrics: enrichedData.lyrics || null,
         genre: enrichedData.genre || null,
+        youtubeLink: enrichedData.youtubeLink || null,
         enriched: !!(enrichedData.artist || enrichedData.duration || enrichedData.lyrics)
       };
     });
@@ -217,6 +226,7 @@ IMPORTANT:
       chords: null,
       lyrics: null,
       genre: null,
+      youtubeLink: null,
       enriched: false,
       error: error.message
     }));

@@ -1,9 +1,38 @@
 import React, { useState } from 'react';
-import { Youtube, Info, Trash2, Music } from 'lucide-react';
+import { Youtube, Info, Trash2 } from 'lucide-react';
 import { isSongPlayable } from '../utils/helpers';
 import SongDetails from './SongDetails';
 import AddToSetlistButton from './AddToSetlistButton';
 import ArtistSelector from './ArtistSelector';
+
+// Fonction pour extraire l'ID YouTube d'une URL
+const getYouTubeVideoId = (url) => {
+  if (!url) return null;
+
+  // Gérer différents formats d'URL YouTube
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/,
+    /youtube\.com\/embed\/([^&\s]+)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  return null;
+};
+
+// Fonction pour obtenir l'URL de la vignette YouTube
+const getYouTubeThumbnail = (url) => {
+  const videoId = getYouTubeVideoId(url);
+  if (!videoId) return null;
+
+  // mqdefault = qualité moyenne (320x180)
+  return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+};
 
 const SongCard = ({
   song,
@@ -29,6 +58,9 @@ const SongCard = ({
   const [selectedSlotId, setSelectedSlotId] = useState(null);
   const songParticipations = participations.filter(p => p.songId === song.id);
   const isPlayable = isSongPlayable(song.id, participations);
+
+  // Obtenir la vignette YouTube si disponible
+  const youtubeThumbnail = getYouTubeThumbnail(song.youtubeLink);
 
   // Vérifier si l'utilisateur peut supprimer ce titre
   const canDelete = () => {
@@ -72,8 +104,26 @@ const SongCard = ({
           ${isSelected ? 'ring-2 ring-orange-500' : ''}
         `}
       >
-        {/* Header with title and artist */}
-        <div className="bg-gradient-to-br from-purple-500 to-indigo-600 text-white p-3 relative rounded-t-xl">
+        {/* Header with title and artist - avec vignette YouTube si disponible */}
+        <div className="relative overflow-hidden rounded-t-xl">
+          {/* Image de fond YouTube si disponible */}
+          {youtubeThumbnail && (
+            <img
+              src={youtubeThumbnail}
+              alt={`Vignette ${song.title}`}
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={(e) => {
+                // En cas d'erreur de chargement, cacher l'image
+                e.target.style.display = 'none';
+              }}
+            />
+          )}
+
+          {/* Overlay gradient (image YouTube ou couleur de fond) */}
+          <div className={`absolute inset-0 ${youtubeThumbnail ? 'bg-gradient-to-b from-black/50 via-purple-900/60 to-purple-900/80' : 'bg-gradient-to-br from-purple-500 to-indigo-600'}`}></div>
+
+          {/* Contenu du header */}
+          <div className="text-white p-3 relative z-10">
           {/* Checkbox de sélection */}
           {onToggleSelection && (
             <input
@@ -110,6 +160,7 @@ const SongCard = ({
               YouTube
             </a>
           )}
+          </div>
         </div>
 
         {/* Instruments section */}
