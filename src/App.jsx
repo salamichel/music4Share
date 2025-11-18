@@ -23,7 +23,6 @@ import {
   updateArtist,
   deleteArtist
 } from './firebase/firebaseHelpers';
-import Login from './components/Login';
 import Header from './components/Header';
 import RepertoireView from './components/RepertoireView';
 import MyGroupsView from './components/MyGroupsView';
@@ -69,21 +68,47 @@ export default function App() {
   const [showUserSettings, setShowUserSettings] = useState(false);
   const [selectedSongs, setSelectedSongs] = useState(new Set()); // IDs des titres sélectionnés pour enrichissement
 
-  // Restaurer la session utilisateur au chargement
+  // Auto-connexion avec utilisateur par défaut (pas d'authentification)
   useEffect(() => {
-    const savedUserId = localStorage.getItem('currentUserId');
-    if (savedUserId && users.length > 0) {
-      const user = users.find(u => u.id === savedUserId);
-      if (user) {
-        setCurrentUser(user);
+    if (!isFirebaseReady) return;
+    if (currentUser) return; // Déjà connecté
+
+    const DEFAULT_USER_ID = 'default_user';
+    const DEFAULT_USER = {
+      id: DEFAULT_USER_ID,
+      username: 'Utilisateur',
+      password: '',
+      instrument: 'guitar',
+      groupIds: []
+    };
+
+    // Chercher ou créer l'utilisateur par défaut
+    const initDefaultUser = async () => {
+      const defaultUser = users.find(u => u.id === DEFAULT_USER_ID);
+
+      if (!defaultUser && users.length >= 0) {
+        // Créer l'utilisateur par défaut s'il n'existe pas
+        console.log('🔧 Création utilisateur par défaut...');
+        try {
+          await addUser(DEFAULT_USER);
+          // Ne pas set currentUser ici, Firebase va trigger un update
+        } catch (error) {
+          console.error('Erreur création utilisateur:', error);
+          // Mode local - set directement
+          setCurrentUser(DEFAULT_USER);
+          setView('repertoire');
+        }
+      } else if (defaultUser) {
+        // Utilisateur existe, connexion
+        setCurrentUser(defaultUser);
         setView('repertoire');
-        console.log('✅ Session restaurée pour:', user.username);
-      } else {
-        // Utilisateur n'existe plus, nettoyer localStorage
-        localStorage.removeItem('currentUserId');
+        localStorage.setItem('currentUserId', DEFAULT_USER_ID);
+        console.log('✅ Connexion automatique');
       }
-    }
-  }, [users]); // Se déclenche quand les utilisateurs sont chargés depuis Firebase
+    };
+
+    initDefaultUser();
+  }, [users, isFirebaseReady, currentUser]); // Se déclenche quand les utilisateurs sont chargés depuis Firebase
 
   // Trouver le slot correspondant à un instrument
   const findUserSlotForInstrument = (instrumentName) => {
@@ -728,18 +753,23 @@ export default function App() {
     }
   };
 
-  // Déconnexion
+  // Déconnexion (désactivée - auto-reconnexion automatique)
   const handleLogout = () => {
-    setCurrentUser(null);
-    setView('login');
-    // Nettoyer la session sauvegardée
-    localStorage.removeItem('currentUserId');
-    console.log('✅ Session supprimée');
+    // Rechargement de la page pour réinitialiser l'état
+    window.location.reload();
   };
 
-  // Page de connexion
-  if (view === 'login') {
-    return <Login onLogin={handleLogin} onSignup={handleSignup} instrumentSlots={instrumentSlots} />;
+  // Affichage du loader pendant le chargement initial
+  if (!currentUser || !isFirebaseReady) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-white text-center">
+          <Music className="w-16 h-16 mx-auto mb-4 animate-pulse" />
+          <h1 className="text-2xl font-bold">Music4Chalemine</h1>
+          <p className="text-purple-200 mt-2">Chargement...</p>
+        </div>
+      </div>
+    );
   }
 
   // Page de création de groupe
