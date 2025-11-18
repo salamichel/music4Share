@@ -952,11 +952,11 @@ export default function App() {
 
       {/* Onglets */}
       <div className="bg-white border-b shadow-sm">
-        <div className="container mx-auto px-4">
-          <div className="flex space-x-1">
+        <div className="container mx-auto px-2 sm:px-4">
+          <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
             <button
               onClick={() => setActiveTab('repertoire')}
-              className={`px-6 py-3 font-medium transition ${
+              className={`px-3 py-2 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap ${
                 activeTab === 'repertoire'
                   ? 'text-purple-600 border-b-2 border-purple-600'
                   : 'text-gray-600 hover:text-gray-800'
@@ -966,7 +966,7 @@ export default function App() {
             </button>
             <button
               onClick={() => setActiveTab('mygroups')}
-              className={`px-6 py-3 font-medium transition ${
+              className={`px-3 py-2 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap ${
                 activeTab === 'mygroups'
                   ? 'text-indigo-600 border-b-2 border-indigo-600'
                   : 'text-gray-600 hover:text-gray-800'
@@ -976,7 +976,7 @@ export default function App() {
             </button>
             <button
               onClick={() => setActiveTab('allgroups')}
-              className={`px-6 py-3 font-medium transition ${
+              className={`px-3 py-2 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap ${
                 activeTab === 'allgroups'
                   ? 'text-green-600 border-b-2 border-green-600'
                   : 'text-gray-600 hover:text-gray-800'
@@ -986,7 +986,7 @@ export default function App() {
             </button>
             <button
               onClick={() => setActiveTab('setlists')}
-              className={`px-6 py-3 font-medium transition ${
+              className={`px-3 py-2 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap ${
                 activeTab === 'setlists'
                   ? 'text-orange-600 border-b-2 border-orange-600'
                   : 'text-gray-600 hover:text-gray-800'
@@ -996,7 +996,7 @@ export default function App() {
             </button>
             <button
               onClick={() => setActiveTab('artists')}
-              className={`px-6 py-3 font-medium transition ${
+              className={`px-3 py-2 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap ${
                 activeTab === 'artists'
                   ? 'text-purple-600 border-b-2 border-purple-600'
                   : 'text-gray-600 hover:text-gray-800'
