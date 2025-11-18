@@ -41,7 +41,7 @@ const SongDetails = ({ song, onClose, onSave }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-br from-copper-600 via-copper-500 to-carmin-600 text-white p-4 sm:p-6">
+        <div className="bg-gradient-to-br from-white via-copper-50/30 to-white border-l-4 border-copper-500 text-white p-4 sm:p-6">
           <div className="flex justify-between items-start gap-4">
             <div className="flex-1 min-w-0">
               {isEditing ? (

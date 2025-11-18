@@ -85,7 +85,7 @@ const ArtistsView = ({ artists, instrumentSlots, onAddArtist, onUpdateArtist, on
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b bg-gradient-to-r from-copper-500 to-carmin-600 text-white">
+      <div className="p-4 border-b bg-gradient-to-r from-white via-copper-50/20 to-white border-l-4 border-copper-500">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-xl font-bold flex items-center">

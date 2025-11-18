@@ -25,7 +25,7 @@ const SetlistForm = ({ onSubmit, onClose, initialSetlist = null }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
         {/* Header */}
-        <div className="bg-gradient-to-r from-copper-600 to-carmin-600 text-white px-6 py-4 rounded-t-lg">
+        <div className="bg-gradient-to-r from-white via-copper-50/30 to-white border-l-4 border-copper-500 px-6 py-4 rounded-t-lg">
           <h2 className="text-xl font-bold">
             {initialSetlist ? 'Modifier la setlist' : 'Nouvelle setlist'}
           </h2>

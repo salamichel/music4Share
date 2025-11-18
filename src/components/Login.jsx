@@ -17,7 +17,7 @@ const Login = ({ onLogin, onSignup, instrumentSlots }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-copper-900 via-carmin-900 to-carmin-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
         <div className="flex items-center justify-center mb-6">
           <Music className="w-12 h-12 text-copper-600 mr-2" />

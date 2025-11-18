@@ -35,20 +35,20 @@ const MyGroupsView = ({
 
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
-      <div className="p-4 border-b bg-gradient-to-r from-carmin-500 to-copper-600 text-white">
+      <div className="p-4 border-b bg-white border-l-4 border-carmin-600">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-xl font-bold flex items-center">
+            <h2 className="text-xl font-bold flex items-center text-gray-800">
               <Users className="w-5 h-5 mr-2" />
               Mes Groupes
             </h2>
-            <p className="text-sm text-carmin-100 mt-1">
+            <p className="text-sm text-gray-600 mt-1">
               {groups.length} groupe{groups.length > 1 ? 's' : ''}
             </p>
           </div>
           <button
             onClick={onCreateGroup}
-            className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm flex items-center"
+            className="border-2 border-carmin-400 text-carmin-700 hover:bg-carmin-50 px-4 py-2 rounded-lg text-sm font-medium flex items-center"
           >
             <Plus className="w-4 h-4 mr-1" />
             Créer
