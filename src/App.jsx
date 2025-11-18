@@ -18,7 +18,10 @@ import {
   addInstrumentSlot,
   deleteInstrumentSlot,
   addMultipleSongs,
-  addMultipleParticipations
+  addMultipleParticipations,
+  addArtist,
+  updateArtist,
+  deleteArtist
 } from './firebase/firebaseHelpers';
 import Login from './components/Login';
 import Header from './components/Header';
@@ -26,6 +29,7 @@ import RepertoireView from './components/RepertoireView';
 import MyGroupsView from './components/MyGroupsView';
 import AllGroupsView from './components/AllGroupsView';
 import SetlistsView from './components/SetlistsView';
+import ArtistsView from './components/ArtistsView';
 import SlotManager from './components/SlotManager';
 import UserSettings from './components/UserSettings';
 import { Music, LogOut } from 'lucide-react';
@@ -50,6 +54,8 @@ export default function App() {
     setSetlists,
     setlistSongs,
     setSetlistSongs,
+    artists,
+    setArtists,
     searchTerm,
     setSearchTerm,
     showSlotManager,
@@ -587,11 +593,12 @@ export default function App() {
   };
 
   // Rejoindre un emplacement
-  const handleJoinSlot = async (songId, slotId) => {
+  const handleJoinSlot = async (songId, slotId, artistId = null) => {
     const participation = {
       id: Date.now().toString() + '_' + Math.random(),
       songId: songId,
-      userId: currentUser.id,
+      userId: artistId ? null : currentUser.id,
+      artistId: artistId || null,
       slotId: slotId,
       comment: ''
     };
@@ -607,7 +614,7 @@ export default function App() {
   // Quitter un emplacement
   const handleLeaveSlot = async (songId, slotId) => {
     const participationToDelete = participations.find(p =>
-      p.songId === songId && p.userId === currentUser.id && p.slotId === slotId
+      p.songId === songId && p.slotId === slotId && (p.artistId || p.userId === currentUser.id)
     );
 
     if (participationToDelete) {
@@ -674,6 +681,50 @@ export default function App() {
       setUsers(users.map(u => u.id === currentUser.id ? updatedUser : u));
       setCurrentUser(updatedUser);
       toast.success('Instrument mis à jour avec succès !');
+    }
+  };
+
+  // ========== ARTISTES ==========
+
+  // Ajouter un artiste
+  const handleAddArtist = async (artistData) => {
+    try {
+      await addArtist(artistData);
+      toast.success('Artiste ajouté avec succès !');
+    } catch (error) {
+      // Fallback mode local
+      setArtists([...artists, artistData]);
+      toast.success('Artiste ajouté avec succès !');
+    }
+  };
+
+  // Mettre à jour un artiste
+  const handleUpdateArtist = async (artistId, updates) => {
+    try {
+      await updateArtist(artistId, updates);
+      toast.success('Artiste mis à jour !');
+    } catch (error) {
+      // Fallback mode local
+      setArtists(artists.map(a => a.id === artistId ? { ...a, ...updates } : a));
+      toast.success('Artiste mis à jour !');
+    }
+  };
+
+  // Supprimer un artiste
+  const handleDeleteArtist = async (artistId) => {
+    try {
+      await deleteArtist(artistId);
+      // Supprimer les participations associées
+      const participationsToDelete = participations.filter(p => p.artistId === artistId);
+      for (const part of participationsToDelete) {
+        await deleteParticipation(part.id);
+      }
+      toast.success('Artiste supprimé !');
+    } catch (error) {
+      // Fallback mode local
+      setArtists(artists.filter(a => a.id !== artistId));
+      setParticipations(participations.filter(p => p.artistId !== artistId));
+      toast.success('Artiste supprimé !');
     }
   };
 
@@ -814,6 +865,16 @@ export default function App() {
             >
               🎵 Setlists ({setlists.length})
             </button>
+            <button
+              onClick={() => setActiveTab('artists')}
+              className={`px-6 py-3 font-medium transition ${
+                activeTab === 'artists'
+                  ? 'text-purple-600 border-b-2 border-purple-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              👥 Artistes ({artists.length})
+            </button>
           </div>
         </div>
       </div>
@@ -829,6 +890,7 @@ export default function App() {
               users={users}
               currentUser={currentUser}
               groups={groups}
+              artists={artists}
               onJoinSlot={handleJoinSlot}
               onLeaveSlot={handleLeaveSlot}
               onReenrichSong={handleReenrichSong}
@@ -853,6 +915,7 @@ export default function App() {
               instrumentSlots={instrumentSlots}
               users={users}
               currentUser={currentUser}
+              artists={artists}
               onJoinSlot={handleJoinSlot}
               onLeaveSlot={handleLeaveSlot}
               onAddSong={handleAddSong}
@@ -889,6 +952,16 @@ export default function App() {
               instrumentSlots={instrumentSlots}
               users={users}
               currentUser={currentUser}
+            />
+          )}
+
+          {activeTab === 'artists' && (
+            <ArtistsView
+              artists={artists}
+              instrumentSlots={instrumentSlots}
+              onAddArtist={handleAddArtist}
+              onUpdateArtist={handleUpdateArtist}
+              onDeleteArtist={handleDeleteArtist}
             />
           )}
         </div>

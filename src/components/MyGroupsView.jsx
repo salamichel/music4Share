@@ -10,6 +10,7 @@ const MyGroupsView = ({
   instrumentSlots,
   users,
   currentUser,
+  artists = [],
   onJoinSlot,
   onLeaveSlot,
   onAddSong,
@@ -171,6 +172,7 @@ const MyGroupsView = ({
                                 users={users}
                                 currentUser={currentUser}
                                 groups={groups}
+                                artists={artists}
                                 onJoinSlot={onJoinSlot}
                                 onLeaveSlot={onLeaveSlot}
                                 onReenrichSong={onReenrichSong}

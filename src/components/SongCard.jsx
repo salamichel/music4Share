@@ -3,6 +3,7 @@ import { Youtube, Info, Sparkles, Loader2, Trash2 } from 'lucide-react';
 import { isSongPlayable } from '../utils/helpers';
 import SongDetails from './SongDetails';
 import AddToSetlistButton from './AddToSetlistButton';
+import ArtistSelector from './ArtistSelector';
 
 const SongCard = ({
   song,
@@ -11,6 +12,7 @@ const SongCard = ({
   users,
   currentUser,
   groups = [],
+  artists = [],
   onJoinSlot,
   onLeaveSlot,
   onReenrichSong,
@@ -22,6 +24,8 @@ const SongCard = ({
   setlistSongs = []
 }) => {
   const [showDetails, setShowDetails] = useState(false);
+  const [showArtistSelector, setShowArtistSelector] = useState(false);
+  const [selectedSlotId, setSelectedSlotId] = useState(null);
   const songParticipations = participations.filter(p => p.songId === song.id);
   const isPlayable = isSongPlayable(song.id, participations);
 
@@ -32,6 +36,27 @@ const SongCard = ({
       return ownerGroup && ownerGroup.memberIds.includes(currentUser.id);
     }
     return song.addedBy === currentUser.id;
+  };
+
+  // Ouvrir le sélecteur d'artiste pour un slot
+  const handleOpenArtistSelector = (slotId) => {
+    setSelectedSlotId(slotId);
+    setShowArtistSelector(true);
+  };
+
+  // Gérer la sélection d'un artiste
+  const handleArtistSelected = (artist) => {
+    if (artist && selectedSlotId) {
+      onJoinSlot(song.id, selectedSlotId, artist.id);
+    }
+    setShowArtistSelector(false);
+    setSelectedSlotId(null);
+  };
+
+  // Annuler la sélection
+  const handleCancelArtistSelection = () => {
+    setShowArtistSelector(false);
+    setSelectedSlotId(null);
   };
 
   return (
@@ -127,8 +152,8 @@ const SongCard = ({
       <div className="flex flex-wrap gap-2 mt-3">
         {[...instrumentSlots].sort((a, b) => a.name.localeCompare(b.name)).map(slot => {
           const slotParticipants = songParticipations.filter(p => p.slotId === slot.id);
-          const userInSlot = slotParticipants.find(p => p.userId === currentUser.id);
-          
+          const userInSlot = slotParticipants.find(p => p.artistId);
+
           return (
             <div key={slot.id} className="relative">
               <button
@@ -136,7 +161,7 @@ const SongCard = ({
                   if (userInSlot) {
                     onLeaveSlot(song.id, slot.id);
                   } else {
-                    onJoinSlot(song.id, slot.id);
+                    handleOpenArtistSelector(slot.id);
                   }
                 }}
                 className={`text-xs px-2 py-1 rounded-full border transition ${
@@ -146,7 +171,12 @@ const SongCard = ({
                     ? 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200'
                     : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
                 }`}
-                title={slotParticipants.map(p => users.find(u => u.id === p.userId)?.username).join(', ') || 'Libre'}
+                title={slotParticipants.map(p => {
+                  if (p.artistId) {
+                    return artists.find(a => a.id === p.artistId)?.name || 'Artiste inconnu';
+                  }
+                  return users.find(u => u.id === p.userId)?.username || 'Utilisateur inconnu';
+                }).join(', ') || 'Libre'}
               >
                 <span className="mr-1">{slot.icon}</span>
                 {slot.name}
@@ -167,7 +197,12 @@ const SongCard = ({
             if (slotParts.length === 0) return null;
             return (
               <span key={slot.id} className="mr-3">
-                {slot.icon} {slotParts.map(p => users.find(u => u.id === p.userId)?.username).join(', ')}
+                {slot.icon} {slotParts.map(p => {
+                  if (p.artistId) {
+                    return artists.find(a => a.id === p.artistId)?.name || 'Artiste inconnu';
+                  }
+                  return users.find(u => u.id === p.userId)?.username || 'Utilisateur inconnu';
+                }).join(', ')}
               </span>
             );
           })}
@@ -178,6 +213,17 @@ const SongCard = ({
       {/* Modal de détails */}
       {showDetails && (
         <SongDetails song={song} onClose={() => setShowDetails(false)} />
+      )}
+
+      {/* Modal de sélection d'artiste */}
+      {showArtistSelector && selectedSlotId && (
+        <ArtistSelector
+          artists={artists}
+          instrumentSlots={instrumentSlots}
+          slotId={selectedSlotId}
+          onSelect={handleArtistSelected}
+          onCancel={handleCancelArtistSelection}
+        />
       )}
     </>
   );

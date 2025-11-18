@@ -18,6 +18,7 @@ export const useFirebaseState = () => {
   const [instrumentSlots, setInstrumentSlots] = useState(DEFAULT_INSTRUMENT_SLOTS);
   const [setlists, setSetlists] = useState([]);
   const [setlistSongs, setSetlistSongs] = useState([]);
+  const [artists, setArtists] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSlotManager, setShowSlotManager] = useState(false);
   const [isFirebaseReady, setIsFirebaseReady] = useState(false);
@@ -189,6 +190,27 @@ export const useFirebaseState = () => {
     return () => unsubscribe();
   }, [isFirebaseReady]);
 
+  // Synchroniser les artistes avec Firestore
+  useEffect(() => {
+    if (!db) return;
+
+    const unsubscribe = onSnapshot(
+      collection(db, 'artists'),
+      (snapshot) => {
+        const artistsData = snapshot.docs.map(doc => ({
+          ...doc.data(),
+          id: doc.id
+        }));
+        setArtists(artistsData);
+      },
+      (error) => {
+        console.error('Erreur lors de la synchronisation des artistes:', error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [isFirebaseReady]);
+
   // Fonctions de mise à jour (wrapper pour Firebase ou local)
   const updateUsers = async (newUsers) => {
     if (db && Array.isArray(newUsers)) {
@@ -247,6 +269,14 @@ export const useFirebaseState = () => {
     }
   };
 
+  const updateArtists = async (newArtists) => {
+    if (db && Array.isArray(newArtists)) {
+      // onSnapshot gère la mise à jour
+    } else {
+      setArtists(newArtists);
+    }
+  };
+
   return {
     currentUser,
     setCurrentUser,
@@ -266,6 +296,8 @@ export const useFirebaseState = () => {
     setSetlists: updateSetlists,
     setlistSongs,
     setSetlistSongs: updateSetlistSongs,
+    artists,
+    setArtists: updateArtists,
     searchTerm,
     setSearchTerm,
     showSlotManager,

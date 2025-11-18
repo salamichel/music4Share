@@ -9,6 +9,7 @@ const RepertoireView = ({
   users,
   currentUser,
   groups,
+  artists = [],
   onJoinSlot,
   onLeaveSlot,
   onReenrichSong,
@@ -161,6 +162,7 @@ const RepertoireView = ({
                     users={users}
                     currentUser={currentUser}
                     groups={groups}
+                    artists={artists}
                     onJoinSlot={onJoinSlot}
                     onLeaveSlot={onLeaveSlot}
                     onReenrichSong={onReenrichSong}
