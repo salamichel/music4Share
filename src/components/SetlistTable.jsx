@@ -1,5 +1,6 @@
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { calculateSetlistDuration } from '../firebase/firebaseHelpers';
+import { isSongPlayable } from '../utils/helpers';
 
 const SetlistTable = ({
   setlistSongs,
@@ -7,6 +8,7 @@ const SetlistTable = ({
   participations,
   instrumentSlots,
   users,
+  artists,
   onReorder,
   onRemoveSong
 }) => {
@@ -46,16 +48,24 @@ const SetlistTable = ({
     const slotMap = {};
     songParticipations.forEach(participation => {
       const slot = instrumentSlots.find(s => s.id === participation.slotId);
-      const user = users.find(u => u.id === participation.userId);
 
-      if (slot && user) {
+      let participantName = null;
+      if (participation.artistId) {
+        const artist = artists.find(a => a.id === participation.artistId);
+        if (artist) participantName = artist.name;
+      } else if (participation.userId) {
+        const user = users.find(u => u.id === participation.userId);
+        if (user) participantName = user.username;
+      }
+
+      if (slot && participantName) {
         if (!slotMap[slot.id]) {
           slotMap[slot.id] = {
             slot,
             users: []
           };
         }
-        slotMap[slot.id].users.push(user);
+        slotMap[slot.id].users.push({ username: participantName });
       }
     });
 
@@ -93,6 +103,7 @@ const SetlistTable = ({
                 {sortedSetlistSongs.map((setlistSong, index) => {
                   const song = getSongById(setlistSong.songId);
                   const participants = getParticipantsForSong(setlistSong.songId);
+                  const isPlayable = isSongPlayable(setlistSong.songId, participations);
 
                   if (!song) return null;
 
@@ -115,7 +126,14 @@ const SetlistTable = ({
                             {index + 1}
                           </td>
                           <td className="px-4 py-3">
-                            <div className="font-medium text-gray-900">{song.title}</div>
+                            <div className="flex items-center gap-2">
+                              <div className="font-medium text-gray-900">{song.title}</div>
+                              {isPlayable && (
+                                <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold whitespace-nowrap">
+                                  ✓ Jouable
+                                </span>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-600">
                             {song.artist || '-'}

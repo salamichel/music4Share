@@ -1081,6 +1081,7 @@ export default function App() {
               participations={participations}
               instrumentSlots={instrumentSlots}
               users={users}
+              artists={artists}
               currentUser={currentUser}
             />
           )}
