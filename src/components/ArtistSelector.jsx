@@ -5,14 +5,24 @@ const ArtistSelector = ({
   artists,
   instrumentSlots,
   slotId,
+  songId,
+  participations = [],
   onSelect,
   onCancel
 }) => {
   const [selectedArtistId, setSelectedArtistId] = useState('');
 
-  // Filtrer les artistes qui ont l'instrument correspondant au slot
+  // Trouver les artistes déjà assignés à ce slot pour cette chanson
+  const assignedArtistIds = participations
+    .filter(p => p.songId === songId && p.slotId === slotId && p.artistId)
+    .map(p => p.artistId);
+
+  // Filtrer les artistes qui :
+  // 1. ont l'instrument correspondant au slot
+  // 2. ne sont pas déjà assignés à ce slot pour cette chanson
   const availableArtists = artists.filter(artist =>
-    artist.instruments.some(inst => inst.slotId === slotId)
+    artist.instruments.some(inst => inst.slotId === slotId) &&
+    !assignedArtistIds.includes(artist.id)
   );
 
   const currentSlot = instrumentSlots.find(s => s.id === slotId);

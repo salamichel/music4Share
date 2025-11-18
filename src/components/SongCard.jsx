@@ -118,43 +118,72 @@ const SongCard = ({
         <div className="p-4 flex-1 flex flex-col">
           <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Instruments</h4>
 
-          <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="space-y-3 mb-3">
             {[...instrumentSlots].sort((a, b) => a.name.localeCompare(b.name)).map(slot => {
               const slotParticipants = songParticipations.filter(p => p.slotId === slot.id);
-              const userInSlot = slotParticipants.find(p => p.artistId);
+              const assignedArtists = slotParticipants
+                .map(p => {
+                  if (p.artistId) {
+                    return {
+                      id: p.artistId,
+                      name: artists.find(a => a.id === p.artistId)?.name || 'Artiste inconnu',
+                      isArtist: true
+                    };
+                  }
+                  return {
+                    id: p.userId,
+                    name: users.find(u => u.id === p.userId)?.username || 'Utilisateur inconnu',
+                    isArtist: false
+                  };
+                })
+                .filter(Boolean);
 
               return (
-                <button
-                  key={slot.id}
-                  onClick={() => {
-                    if (userInSlot) {
-                      onLeaveSlot(song.id, slot.id);
-                    } else {
-                      handleOpenArtistSelector(slot.id);
-                    }
-                  }}
-                  className={`
-                    text-xs px-2 py-2 rounded-lg border transition-all font-medium
-                    ${userInSlot
-                      ? 'bg-purple-600 text-white border-purple-600 shadow-md'
-                      : slotParticipants.length > 0
-                      ? 'bg-blue-50 text-blue-800 border-blue-300 hover:bg-blue-100'
-                      : 'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100'
-                    }
-                  `}
-                  title={slotParticipants.map(p => {
-                    if (p.artistId) {
-                      return artists.find(a => a.id === p.artistId)?.name || 'Artiste inconnu';
-                    }
-                    return users.find(u => u.id === p.userId)?.username || 'Utilisateur inconnu';
-                  }).join(', ') || 'Libre'}
-                >
-                  <span className="mr-1">{slot.icon}</span>
-                  {slot.name}
-                  {slotParticipants.length > 0 && (
-                    <span className="ml-1 font-bold">({slotParticipants.length})</span>
+                <div key={slot.id} className="border rounded-lg p-2 bg-gray-50">
+                  {/* Slot header */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center text-xs font-semibold text-gray-700">
+                      <span className="mr-1 text-base">{slot.icon}</span>
+                      {slot.name}
+                      {assignedArtists.length > 0 && (
+                        <span className="ml-1 text-purple-600">({assignedArtists.length})</span>
+                      )}
+                    </div>
+                    {/* Bouton pour ajouter un artiste */}
+                    <button
+                      onClick={() => handleOpenArtistSelector(slot.id)}
+                      className="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700 transition"
+                      title="Ajouter un artiste"
+                    >
+                      + Ajouter
+                    </button>
+                  </div>
+
+                  {/* Liste des artistes assignés */}
+                  {assignedArtists.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {assignedArtists.map(artist => (
+                        <button
+                          key={`${slot.id}-${artist.id}`}
+                          onClick={() => {
+                            if (artist.isArtist) {
+                              onLeaveSlot(song.id, slot.id, artist.id);
+                            } else {
+                              onLeaveSlot(song.id, slot.id);
+                            }
+                          }}
+                          className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full hover:bg-red-100 hover:text-red-800 transition flex items-center gap-1"
+                          title={`Retirer ${artist.name}`}
+                        >
+                          <span>{artist.name}</span>
+                          <span className="font-bold">×</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-gray-400 italic">Aucun artiste assigné</div>
                   )}
-                </button>
+                </div>
               );
             })}
           </div>
@@ -233,6 +262,8 @@ const SongCard = ({
           artists={artists}
           instrumentSlots={instrumentSlots}
           slotId={selectedSlotId}
+          songId={song.id}
+          participations={participations}
           onSelect={handleArtistSelected}
           onCancel={handleCancelArtistSelection}
         />

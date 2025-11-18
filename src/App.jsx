@@ -733,9 +733,12 @@ export default function App() {
   };
 
   // Quitter un emplacement
-  const handleLeaveSlot = async (songId, slotId) => {
+  const handleLeaveSlot = async (songId, slotId, artistId = null) => {
+    // Si artistId est fourni, retirer cet artiste spécifique
+    // Sinon, comportement par défaut: retirer le premier participant trouvé
     const participationToDelete = participations.find(p =>
-      p.songId === songId && p.slotId === slotId && (p.artistId || p.userId === currentUser.id)
+      p.songId === songId && p.slotId === slotId &&
+      (artistId ? p.artistId === artistId : (p.artistId || p.userId === currentUser.id))
     );
 
     if (participationToDelete) {
