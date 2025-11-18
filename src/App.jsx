@@ -367,12 +367,32 @@ export default function App() {
       };
       newSongs.push(song);
 
-      // Si titre de groupe ET slot trouvé, auto-inscrire l'utilisateur
-      if (groupId && userSlotId) {
+      // Auto-assignation des artistes : chercher un artiste correspondant au nom
+      const normalizedArtistName = (parsedSong.artist || '').toLowerCase().trim();
+      const matchingArtist = artists.find(a =>
+        a.name.toLowerCase().trim() === normalizedArtistName
+      );
+
+      if (matchingArtist && matchingArtist.instruments && matchingArtist.instruments.length > 0) {
+        // Auto-assigner l'artiste sur tous ses instruments pour ce titre
+        matchingArtist.instruments.forEach((instrument, instIndex) => {
+          const participation = {
+            id: `${songId}_artist_${matchingArtist.id}_${instIndex}`,
+            songId: songId,
+            userId: null,
+            artistId: matchingArtist.id,
+            slotId: instrument.slotId,
+            comment: ''
+          };
+          newParticipations.push(participation);
+        });
+      } else if (groupId && userSlotId) {
+        // Sinon, si titre de groupe ET slot trouvé, auto-inscrire l'utilisateur
         const participation = {
           id: songId + '_auto',
           songId: songId,
           userId: currentUser.id,
+          artistId: null,
           slotId: userSlotId,
           comment: ''
         };
@@ -380,18 +400,24 @@ export default function App() {
       }
     });
 
+    // Compter les auto-assignations d'artistes
+    const artistParticipations = newParticipations.filter(p => p.artistId);
+    const successMessage = artistParticipations.length > 0
+      ? `${parsedSongs.length} titre(s) importé(s) avec ${artistParticipations.length} artiste(s) auto-assigné(s) ! Utilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir.`
+      : `${parsedSongs.length} titre(s) importé(s) avec succès ! Utilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir.`;
+
     try {
       await addMultipleSongs(newSongs);
       if (newParticipations.length > 0) {
         await addMultipleParticipations(newParticipations);
       }
 
-      toast.success(`${parsedSongs.length} titre(s) importé(s) avec succès ! Utilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir.`);
+      toast.success(successMessage);
     } catch (error) {
       // Fallback mode local
       setSongs([...songs, ...newSongs]);
       setParticipations([...participations, ...newParticipations]);
-      toast.success(`${parsedSongs.length} titre(s) importé(s) avec succès ! Utilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir.`);
+      toast.success(successMessage);
     }
   };
 
@@ -553,11 +579,12 @@ export default function App() {
         alert("Vous devez être membre du groupe pour supprimer ce titre.");
         return;
       }
-    } else if (song.addedBy !== currentUser.id) {
-      // Pour les titres personnels, seul le créateur peut supprimer
+    } else if (song.addedBy && song.addedBy !== currentUser.id) {
+      // Pour les titres personnels, seul le créateur peut supprimer (si addedBy est défini)
       alert("Seul le créateur peut supprimer ce titre.");
       return;
     }
+    // Si addedBy est undefined/null, on autorise la suppression (anciens titres)
 
     // Confirmation
     if (!window.confirm(`Êtes-vous sûr de vouloir supprimer "${song.title}" ?`)) {
@@ -619,7 +646,8 @@ export default function App() {
         const ownerGroup = groups.find(g => g.id === song.ownerGroupId);
         return ownerGroup && ownerGroup.memberIds.includes(currentUser.id);
       }
-      return song.addedBy === currentUser.id;
+      // Pour les titres personnels: vérifier addedBy ou accepter si addedBy est manquant (anciens titres)
+      return !song.addedBy || song.addedBy === currentUser.id;
     });
 
     if (deletableSongs.length === 0) {

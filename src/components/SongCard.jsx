@@ -35,7 +35,8 @@ const SongCard = ({
       const ownerGroup = groups.find(g => g.id === song.ownerGroupId);
       return ownerGroup && ownerGroup.memberIds.includes(currentUser.id);
     }
-    return song.addedBy === currentUser.id;
+    // Pour les titres personnels: autoriser si addedBy est manquant (anciens titres) ou correspond
+    return !song.addedBy || song.addedBy === currentUser.id;
   };
 
   // Ouvrir le sélecteur d'artiste pour un slot
