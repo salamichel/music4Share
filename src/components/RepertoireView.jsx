@@ -195,9 +195,9 @@ const RepertoireView = ({
               const ownerGroup = groups.find(g => g.id === song.ownerGroupId);
               return (
                 <div key={song.id} className="flex flex-col">
-                  {/* Group label */}
+                  {/* Group label - Plus visible */}
                   {ownerGroup && (
-                    <div className="text-xs text-indigo-600 font-medium mb-2 flex items-center px-1">
+                    <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-bold mb-2 px-3 py-1.5 rounded-t-lg shadow-md flex items-center">
                       📁 {ownerGroup.name}
                     </div>
                   )}
