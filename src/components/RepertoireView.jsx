@@ -24,7 +24,7 @@ const RepertoireView = ({
   setlists = [],
   setlistSongs = []
 }) => {
-  const [filterGroup, setFilterGroup] = useState('all');
+  const [filterGroup, setFilterGroup] = useState('null');
   const [filterPlayable, setFilterPlayable] = useState('all');
   const [filterArtist, setFilterArtist] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
@@ -94,7 +94,6 @@ const RepertoireView = ({
                 onChange={(e) => setFilterGroup(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-white/20 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm"
               >
-                <option value="all" className="text-gray-900">Tous les groupes</option>
                 <option value="null" className="text-gray-900">Personnel</option>
                 {groups.map(g => (
                   <option key={g.id} value={g.id} className="text-gray-900">{g.name}</option>
