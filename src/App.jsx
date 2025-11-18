@@ -296,41 +296,10 @@ export default function App() {
 
     try {
       await addSong(song);
-
-      // Si ajouté dans un groupe, inscrire automatiquement le créateur sur son instrument
-      if (groupId) {
-        const userSlotId = findUserSlotForInstrument(currentUser.instrument);
-        console.log('🎸 Auto-inscription:', { instrument: currentUser.instrument, slotId: userSlotId });
-
-        if (userSlotId) {
-          const participation = {
-            id: Date.now().toString() + '_auto',
-            songId: song.id,
-            userId: currentUser.id,
-            slotId: userSlotId,
-            comment: ''
-          };
-          await addParticipation(participation);
-        }
-      }
-
       toast.success('Titre ajouté avec succès !');
     } catch (error) {
       // Fallback mode local
       setSongs([...songs, song]);
-      if (groupId) {
-        const userSlotId = findUserSlotForInstrument(currentUser.instrument);
-        if (userSlotId) {
-          const participation = {
-            id: Date.now().toString() + '_auto',
-            songId: song.id,
-            userId: currentUser.id,
-            slotId: userSlotId,
-            comment: ''
-          };
-          setParticipations([...participations, participation]);
-        }
-      }
       toast.success('Titre ajouté avec succès !');
     }
   };
@@ -344,8 +313,6 @@ export default function App() {
     }
 
     const newSongs = [];
-    const newParticipations = [];
-    const userSlotId = findUserSlotForInstrument(currentUser.instrument);
 
     // Créer les titres SANS enrichissement (sera fait manuellement après)
     parsedSongs.forEach((parsedSong, index) => {
@@ -365,31 +332,14 @@ export default function App() {
         enriched: false
       };
       newSongs.push(song);
-
-      // Si titre de groupe ET slot trouvé, auto-inscrire l'utilisateur
-      if (groupId && userSlotId) {
-        const participation = {
-          id: songId + '_auto',
-          songId: songId,
-          userId: currentUser.id,
-          slotId: userSlotId,
-          comment: ''
-        };
-        newParticipations.push(participation);
-      }
     });
 
     try {
       await addMultipleSongs(newSongs);
-      if (newParticipations.length > 0) {
-        await addMultipleParticipations(newParticipations);
-      }
-
       toast.success(`${parsedSongs.length} titre(s) importé(s) avec succès ! Utilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir.`);
     } catch (error) {
       // Fallback mode local
       setSongs([...songs, ...newSongs]);
-      setParticipations([...participations, ...newParticipations]);
       toast.success(`${parsedSongs.length} titre(s) importé(s) avec succès ! Utilisez "Tout sélectionner" puis "Enrichir la sélection" pour enrichir.`);
     }
   };
