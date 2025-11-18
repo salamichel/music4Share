@@ -4,7 +4,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useFirebaseState } from './hooks/useFirebaseState';
 import { parseBulkImportText } from './utils/helpers';
 import { enrichSongWithGemini, enrichBatchSongs } from './services/geminiService';
-import { enrichSongMultiAPI, enrichBatchMultiAPI } from './services/multiEnrichmentService';
 import {
   addUser,
   updateUser,
@@ -365,6 +364,101 @@ export default function App() {
     }
   };
 
+  // Import JSON avec données enrichies - ENRICHIT LES TITRES EXISTANTS
+  const handleJsonImport = async (jsonSongs, groupId) => {
+    if (!jsonSongs || jsonSongs.length === 0) {
+      toast.error('Aucun titre trouvé dans le JSON');
+      return;
+    }
+
+    // Fonction pour normaliser les strings pour le matching
+    const normalize = (str) => {
+      if (!str) return '';
+      return str.toLowerCase().trim().replace(/\s+/g, ' ');
+    };
+
+    let matchedCount = 0;
+    let notFoundCount = 0;
+    const notFoundTitles = [];
+
+    // Pour chaque titre du JSON, chercher le titre existant correspondant
+    for (const jsonSong of jsonSongs) {
+      const jsonTitle = normalize(jsonSong.title);
+      const jsonArtist = normalize(jsonSong.artist || '');
+
+      // Filtrer les titres du groupe
+      const groupSongs = groupId
+        ? songs.filter(s => s.ownerGroupId === groupId)
+        : songs;
+
+      // Chercher le titre correspondant
+      const existingSong = groupSongs.find(song => {
+        const songTitle = normalize(song.title);
+        const songArtist = normalize(song.artist);
+
+        // Match si titre identique ET (artiste identique OU l'un des deux est vide/inconnu)
+        return songTitle === jsonTitle && (
+          songArtist === jsonArtist ||
+          !jsonArtist ||
+          songArtist === 'artiste inconnu' ||
+          jsonArtist === 'artiste inconnu'
+        );
+      });
+
+      if (existingSong) {
+        // ENRICHIR le titre existant avec les données du JSON
+        const updates = {
+          artist: jsonSong.artist || existingSong.artist,
+          duration: jsonSong.duration || existingSong.duration,
+          chords: jsonSong.chords || existingSong.chords,
+          lyrics: jsonSong.lyrics || existingSong.lyrics,
+          genre: jsonSong.genre || existingSong.genre,
+          youtubeLink: jsonSong.youtubeLink || existingSong.youtubeLink,
+          enriched: !!(
+            jsonSong.chords || existingSong.chords ||
+            jsonSong.lyrics || existingSong.lyrics ||
+            jsonSong.duration || existingSong.duration ||
+            jsonSong.genre || existingSong.genre
+          )
+        };
+
+        try {
+          await updateSong(existingSong.id, updates);
+          matchedCount++;
+        } catch (error) {
+          // Fallback local
+          const updatedSongs = songs.map(s =>
+            s.id === existingSong.id ? { ...s, ...updates } : s
+          );
+          setSongs(updatedSongs);
+          matchedCount++;
+        }
+      } else {
+        // Titre non trouvé
+        notFoundCount++;
+        notFoundTitles.push(`"${jsonSong.title}" - ${jsonSong.artist || '?'}`);
+      }
+    }
+
+    // Notification des résultats
+    if (matchedCount > 0) {
+      toast.success(`✅ ${matchedCount} titre(s) enrichi(s) avec succès !`);
+    }
+
+    if (notFoundCount > 0) {
+      toast.warning(
+        `⚠️ ${notFoundCount} titre(s) non trouvé(s) dans le groupe.\n` +
+        `Titres manquants: ${notFoundTitles.slice(0, 3).join(', ')}` +
+        (notFoundTitles.length > 3 ? '...' : ''),
+        { autoClose: 8000 }
+      );
+    }
+
+    if (matchedCount === 0 && notFoundCount > 0) {
+      toast.error('❌ Aucun titre correspondant trouvé. Vérifiez les titres/artistes.');
+    }
+  };
+
   // Re-enrichir un titre existant
   const handleReenrichSong = async (songId) => {
     const song = songs.find(s => s.id === songId);
@@ -374,8 +468,8 @@ export default function App() {
     setEnrichingSongs(prev => new Set([...prev, songId]));
 
     try {
-      // Enrichir le titre avec le service multi-API (MusicBrainz + Lyrics.ovh + Gemini fallback)
-      const enrichedData = await enrichSongMultiAPI(song.title, song.artist);
+      // Enrichir le titre avec Gemini
+      const enrichedData = await enrichSongWithGemini(song.title, song.artist);
 
       // Mettre à jour le titre avec les nouvelles données (inclut l'artiste si trouvé par Gemini)
       const updates = {
@@ -548,8 +642,8 @@ export default function App() {
     toast.info(`Enrichissement de ${selectedSongs.size} titre(s) en cours...`);
 
     try {
-      // Enrichir avec le service multi-API (MusicBrainz + Lyrics.ovh, puis Gemini pour accords)
-      const enrichedResults = await enrichBatchMultiAPI(songsToEnrich);
+      // Enrichir avec Gemini
+      const enrichedResults = await enrichBatchSongs(songsToEnrich);
 
       // Mettre à jour chaque titre avec les données enrichies
       for (const enrichedData of enrichedResults) {
@@ -857,6 +951,7 @@ export default function App() {
               onLeaveSlot={handleLeaveSlot}
               onAddSong={handleAddSong}
               onBulkImport={handleBulkImport}
+              onJsonImport={handleJsonImport}
               onCreateGroup={handleCreateGroup}
               onReenrichSong={handleReenrichSong}
               onDeleteSong={handleDeleteSong}
