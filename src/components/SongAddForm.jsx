@@ -173,10 +173,12 @@ const SongAddForm = ({
             </div>
           </div>
           <p className="text-xs text-gray-600 mb-2">
-            Collez un JSON avec vos titres enrichis (accords, paroles, etc.)
+            <strong>⚠️ Enrichit les titres existants</strong> (ne crée pas de nouveaux titres)
+            <br />
+            Match par nom de titre + artiste. Collez un JSON avec vos données enrichies.
           </p>
           <details className="mb-2 text-xs text-gray-600">
-            <summary className="cursor-pointer hover:text-purple-600">Format JSON attendu</summary>
+            <summary className="cursor-pointer hover:text-purple-600">📖 Format JSON attendu</summary>
             <pre className="mt-2 bg-white p-2 rounded border overflow-x-auto">
 {`[
   {

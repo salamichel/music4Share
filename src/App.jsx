@@ -364,63 +364,98 @@ export default function App() {
     }
   };
 
-  // Import JSON avec données enrichies
+  // Import JSON avec données enrichies - ENRICHIT LES TITRES EXISTANTS
   const handleJsonImport = async (jsonSongs, groupId) => {
     if (!jsonSongs || jsonSongs.length === 0) {
       toast.error('Aucun titre trouvé dans le JSON');
       return;
     }
 
-    const newSongs = [];
-    const newParticipations = [];
-    const userSlotId = findUserSlotForInstrument(currentUser.instrument);
+    // Fonction pour normaliser les strings pour le matching
+    const normalize = (str) => {
+      if (!str) return '';
+      return str.toLowerCase().trim().replace(/\s+/g, ' ');
+    };
 
-    // Créer les titres avec les données enrichies du JSON
-    jsonSongs.forEach((jsonSong, index) => {
-      const songId = Date.now().toString() + '_' + index;
-      const song = {
-        id: songId,
-        title: jsonSong.title,
-        artist: jsonSong.artist || 'Artiste inconnu',
-        youtubeLink: jsonSong.youtubeLink || '',
-        ownerGroupId: groupId,
-        addedBy: currentUser.id,
-        // Données enrichies depuis le JSON
-        duration: jsonSong.duration || null,
-        chords: jsonSong.chords || null,
-        lyrics: jsonSong.lyrics || null,
-        genre: jsonSong.genre || null,
-        enriched: !!(jsonSong.chords || jsonSong.lyrics || jsonSong.duration || jsonSong.genre)
-      };
-      newSongs.push(song);
+    let matchedCount = 0;
+    let notFoundCount = 0;
+    const notFoundTitles = [];
 
-      // Si titre de groupe ET slot trouvé, auto-inscrire l'utilisateur
-      if (groupId && userSlotId) {
-        const participation = {
-          id: songId + '_auto',
-          songId: songId,
-          userId: currentUser.id,
-          slotId: userSlotId,
-          comment: ''
+    // Pour chaque titre du JSON, chercher le titre existant correspondant
+    for (const jsonSong of jsonSongs) {
+      const jsonTitle = normalize(jsonSong.title);
+      const jsonArtist = normalize(jsonSong.artist || '');
+
+      // Filtrer les titres du groupe
+      const groupSongs = groupId
+        ? songs.filter(s => s.ownerGroupId === groupId)
+        : songs;
+
+      // Chercher le titre correspondant
+      const existingSong = groupSongs.find(song => {
+        const songTitle = normalize(song.title);
+        const songArtist = normalize(song.artist);
+
+        // Match si titre identique ET (artiste identique OU l'un des deux est vide/inconnu)
+        return songTitle === jsonTitle && (
+          songArtist === jsonArtist ||
+          !jsonArtist ||
+          songArtist === 'artiste inconnu' ||
+          jsonArtist === 'artiste inconnu'
+        );
+      });
+
+      if (existingSong) {
+        // ENRICHIR le titre existant avec les données du JSON
+        const updates = {
+          artist: jsonSong.artist || existingSong.artist,
+          duration: jsonSong.duration || existingSong.duration,
+          chords: jsonSong.chords || existingSong.chords,
+          lyrics: jsonSong.lyrics || existingSong.lyrics,
+          genre: jsonSong.genre || existingSong.genre,
+          youtubeLink: jsonSong.youtubeLink || existingSong.youtubeLink,
+          enriched: !!(
+            jsonSong.chords || existingSong.chords ||
+            jsonSong.lyrics || existingSong.lyrics ||
+            jsonSong.duration || existingSong.duration ||
+            jsonSong.genre || existingSong.genre
+          )
         };
-        newParticipations.push(participation);
-      }
-    });
 
-    try {
-      await addMultipleSongs(newSongs);
-      if (newParticipations.length > 0) {
-        await addMultipleParticipations(newParticipations);
+        try {
+          await updateSong(existingSong.id, updates);
+          matchedCount++;
+        } catch (error) {
+          // Fallback local
+          const updatedSongs = songs.map(s =>
+            s.id === existingSong.id ? { ...s, ...updates } : s
+          );
+          setSongs(updatedSongs);
+          matchedCount++;
+        }
+      } else {
+        // Titre non trouvé
+        notFoundCount++;
+        notFoundTitles.push(`"${jsonSong.title}" - ${jsonSong.artist || '?'}`);
       }
+    }
 
-      const enrichedCount = newSongs.filter(s => s.enriched).length;
-      toast.success(`${jsonSongs.length} titre(s) importé(s) avec succès ! ${enrichedCount} déjà enrichis.`);
-    } catch (error) {
-      // Fallback mode local
-      setSongs([...songs, ...newSongs]);
-      setParticipations([...participations, ...newParticipations]);
-      const enrichedCount = newSongs.filter(s => s.enriched).length;
-      toast.success(`${jsonSongs.length} titre(s) importé(s) avec succès ! ${enrichedCount} déjà enrichis.`);
+    // Notification des résultats
+    if (matchedCount > 0) {
+      toast.success(`✅ ${matchedCount} titre(s) enrichi(s) avec succès !`);
+    }
+
+    if (notFoundCount > 0) {
+      toast.warning(
+        `⚠️ ${notFoundCount} titre(s) non trouvé(s) dans le groupe.\n` +
+        `Titres manquants: ${notFoundTitles.slice(0, 3).join(', ')}` +
+        (notFoundTitles.length > 3 ? '...' : ''),
+        { autoClose: 8000 }
+      );
+    }
+
+    if (matchedCount === 0 && notFoundCount > 0) {
+      toast.error('❌ Aucun titre correspondant trouvé. Vérifiez les titres/artistes.');
     }
   };
 
