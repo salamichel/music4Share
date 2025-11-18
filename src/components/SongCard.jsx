@@ -104,26 +104,35 @@ const SongCard = ({
           ${isSelected ? 'ring-2 ring-orange-500' : ''}
         `}
       >
-        {/* Header with title and artist - avec vignette YouTube si disponible */}
-        <div className="relative overflow-hidden rounded-t-xl">
-          {/* Image de fond YouTube si disponible */}
-          {youtubeThumbnail && (
+        {/* Vignette YouTube cliquable si disponible */}
+        {youtubeThumbnail && song.youtubeLink && (
+          <a
+            href={song.youtubeLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative block rounded-t-xl overflow-hidden group"
+          >
             <img
               src={youtubeThumbnail}
               alt={`Vignette ${song.title}`}
-              className="absolute inset-0 w-full h-full object-cover"
+              className="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-105"
               onError={(e) => {
-                // En cas d'erreur de chargement, cacher l'image
+                // En cas d'erreur de chargement, afficher une div de fallback
                 e.target.style.display = 'none';
+                e.target.parentElement.style.display = 'none';
               }}
             />
-          )}
+            {/* Overlay YouTube au survol */}
+            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors flex items-center justify-center">
+              <div className="bg-red-600 rounded-full p-3 transform group-hover:scale-110 transition-transform">
+                <Youtube className="w-6 h-6 text-white" />
+              </div>
+            </div>
+          </a>
+        )}
 
-          {/* Overlay gradient (image YouTube ou couleur de fond) */}
-          <div className={`absolute inset-0 ${youtubeThumbnail ? 'bg-gradient-to-b from-black/50 via-purple-900/60 to-purple-900/80' : 'bg-gradient-to-br from-purple-500 to-indigo-600'}`}></div>
-
-          {/* Contenu du header */}
-          <div className="text-white p-3 relative z-10">
+        {/* Header with title and artist */}
+        <div className="bg-gradient-to-br from-purple-500 to-indigo-600 text-white p-3 relative">
           {/* Checkbox de sélection */}
           {onToggleSelection && (
             <input
@@ -148,8 +157,8 @@ const SongCard = ({
             <p className="text-xs opacity-90 line-clamp-1">{song.artist}</p>
           </div>
 
-          {/* YouTube link */}
-          {song.youtubeLink && (
+          {/* YouTube link (petit badge si pas de vignette) */}
+          {song.youtubeLink && !youtubeThumbnail && (
             <a
               href={song.youtubeLink}
               target="_blank"
@@ -160,7 +169,6 @@ const SongCard = ({
               YouTube
             </a>
           )}
-          </div>
         </div>
 
         {/* Instruments section */}
