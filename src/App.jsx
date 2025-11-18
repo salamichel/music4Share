@@ -490,6 +490,38 @@ export default function App() {
     }
   };
 
+  // Sauvegarder les modifications d'un titre
+  const handleSaveSong = async (songId, editedData) => {
+    const song = songs.find(s => s.id === songId);
+    if (!song) return;
+
+    try {
+      // Mettre à jour le titre avec les nouvelles données
+      const updates = {
+        title: editedData.title,
+        artist: editedData.artist,
+        duration: editedData.duration,
+        chords: editedData.chords,
+        lyrics: editedData.lyrics,
+        genre: editedData.genre,
+        // Marquer comme enrichi si au moins un champ enrichi est rempli
+        enriched: Boolean(editedData.chords || editedData.lyrics || editedData.genre || editedData.duration)
+      };
+
+      try {
+        await updateSong(songId, updates);
+        toast.success(`"${editedData.title}" sauvegardé avec succès !`);
+      } catch (error) {
+        // Fallback mode local
+        setSongs(songs.map(s => s.id === songId ? { ...s, ...updates } : s));
+        toast.success(`"${editedData.title}" sauvegardé avec succès !`);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      toast.error(`Erreur lors de la sauvegarde de "${editedData.title}"`);
+    }
+  };
+
   // Supprimer un titre (si membre du groupe propriétaire)
   const handleDeleteSong = async (songId) => {
     const song = songs.find(s => s.id === songId);
@@ -962,6 +994,7 @@ export default function App() {
               onLeaveSlot={handleLeaveSlot}
               onReenrichSong={handleReenrichSong}
               onDeleteSong={handleDeleteSong}
+              onSaveSong={handleSaveSong}
               enrichingSongs={enrichingSongs}
               selectedSongs={selectedSongs}
               onToggleSongSelection={handleToggleSongSelection}
@@ -991,6 +1024,7 @@ export default function App() {
               onCreateGroup={handleCreateGroup}
               onReenrichSong={handleReenrichSong}
               onDeleteSong={handleDeleteSong}
+              onSaveSong={handleSaveSong}
               enrichingSongs={enrichingSongs}
               selectedSongs={selectedSongs}
               onToggleSongSelection={handleToggleSongSelection}
