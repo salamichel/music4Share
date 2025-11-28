@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Clock, Music2, FileText, Tag, Youtube, Sparkles, Edit2, Save, Download } from 'lucide-react';
+import { X, Clock, Music2, FileText, Tag, Youtube, Sparkles, Edit2, Save, Download, Upload } from 'lucide-react';
 import { downloadAudio, generateAudioFileName } from '../utils/audioDownload';
 
 const SongDetails = ({ song, onClose, onSave }) => {
@@ -13,6 +13,7 @@ const SongDetails = ({ song, onClose, onSave }) => {
     genre: song.genre || '',
     chords: song.chords || '',
     lyrics: song.lyrics || '',
+    audioFile: null,
   });
 
   const handleEditChange = (field, value) => {
@@ -34,6 +35,7 @@ const SongDetails = ({ song, onClose, onSave }) => {
       genre: song.genre || '',
       chords: song.chords || '',
       lyrics: song.lyrics || '',
+      audioFile: null,
     });
     setIsEditing(false);
   };
@@ -47,6 +49,26 @@ const SongDetails = ({ song, onClose, onSave }) => {
     } catch (error) {
       console.error('Erreur lors du téléchargement de l\'audio:', error);
       alert('Erreur lors du téléchargement du fichier audio. Veuillez réessayer.');
+    }
+  };
+
+  const handleAudioFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/m4a'];
+      if (!validTypes.includes(file.type)) {
+        alert('Format de fichier non supporté. Utilisez MP3, WAV, OGG ou M4A.');
+        e.target.value = '';
+        return;
+      }
+      // Validate file size (max 50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        alert('Fichier trop volumineux. Taille maximale: 50MB.');
+        e.target.value = '';
+        return;
+      }
+      setEditedSong(prev => ({ ...prev, audioFile: file }));
     }
   };
 
@@ -175,7 +197,7 @@ const SongDetails = ({ song, onClose, onSave }) => {
           )}
 
           {/* Audio Download */}
-          {song.audioUrl && (
+          {song.audioUrl && !isEditing && (
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
               <button
                 onClick={handleDownloadAudio}
@@ -184,6 +206,41 @@ const SongDetails = ({ song, onClose, onSave }) => {
                 <Download className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
                 Télécharger l'audio
               </button>
+            </div>
+          )}
+
+          {/* Audio Upload (Edit Mode) */}
+          {isEditing && (
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
+              <div className="mb-2 text-sm font-semibold text-green-900">
+                {song.audioUrl ? '🎵 Remplacer le fichier audio' : '🎵 Ajouter un fichier audio'}
+              </div>
+              <div className="relative">
+                <label className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-green-300 rounded-lg cursor-pointer hover:border-green-500 transition text-sm text-green-700 hover:text-green-800 bg-white">
+                  <Upload className="w-5 h-5 mr-2" />
+                  {editedSong.audioFile ? editedSong.audioFile.name : 'Choisir un fichier audio'}
+                  <input
+                    type="file"
+                    accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/m4a"
+                    onChange={handleAudioFileChange}
+                    className="hidden"
+                  />
+                </label>
+                {editedSong.audioFile && (
+                  <button
+                    type="button"
+                    onClick={() => setEditedSong(prev => ({ ...prev, audioFile: null }))}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-red-600 hover:text-red-800 text-xs font-bold"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              {song.audioUrl && !editedSong.audioFile && (
+                <div className="mt-2 text-xs text-green-700">
+                  ℹ️ Un fichier audio existe déjà. Uploadez un nouveau fichier pour le remplacer.
+                </div>
+              )}
             </div>
           )}
 

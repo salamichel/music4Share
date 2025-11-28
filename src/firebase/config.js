@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
 // Configuration Firebase (à remplir avec vos identifiants)
 const firebaseConfig = {
@@ -14,14 +15,16 @@ const firebaseConfig = {
 // Initialiser Firebase
 let app;
 let db;
+let storage;
 
 try {
   app = initializeApp(firebaseConfig);
   db = getFirestore(app);
+  storage = getStorage(app);
   console.log('✅ Firebase initialisé avec succès');
 } catch (error) {
   console.error('❌ Erreur lors de l\'initialisation de Firebase:', error);
   console.warn('⚠️ L\'application fonctionnera en mode local sans persistance.');
 }
 
-export { db };
+export { db, storage };

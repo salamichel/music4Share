@@ -4,7 +4,8 @@ import {
   doc,
   setDoc
 } from 'firebase/firestore';
-import { db } from './config';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { db, storage } from './config';
 
 // ========== ARTISTS ==========
 
@@ -350,4 +351,57 @@ export const calculateSetlistDuration = (setlistSongs, allSongs) => {
     return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   }
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
+};
+
+// ========== AUDIO FILE STORAGE ==========
+
+/**
+ * Upload an audio file to Firebase Storage
+ * @param {File} audioFile - The audio file to upload
+ * @param {string} songId - The ID of the song
+ * @returns {Promise<string>} - The download URL of the uploaded file
+ */
+export const uploadAudioFile = async (audioFile, songId) => {
+  if (!storage) {
+    console.warn('Firebase Storage non configuré - upload impossible');
+    return null;
+  }
+
+  try {
+    // Create a reference to the file location
+    const fileExtension = audioFile.name.split('.').pop();
+    const fileName = `${songId}.${fileExtension}`;
+    const storageRef = ref(storage, `audio/${fileName}`);
+
+    // Upload the file
+    const snapshot = await uploadBytes(storageRef, audioFile);
+    console.log('✅ Fichier audio uploadé:', snapshot.metadata.fullPath);
+
+    // Get the download URL
+    const downloadURL = await getDownloadURL(storageRef);
+    return downloadURL;
+  } catch (error) {
+    console.error('Erreur lors de l\'upload du fichier audio:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete an audio file from Firebase Storage
+ * @param {string} songId - The ID of the song
+ * @param {string} audioUrl - The URL of the audio file to delete
+ * @returns {Promise<void>}
+ */
+export const deleteAudioFile = async (songId, audioUrl) => {
+  if (!storage || !audioUrl) return;
+
+  try {
+    // Extract the file path from the URL
+    const storageRef = ref(storage, audioUrl);
+    await deleteObject(storageRef);
+    console.log('✅ Fichier audio supprimé');
+  } catch (error) {
+    console.error('Erreur lors de la suppression du fichier audio:', error);
+    // Don't throw - we don't want to block song deletion if audio deletion fails
+  }
 };
