@@ -5,6 +5,7 @@ import {
   setDoc
 } from 'firebase/firestore';
 import { db } from './config';
+import { storeAudioLocally, deleteAudioLocally } from '../utils/localAudioStorage';
 
 // ========== ARTISTS ==========
 
@@ -350,4 +351,40 @@ export const calculateSetlistDuration = (setlistSongs, allSongs) => {
     return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   }
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
+};
+
+// ========== AUDIO FILE STORAGE (LOCAL) ==========
+
+/**
+ * Store an audio file locally in IndexedDB
+ * @param {File} audioFile - The audio file to store
+ * @param {string} songId - The ID of the song
+ * @returns {Promise<string>} - A local reference URL (local://songId)
+ */
+export const uploadAudioFile = async (audioFile, songId) => {
+  try {
+    // Store locally in IndexedDB
+    const localUrl = await storeAudioLocally(audioFile, songId);
+    return localUrl;
+  } catch (error) {
+    console.error('Erreur lors du stockage local de l\'audio:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete an audio file from local storage
+ * @param {string} songId - The ID of the song
+ * @param {string} audioUrl - The URL of the audio file (not used, we use songId)
+ * @returns {Promise<void>}
+ */
+export const deleteAudioFile = async (songId, audioUrl) => {
+  if (!audioUrl) return;
+
+  try {
+    await deleteAudioLocally(songId);
+  } catch (error) {
+    console.error('Erreur lors de la suppression de l\'audio local:', error);
+    // Don't throw - we don't want to block song deletion if audio deletion fails
+  }
 };

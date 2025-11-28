@@ -20,7 +20,8 @@ import {
   addMultipleParticipations,
   addArtist,
   updateArtist,
-  deleteArtist
+  deleteArtist,
+  uploadAudioFile
 } from './firebase/firebaseHelpers';
 import Header from './components/Header';
 import RepertoireView from './components/RepertoireView';
@@ -279,11 +280,29 @@ export default function App() {
 
   // Ajouter un titre (SANS enrichissement automatique)
   const handleAddSong = async (newSongData, groupId) => {
+    const songId = Date.now().toString();
+
+    let audioUrl = null;
+
+    // Store audio file locally if provided
+    if (newSongData.audioFile) {
+      try {
+        toast.info('Sauvegarde du fichier audio en local...');
+        audioUrl = await uploadAudioFile(newSongData.audioFile, songId);
+        toast.success('Fichier audio sauvegardé localement !');
+      } catch (error) {
+        console.error('Erreur stockage audio local:', error);
+        toast.error('Erreur lors de la sauvegarde du fichier audio');
+        return; // Stop if audio storage fails
+      }
+    }
+
     const song = {
-      id: Date.now().toString(),
+      id: songId,
       title: newSongData.title,
       artist: newSongData.artist || 'Artiste inconnu',
       youtubeLink: newSongData.youtubeLink,
+      audioUrl: audioUrl,
       ownerGroupId: groupId, // null si personnel
       addedBy: currentUser.id,
       // Pas d'enrichissement automatique - sera fait manuellement
@@ -496,6 +515,20 @@ export default function App() {
     if (!song) return;
 
     try {
+      // Store audio file locally if provided
+      let audioUrl = song.audioUrl; // Keep existing URL
+      if (editedData.audioFile) {
+        try {
+          toast.info('Sauvegarde du fichier audio en local...');
+          audioUrl = await uploadAudioFile(editedData.audioFile, songId);
+          toast.success('Fichier audio sauvegardé localement !');
+        } catch (error) {
+          console.error('Erreur stockage audio local:', error);
+          toast.error('Erreur lors de la sauvegarde du fichier audio');
+          return; // Stop if audio storage fails
+        }
+      }
+
       // Mettre à jour le titre avec les nouvelles données
       const updates = {
         title: editedData.title,
@@ -504,6 +537,7 @@ export default function App() {
         chords: editedData.chords,
         lyrics: editedData.lyrics,
         genre: editedData.genre,
+        audioUrl: audioUrl,
         // Marquer comme enrichi si au moins un champ enrichi est rempli
         enriched: Boolean(editedData.chords || editedData.lyrics || editedData.genre || editedData.duration)
       };

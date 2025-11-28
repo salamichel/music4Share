@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, FileJson } from 'lucide-react';
+import { Plus, FileJson, Upload } from 'lucide-react';
 
 const SongAddForm = ({
   groupId,
@@ -9,7 +9,7 @@ const SongAddForm = ({
   showBulkImport,
   onToggleBulkImport
 }) => {
-  const [newSong, setNewSong] = useState({ title: '', artist: '', youtubeLink: '' });
+  const [newSong, setNewSong] = useState({ title: '', artist: '', youtubeLink: '', audioFile: null });
   const [bulkText, setBulkText] = useState('');
   const [jsonText, setJsonText] = useState('');
   const [importMode, setImportMode] = useState('simple'); // 'simple', 'bulk', 'json'
@@ -18,7 +18,27 @@ const SongAddForm = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     onAddSong(newSong, groupId);
-    setNewSong({ title: '', artist: '', youtubeLink: '' });
+    setNewSong({ title: '', artist: '', youtubeLink: '', audioFile: null });
+  };
+
+  const handleAudioFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/m4a'];
+      if (!validTypes.includes(file.type)) {
+        alert('Format de fichier non supporté. Utilisez MP3, WAV, OGG ou M4A.');
+        e.target.value = '';
+        return;
+      }
+      // Validate file size (max 50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        alert('Fichier trop volumineux. Taille maximale: 50MB.');
+        e.target.value = '';
+        return;
+      }
+      setNewSong({...newSong, audioFile: file});
+    }
   };
 
   const handleBulkImport = () => {
@@ -96,6 +116,27 @@ const SongAddForm = ({
               onChange={(e) => setNewSong({...newSong, youtubeLink: e.target.value})}
               className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
+            <div className="relative">
+              <label className="flex items-center justify-center w-full px-3 py-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-purple-500 transition text-sm text-gray-600 hover:text-purple-600">
+                <Upload className="w-4 h-4 mr-2" />
+                {newSong.audioFile ? newSong.audioFile.name : 'Fichier audio (optionnel)'}
+                <input
+                  type="file"
+                  accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/m4a"
+                  onChange={handleAudioFileChange}
+                  className="hidden"
+                />
+              </label>
+              {newSong.audioFile && (
+                <button
+                  type="button"
+                  onClick={() => setNewSong({...newSong, audioFile: null})}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-red-600 hover:text-red-800 text-xs font-bold"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
             <button type="submit" className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 text-sm">
               <Plus className="w-4 h-4 inline mr-1" />
               Ajouter

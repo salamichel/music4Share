@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Youtube, Info, Trash2, Music } from 'lucide-react';
 import { isSongPlayable } from '../utils/helpers';
+import { useLocalAudio } from '../hooks/useLocalAudio';
 import SongDetails from './SongDetails';
 import AddToSetlistButton from './AddToSetlistButton';
 import ArtistSelector from './ArtistSelector';
@@ -29,6 +30,9 @@ const SongCard = ({
   const [selectedSlotId, setSelectedSlotId] = useState(null);
   const songParticipations = participations.filter(p => p.songId === song.id);
   const isPlayable = isSongPlayable(song.id, participations);
+
+  // Load local audio if needed
+  const { audioUrl: actualAudioUrl } = useLocalAudio(song.audioUrl);
 
   // Vérifier si l'utilisateur peut supprimer ce titre
   const canDelete = () => {
@@ -109,6 +113,24 @@ const SongCard = ({
               <Youtube className="w-3 h-3 mr-1" />
               YouTube
             </a>
+          )}
+
+          {/* Audio Player */}
+          {song.audioUrl && actualAudioUrl && (
+            <div className="mt-2 px-2">
+              <audio
+                controls
+                className="w-full h-8"
+                style={{ maxHeight: '32px' }}
+                preload="metadata"
+                key={actualAudioUrl}
+              >
+                <source src={actualAudioUrl} type="audio/mpeg" />
+                <source src={actualAudioUrl} type="audio/wav" />
+                <source src={actualAudioUrl} type="audio/ogg" />
+                Votre navigateur ne supporte pas la lecture audio.
+              </audio>
+            </div>
           )}
         </div>
 
