@@ -110,6 +110,23 @@ const SongCard = ({
               YouTube
             </a>
           )}
+
+          {/* Audio Player */}
+          {song.audioUrl && (
+            <div className="mt-2 px-2">
+              <audio
+                controls
+                className="w-full h-8"
+                style={{ maxHeight: '32px' }}
+                preload="metadata"
+              >
+                <source src={song.audioUrl} type="audio/mpeg" />
+                <source src={song.audioUrl} type="audio/wav" />
+                <source src={song.audioUrl} type="audio/ogg" />
+                Votre navigateur ne supporte pas la lecture audio.
+              </audio>
+            </div>
+          )}
         </div>
 
         {/* Instruments section */}
