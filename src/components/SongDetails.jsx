@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, Clock, Music2, FileText, Tag, Youtube, Sparkles, Edit2, Save } from 'lucide-react';
+import { X, Clock, Music2, FileText, Tag, Youtube, Sparkles, Edit2, Save, Download } from 'lucide-react';
+import { downloadAudio, generateAudioFileName } from '../utils/audioDownload';
 
 const SongDetails = ({ song, onClose, onSave }) => {
   if (!song) return null;
@@ -35,6 +36,18 @@ const SongDetails = ({ song, onClose, onSave }) => {
       lyrics: song.lyrics || '',
     });
     setIsEditing(false);
+  };
+
+  const handleDownloadAudio = async () => {
+    if (!song.audioUrl) return;
+
+    try {
+      const fileName = generateAudioFileName(song.title, song.artist);
+      await downloadAudio(song.audioUrl, fileName);
+    } catch (error) {
+      console.error('Erreur lors du téléchargement de l\'audio:', error);
+      alert('Erreur lors du téléchargement du fichier audio. Veuillez réessayer.');
+    }
   };
 
   return (
@@ -158,6 +171,19 @@ const SongDetails = ({ song, onClose, onSave }) => {
                 <Youtube className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
                 Voir sur YouTube
               </a>
+            </div>
+          )}
+
+          {/* Audio Download */}
+          {song.audioUrl && (
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
+              <button
+                onClick={handleDownloadAudio}
+                className="w-full flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-md hover:shadow-lg"
+              >
+                <Download className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
+                Télécharger l'audio
+              </button>
             </div>
           )}
 
