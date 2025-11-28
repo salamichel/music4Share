@@ -1,10 +1,39 @@
 import React, { useState } from 'react';
-import { Youtube, Info, Trash2, Music } from 'lucide-react';
+import { Youtube, Info, Trash2 } from 'lucide-react';
 import { isSongPlayable } from '../utils/helpers';
 import { useLocalAudio } from '../hooks/useLocalAudio';
 import SongDetails from './SongDetails';
 import AddToSetlistButton from './AddToSetlistButton';
 import ArtistSelector from './ArtistSelector';
+
+// Fonction pour extraire l'ID YouTube d'une URL
+const getYouTubeVideoId = (url) => {
+  if (!url) return null;
+
+  // Gérer différents formats d'URL YouTube
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/,
+    /youtube\.com\/embed\/([^&\s]+)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  return null;
+};
+
+// Fonction pour obtenir l'URL de la vignette YouTube
+const getYouTubeThumbnail = (url) => {
+  const videoId = getYouTubeVideoId(url);
+  if (!videoId) return null;
+
+  // mqdefault = qualité moyenne (320x180)
+  return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+};
 
 const SongCard = ({
   song,
@@ -30,6 +59,9 @@ const SongCard = ({
   const [selectedSlotId, setSelectedSlotId] = useState(null);
   const songParticipations = participations.filter(p => p.songId === song.id);
   const isPlayable = isSongPlayable(song.id, participations);
+
+  // Obtenir la vignette YouTube si disponible
+  const youtubeThumbnail = getYouTubeThumbnail(song.youtubeLink);
 
   // Load local audio if needed
   const { audioUrl: actualAudioUrl } = useLocalAudio(song.audioUrl);
@@ -76,8 +108,35 @@ const SongCard = ({
           ${isSelected ? 'ring-2 ring-orange-500' : ''}
         `}
       >
+        {/* Vignette YouTube cliquable si disponible */}
+        {youtubeThumbnail && song.youtubeLink && (
+          <a
+            href={song.youtubeLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative block rounded-t-xl overflow-hidden group"
+          >
+            <img
+              src={youtubeThumbnail}
+              alt={`Vignette ${song.title}`}
+              className="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-105"
+              onError={(e) => {
+                // En cas d'erreur de chargement, afficher une div de fallback
+                e.target.style.display = 'none';
+                e.target.parentElement.style.display = 'none';
+              }}
+            />
+            {/* Overlay YouTube au survol */}
+            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors flex items-center justify-center">
+              <div className="bg-red-600 rounded-full p-3 transform group-hover:scale-110 transition-transform">
+                <Youtube className="w-6 h-6 text-white" />
+              </div>
+            </div>
+          </a>
+        )}
+
         {/* Header with title and artist */}
-        <div className="bg-gradient-to-br from-purple-500 to-indigo-600 text-white p-3 relative rounded-t-xl">
+        <div className="bg-gradient-to-br from-purple-500 to-indigo-600 text-white p-3 relative">
           {/* Checkbox de sélection */}
           {onToggleSelection && (
             <input
@@ -102,8 +161,8 @@ const SongCard = ({
             <p className="text-xs opacity-90 line-clamp-1">{song.artist}</p>
           </div>
 
-          {/* YouTube link */}
-          {song.youtubeLink && (
+          {/* YouTube link (petit badge si pas de vignette) */}
+          {song.youtubeLink && !youtubeThumbnail && (
             <a
               href={song.youtubeLink}
               target="_blank"
