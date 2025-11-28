@@ -2,16 +2,37 @@
  * Utility functions for downloading audio files
  */
 
+import { isLocalAudioUrl, getSongIdFromLocalUrl, getAudioLocally } from './localAudioStorage';
+
 /**
- * Downloads an audio file from a given URL
- * @param {string} audioUrl - The URL of the audio file to download
+ * Downloads an audio file from a given URL (handles both remote and local URLs)
+ * @param {string} audioUrl - The URL of the audio file to download (can be local:// or http://)
  * @param {string} fileName - The desired filename for the downloaded file
  * @returns {Promise<void>}
  */
 export const downloadAudio = async (audioUrl, fileName = 'audio.mp3') => {
   try {
-    // Fetch the audio file
-    const response = await fetch(audioUrl);
+    let actualUrl = audioUrl;
+
+    // If it's a local URL, fetch from IndexedDB first
+    if (isLocalAudioUrl(audioUrl)) {
+      const songId = getSongIdFromLocalUrl(audioUrl);
+      actualUrl = await getAudioLocally(songId);
+    }
+
+    // For data URLs, we can use them directly
+    if (actualUrl.startsWith('data:')) {
+      const link = document.createElement('a');
+      link.href = actualUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return;
+    }
+
+    // For remote URLs, fetch and download
+    const response = await fetch(actualUrl);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

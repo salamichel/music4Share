@@ -284,16 +284,16 @@ export default function App() {
 
     let audioUrl = null;
 
-    // Upload audio file if provided
+    // Store audio file locally if provided
     if (newSongData.audioFile) {
       try {
-        toast.info('Upload du fichier audio en cours...');
+        toast.info('Sauvegarde du fichier audio en local...');
         audioUrl = await uploadAudioFile(newSongData.audioFile, songId);
-        toast.success('Fichier audio uploadé !');
+        toast.success('Fichier audio sauvegardé localement !');
       } catch (error) {
-        console.error('Erreur upload audio:', error);
-        toast.error('Erreur lors de l\'upload du fichier audio');
-        return; // Stop if audio upload fails
+        console.error('Erreur stockage audio local:', error);
+        toast.error('Erreur lors de la sauvegarde du fichier audio');
+        return; // Stop if audio storage fails
       }
     }
 
@@ -515,17 +515,17 @@ export default function App() {
     if (!song) return;
 
     try {
-      // Upload audio file if provided
+      // Store audio file locally if provided
       let audioUrl = song.audioUrl; // Keep existing URL
       if (editedData.audioFile) {
         try {
-          toast.info('Upload du fichier audio en cours...');
+          toast.info('Sauvegarde du fichier audio en local...');
           audioUrl = await uploadAudioFile(editedData.audioFile, songId);
-          toast.success('Fichier audio uploadé !');
+          toast.success('Fichier audio sauvegardé localement !');
         } catch (error) {
-          console.error('Erreur upload audio:', error);
-          toast.error('Erreur lors de l\'upload du fichier audio');
-          return; // Stop if audio upload fails
+          console.error('Erreur stockage audio local:', error);
+          toast.error('Erreur lors de la sauvegarde du fichier audio');
+          return; // Stop if audio storage fails
         }
       }
 

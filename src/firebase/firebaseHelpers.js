@@ -4,8 +4,8 @@ import {
   doc,
   setDoc
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { db, storage } from './config';
+import { db } from './config';
+import { storeAudioLocally, deleteAudioLocally } from '../utils/localAudioStorage';
 
 // ========== ARTISTS ==========
 
@@ -353,55 +353,38 @@ export const calculateSetlistDuration = (setlistSongs, allSongs) => {
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 };
 
-// ========== AUDIO FILE STORAGE ==========
+// ========== AUDIO FILE STORAGE (LOCAL) ==========
 
 /**
- * Upload an audio file to Firebase Storage
- * @param {File} audioFile - The audio file to upload
+ * Store an audio file locally in IndexedDB
+ * @param {File} audioFile - The audio file to store
  * @param {string} songId - The ID of the song
- * @returns {Promise<string>} - The download URL of the uploaded file
+ * @returns {Promise<string>} - A local reference URL (local://songId)
  */
 export const uploadAudioFile = async (audioFile, songId) => {
-  if (!storage) {
-    console.warn('Firebase Storage non configuré - upload impossible');
-    return null;
-  }
-
   try {
-    // Create a reference to the file location
-    const fileExtension = audioFile.name.split('.').pop();
-    const fileName = `${songId}.${fileExtension}`;
-    const storageRef = ref(storage, `audio/${fileName}`);
-
-    // Upload the file
-    const snapshot = await uploadBytes(storageRef, audioFile);
-    console.log('✅ Fichier audio uploadé:', snapshot.metadata.fullPath);
-
-    // Get the download URL
-    const downloadURL = await getDownloadURL(storageRef);
-    return downloadURL;
+    // Store locally in IndexedDB
+    const localUrl = await storeAudioLocally(audioFile, songId);
+    return localUrl;
   } catch (error) {
-    console.error('Erreur lors de l\'upload du fichier audio:', error);
+    console.error('Erreur lors du stockage local de l\'audio:', error);
     throw error;
   }
 };
 
 /**
- * Delete an audio file from Firebase Storage
+ * Delete an audio file from local storage
  * @param {string} songId - The ID of the song
- * @param {string} audioUrl - The URL of the audio file to delete
+ * @param {string} audioUrl - The URL of the audio file (not used, we use songId)
  * @returns {Promise<void>}
  */
 export const deleteAudioFile = async (songId, audioUrl) => {
-  if (!storage || !audioUrl) return;
+  if (!audioUrl) return;
 
   try {
-    // Extract the file path from the URL
-    const storageRef = ref(storage, audioUrl);
-    await deleteObject(storageRef);
-    console.log('✅ Fichier audio supprimé');
+    await deleteAudioLocally(songId);
   } catch (error) {
-    console.error('Erreur lors de la suppression du fichier audio:', error);
+    console.error('Erreur lors de la suppression de l\'audio local:', error);
     // Don't throw - we don't want to block song deletion if audio deletion fails
   }
 };

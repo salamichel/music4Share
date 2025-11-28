@@ -1,8 +1,8 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
 
 // Configuration Firebase (à remplir avec vos identifiants)
+// Note: Audio files are stored locally in IndexedDB, not in Firebase Storage
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -15,16 +15,14 @@ const firebaseConfig = {
 // Initialiser Firebase
 let app;
 let db;
-let storage;
 
 try {
   app = initializeApp(firebaseConfig);
   db = getFirestore(app);
-  storage = getStorage(app);
-  console.log('✅ Firebase initialisé avec succès');
+  console.log('✅ Firebase initialisé avec succès (Firestore only - audio stored locally)');
 } catch (error) {
   console.error('❌ Erreur lors de l\'initialisation de Firebase:', error);
   console.warn('⚠️ L\'application fonctionnera en mode local sans persistance.');
 }
 
-export { db, storage };
+export { db };
