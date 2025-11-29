@@ -353,38 +353,72 @@ export const calculateSetlistDuration = (setlistSongs, allSongs) => {
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 };
 
-// ========== AUDIO FILE STORAGE (LOCAL) ==========
+// ========== AUDIO FILE STORAGE (SERVER) ==========
+
+const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'http://localhost:5000';
 
 /**
- * Store an audio file locally in IndexedDB
- * @param {File} audioFile - The audio file to store
+ * Upload an audio file to the server
+ * @param {File} audioFile - The audio file to upload
  * @param {string} songId - The ID of the song
- * @returns {Promise<string>} - A local reference URL (local://songId)
+ * @returns {Promise<string>} - The server URL of the uploaded file
  */
 export const uploadAudioFile = async (audioFile, songId) => {
   try {
-    // Store locally in IndexedDB
+    const formData = new FormData();
+    formData.append('audioFile', audioFile);
+    formData.append('songId', songId);
+
+    const response = await fetch(`${SERVER_URL}/api/upload/audio`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Erreur lors de l\'upload');
+    }
+
+    const data = await response.json();
+
+    // Return full server URL
+    return `${SERVER_URL}${data.url}`;
+  } catch (error) {
+    console.error('Erreur lors de l\'upload sur le serveur:', error);
+
+    // Fallback to local storage if server is not available
+    console.warn('⚠️ Serveur non disponible, stockage local en IndexedDB');
     const localUrl = await storeAudioLocally(audioFile, songId);
     return localUrl;
-  } catch (error) {
-    console.error('Erreur lors du stockage local de l\'audio:', error);
-    throw error;
   }
 };
 
 /**
- * Delete an audio file from local storage
+ * Delete an audio file from the server
  * @param {string} songId - The ID of the song
- * @param {string} audioUrl - The URL of the audio file (not used, we use songId)
+ * @param {string} audioUrl - The URL of the audio file
  * @returns {Promise<void>}
  */
 export const deleteAudioFile = async (songId, audioUrl) => {
   if (!audioUrl) return;
 
   try {
-    await deleteAudioLocally(songId);
+    // Check if it's a server URL
+    if (audioUrl.startsWith('http')) {
+      const filename = audioUrl.split('/').pop();
+      const response = await fetch(`${SERVER_URL}/api/audio/${filename}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        console.warn('Erreur lors de la suppression sur le serveur');
+      }
+    } else if (audioUrl.startsWith('local://')) {
+      // Delete from IndexedDB if it's a local file
+      await deleteAudioLocally(songId);
+    }
   } catch (error) {
-    console.error('Erreur lors de la suppression de l\'audio local:', error);
+    console.error('Erreur lors de la suppression de l\'audio:', error);
     // Don't throw - we don't want to block song deletion if audio deletion fails
   }
 };
