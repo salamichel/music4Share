@@ -8,7 +8,30 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Enable CORS for React app
-app.use(cors());
+// Allow both localhost (development) and production domain
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://music4chalemine.moka-web.net',
+  'http://music4chalemine.moka-web.net'
+];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.warn(`⚠️ Origin non autorisé: ${origin}`);
+      callback(null, true); // En développement, on autorise quand même
+      // En production, utilisez: callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Create uploads directory if it doesn't exist
