@@ -135,6 +135,21 @@ app.delete('/api/audio/:filename', (req, res) => {
   }
 });
 
+// Serve React static files (production build)
+const buildPath = path.join(__dirname, '../build');
+if (fs.existsSync(buildPath)) {
+  app.use(express.static(buildPath));
+
+  // All non-API routes go to React app (must be after API routes)
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(buildPath, 'index.html'));
+  });
+
+  console.log('📦 Serving React app from build folder');
+} else {
+  console.log('⚠️ Build folder not found. In production, run "npm run build" first.');
+}
+
 // Error handling middleware
 app.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
@@ -150,4 +165,5 @@ app.use((error, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 Serveur démarré sur le port ${PORT}`);
   console.log(`📁 Dossier uploads: ${uploadsDir}`);
+  console.log(`🌐 Application accessible sur http://localhost:${PORT}`);
 });

@@ -355,13 +355,12 @@ export const calculateSetlistDuration = (setlistSongs, allSongs) => {
 
 // ========== AUDIO FILE STORAGE (SERVER) ==========
 
-const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'http://localhost:5000';
-
 /**
  * Upload an audio file to the server
+ * Uses relative URL /api - works in both dev (with proxy) and production (same origin)
  * @param {File} audioFile - The audio file to upload
  * @param {string} songId - The ID of the song
- * @returns {Promise<string>} - The server URL of the uploaded file
+ * @returns {Promise<string>} - The URL of the uploaded file
  */
 export const uploadAudioFile = async (audioFile, songId) => {
   try {
@@ -369,7 +368,7 @@ export const uploadAudioFile = async (audioFile, songId) => {
     formData.append('audioFile', audioFile);
     formData.append('songId', songId);
 
-    const response = await fetch(`${SERVER_URL}/api/upload/audio`, {
+    const response = await fetch('/api/upload/audio', {
       method: 'POST',
       body: formData
     });
@@ -381,8 +380,8 @@ export const uploadAudioFile = async (audioFile, songId) => {
 
     const data = await response.json();
 
-    // Return full server URL
-    return `${SERVER_URL}${data.url}`;
+    // Return the URL (relative path like /api/audio/filename.mp3)
+    return data.url;
   } catch (error) {
     console.error('Erreur lors de l\'upload sur le serveur:', error);
 
@@ -403,19 +402,29 @@ export const deleteAudioFile = async (songId, audioUrl) => {
   if (!audioUrl) return;
 
   try {
-    // Check if it's a server URL
-    if (audioUrl.startsWith('http')) {
-      const filename = audioUrl.split('/').pop();
-      const response = await fetch(`${SERVER_URL}/api/audio/${filename}`, {
+    // Check if it's a local URL
+    if (audioUrl.startsWith('local://')) {
+      // Delete from IndexedDB if it's a local file
+      await deleteAudioLocally(songId);
+    } else if (audioUrl.startsWith('/api/audio/')) {
+      // Delete from server
+      const response = await fetch(audioUrl, {
         method: 'DELETE'
       });
 
       if (!response.ok) {
         console.warn('Erreur lors de la suppression sur le serveur');
       }
-    } else if (audioUrl.startsWith('local://')) {
-      // Delete from IndexedDB if it's a local file
-      await deleteAudioLocally(songId);
+    } else if (audioUrl.startsWith('http')) {
+      // Legacy: full URLs (for backwards compatibility)
+      const filename = audioUrl.split('/').pop();
+      const response = await fetch(`/api/audio/${filename}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        console.warn('Erreur lors de la suppression sur le serveur');
+      }
     }
   } catch (error) {
     console.error('Erreur lors de la suppression de l\'audio:', error);
