@@ -38,8 +38,10 @@ musicshare-organized/
 
 ### Option 1 : Avec Docker Compose (recommandé)
 
+Docker Compose lance automatiquement le frontend React ET le serveur backend pour l'upload de fichiers audio.
+
 ```bash
-# Lancer l'application
+# Lancer l'application (frontend + backend)
 docker-compose up
 
 # En arrière-plan
@@ -47,7 +49,17 @@ docker-compose up -d
 
 # Arrêter
 docker-compose down
+
+# Reconstruire les images après modification
+docker-compose up --build
 ```
+
+**Services lancés :**
+- Frontend React : http://localhost:3000
+- Backend (upload MP3) : http://localhost:5000
+
+**Persistance des fichiers :**
+Les fichiers MP3 uploadés sont stockés dans un volume Docker nommé `audio_uploads` et persistent même après l'arrêt des conteneurs.
 
 ### Option 2 : Installation Node.js classique
 

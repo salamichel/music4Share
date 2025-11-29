@@ -1,6 +1,24 @@
 version: '3.8'
 
 services:
+  # Backend server for audio file uploads
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - audio_uploads:/app/uploads
+      - ./server:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=production
+    networks:
+      - musicshare-network
+    restart: unless-stopped
+
+  # Frontend React application
   musicshare:
     build: .
     ports:
@@ -11,5 +29,18 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
+      # React runs in browser, so it needs to access backend via localhost
+      - REACT_APP_SERVER_URL=http://localhost:5000
+    depends_on:
+      - backend
+    networks:
+      - musicshare-network
     stdin_open: true
     tty: true
+
+networks:
+  musicshare-network:
+    driver: bridge
+
+volumes:
+  audio_uploads:
