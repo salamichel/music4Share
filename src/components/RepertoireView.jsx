@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { List, Filter, Sparkles, CheckSquare, Square, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import SongCard from './SongCard';
+import SongListItem from './SongListItem';
+import ViewModeToggle from './ViewModeToggle';
 
 const RepertoireView = ({
   songs,
@@ -29,6 +31,7 @@ const RepertoireView = ({
   const [filterPlayable, setFilterPlayable] = useState('all');
   const [filterArtist, setFilterArtist] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState('grid');
 
   const filteredSongs = songs.filter(song => {
     // Filtre par groupe
@@ -72,14 +75,19 @@ const RepertoireView = ({
             </p>
           </div>
 
-          {/* Filter toggle button for mobile */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition md:hidden"
-          >
-            <Filter className="w-5 h-5" />
-            {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
+          <div className="flex items-center gap-2">
+            {/* View Mode Toggle */}
+            <ViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+
+            {/* Filter toggle button for mobile */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition md:hidden"
+            >
+              <Filter className="w-5 h-5" />
+              {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
 
         {/* Filtres - Always visible on desktop, collapsible on mobile */}
@@ -183,13 +191,13 @@ const RepertoireView = ({
         </div>
       )}
 
-      {/* Grid de cards - Responsive */}
+      {/* Grid de cards ou Liste - Responsive */}
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
         {filteredSongs.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-500 text-center py-8">Aucun titre trouvé</p>
           </div>
-        ) : (
+        ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredSongs.map(song => {
               const ownerGroup = groups.find(g => g.id === song.ownerGroupId);
@@ -202,6 +210,41 @@ const RepertoireView = ({
                     </div>
                   )}
                   <SongCard
+                    song={song}
+                    participations={participations}
+                    instrumentSlots={instrumentSlots}
+                    users={users}
+                    currentUser={currentUser}
+                    groups={groups}
+                    artists={artists}
+                    onJoinSlot={onJoinSlot}
+                    onLeaveSlot={onLeaveSlot}
+                    onReenrichSong={onReenrichSong}
+                    onDeleteSong={onDeleteSong}
+                    onSaveSong={onSaveSong}
+                    isEnriching={enrichingSongs.has(song.id)}
+                    isSelected={selectedSongs && selectedSongs.has(song.id)}
+                    onToggleSelection={onToggleSongSelection}
+                    setlists={setlists}
+                    setlistSongs={setlistSongs}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {filteredSongs.map(song => {
+              const ownerGroup = groups.find(g => g.id === song.ownerGroupId);
+              return (
+                <div key={song.id} className="flex flex-col">
+                  {/* Group label pour la vue liste */}
+                  {ownerGroup && (
+                    <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-bold mb-2 px-3 py-1 rounded shadow-md inline-flex items-center w-fit">
+                      📁 {ownerGroup.name}
+                    </div>
+                  )}
+                  <SongListItem
                     song={song}
                     participations={participations}
                     instrumentSlots={instrumentSlots}
