@@ -38,8 +38,10 @@ musicshare-organized/
 
 ### Option 1 : Avec Docker Compose (recommandé)
 
+Docker Compose lance automatiquement le frontend React ET le serveur backend pour l'upload de fichiers audio.
+
 ```bash
-# Lancer l'application
+# Lancer l'application (frontend + backend)
 docker-compose up
 
 # En arrière-plan
@@ -47,22 +49,40 @@ docker-compose up -d
 
 # Arrêter
 docker-compose down
+
+# Reconstruire les images après modification
+docker-compose up --build
 ```
+
+**Services lancés :**
+- Frontend React : http://localhost:3000
+- Backend (upload MP3) : http://localhost:5000
+
+**Persistance des fichiers :**
+Les fichiers MP3 uploadés sont stockés dans un volume Docker nommé `audio_uploads` et persistent même après l'arrêt des conteneurs.
 
 ### Option 2 : Installation Node.js classique
 
 ```bash
-# Installer les dépendances
+# 1. Installer les dépendances du frontend
 npm install
 
-# Lancer en développement
-npm start
+# 2. Installer les dépendances du serveur backend
+cd server
+npm install
+cd ..
 
-# Build pour production
-npm run build
+# 3. Démarrer le serveur backend (dans un terminal séparé)
+cd server
+npm start
+# Le serveur démarre sur http://localhost:5000
+
+# 4. Démarrer l'application React (dans un autre terminal)
+npm start
+# L'application démarre sur http://localhost:3000
 ```
 
-L'application sera accessible sur **http://localhost:3000**
+L'application sera accessible sur **http://localhost:3000** et le serveur backend sur **http://localhost:5000**
 
 ## Fonctionnalités
 
@@ -189,6 +209,48 @@ L'application utilise maintenant **Firebase Firestore** pour la persistance des 
   - `instrumentSlots` : Emplacements d'instruments personnalisés
 
 **Note** : Sans configuration Firebase, l'application fonctionne normalement mais les données sont perdues au rafraîchissement de la page.
+
+### 🎵 Stockage des fichiers audio sur serveur local
+
+L'application permet maintenant d'uploader des fichiers MP3 qui sont stockés sur votre serveur local au lieu du navigateur.
+
+#### Configuration du serveur backend
+
+1. **Installer les dépendances du serveur**
+   ```bash
+   cd server
+   npm install
+   ```
+
+2. **Démarrer le serveur**
+   ```bash
+   cd server
+   npm start
+   ```
+   Le serveur démarre sur le port 5000 par défaut.
+
+3. **Configurer l'URL du serveur** (optionnel)
+   ```bash
+   # Dans le fichier .env à la racine du projet
+   REACT_APP_SERVER_URL=http://localhost:5000
+   ```
+
+#### Fonctionnalités du serveur
+
+- ✅ **Upload de fichiers MP3** : Les fichiers sont stockés sur le serveur dans le dossier `server/uploads/`
+- ✅ **Formats supportés** : MP3, WAV, OGG, M4A
+- ✅ **Limite de taille** : 50MB par fichier
+- ✅ **Fallback automatique** : Si le serveur n'est pas disponible, l'application stocke les fichiers localement dans IndexedDB
+- ✅ **Suppression** : Les fichiers sont supprimés du serveur quand un titre est supprimé
+
+#### Endpoints API du serveur
+
+- `POST /api/upload/audio` : Upload d'un fichier audio
+- `GET /api/audio/:filename` : Récupération d'un fichier audio
+- `DELETE /api/audio/:filename` : Suppression d'un fichier audio
+- `GET /api/health` : Health check du serveur
+
+**Note** : Les fichiers uploadés sont stockés dans `server/uploads/` et ne sont pas versionnés (exclus via `.gitignore`).
 
 ## Architecture
 
