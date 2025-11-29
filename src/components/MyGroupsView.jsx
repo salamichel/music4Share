@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Users, Plus, ChevronDown, ChevronUp, Sparkles, CheckSquare, Square, Trash2 } from 'lucide-react';
 import SongAddForm from './SongAddForm';
 import SongCard from './SongCard';
+import SongListItem from './SongListItem';
+import ViewModeToggle from './ViewModeToggle';
 
 const MyGroupsView = ({
   groups,
@@ -32,6 +34,7 @@ const MyGroupsView = ({
 }) => {
   const [expandedGroupId, setExpandedGroupId] = useState(null);
   const [showBulkImport, setShowBulkImport] = useState(false);
+  const [viewMode, setViewMode] = useState('grid');
 
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
@@ -46,13 +49,17 @@ const MyGroupsView = ({
               {groups.length} groupe{groups.length > 1 ? 's' : ''}
             </p>
           </div>
-          <button
-            onClick={onCreateGroup}
-            className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm flex items-center"
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Créer
-          </button>
+          <div className="flex items-center gap-2">
+            {/* View Mode Toggle */}
+            <ViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+            <button
+              onClick={onCreateGroup}
+              className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm flex items-center"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Créer
+            </button>
+          </div>
         </div>
       </div>
 
@@ -158,16 +165,41 @@ const MyGroupsView = ({
                         </div>
                       )}
 
-                      {/* Grid de cards des titres du groupe */}
+                      {/* Grid de cards ou Liste des titres du groupe */}
                       <div className="p-4 bg-gray-50">
                         {groupSongs.length === 0 ? (
                           <p className="text-gray-500 text-center py-4 text-sm">
                             Aucun titre dans ce groupe
                           </p>
-                        ) : (
+                        ) : viewMode === 'grid' ? (
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                             {groupSongs.map(song => (
                               <SongCard
+                                key={song.id}
+                                song={song}
+                                participations={participations}
+                                instrumentSlots={instrumentSlots}
+                                users={users}
+                                currentUser={currentUser}
+                                groups={groups}
+                                artists={artists}
+                                onJoinSlot={onJoinSlot}
+                                onLeaveSlot={onLeaveSlot}
+                                onReenrichSong={onReenrichSong}
+                                onDeleteSong={onDeleteSong}
+                                onSaveSong={onSaveSong}
+                                isEnriching={enrichingSongs.has(song.id)}
+                                isSelected={selectedSongs && selectedSongs.has(song.id)}
+                                onToggleSelection={onToggleSongSelection}
+                                setlists={setlists}
+                                setlistSongs={setlistSongs}
+                              />
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-3">
+                            {groupSongs.map(song => (
+                              <SongListItem
                                 key={song.id}
                                 song={song}
                                 participations={participations}
