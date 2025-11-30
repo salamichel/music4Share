@@ -23,6 +23,7 @@ import {
   deleteArtist,
   uploadAudioFile
 } from './firebase/firebaseHelpers';
+import { cleanOrphanedLocalAudioRefs } from './utils/audioCleanup';
 import Header from './components/Header';
 import RepertoireView from './components/RepertoireView';
 import MyGroupsView from './components/MyGroupsView';
@@ -108,6 +109,32 @@ export default function App() {
 
     initDefaultUser();
   }, [users, isFirebaseReady, currentUser]); // Se déclenche quand les utilisateurs sont chargés depuis Firebase
+
+  // Nettoyer les références audio locales orphelines (local://) au démarrage
+  useEffect(() => {
+    if (!isFirebaseReady || songs.length === 0) return;
+
+    // Nettoyer une seule fois au démarrage
+    let hasRun = false;
+
+    const cleanup = async () => {
+      if (hasRun) return;
+      hasRun = true;
+
+      try {
+        const cleaned = await cleanOrphanedLocalAudioRefs();
+        if (cleaned > 0) {
+          console.log(`🧹 ${cleaned} référence(s) audio locale(s) orpheline(s) supprimée(s)`);
+        }
+      } catch (error) {
+        console.error('Erreur nettoyage audio:', error);
+      }
+    };
+
+    // Attendre 2 secondes après le chargement pour ne pas bloquer l'interface
+    const timer = setTimeout(cleanup, 2000);
+    return () => clearTimeout(timer);
+  }, [isFirebaseReady, songs.length]); // Se déclenche une fois que les chansons sont chargées
 
   // Trouver le slot correspondant à un instrument
   const findUserSlotForInstrument = (instrumentName) => {

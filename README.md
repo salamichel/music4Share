@@ -38,6 +38,8 @@ musicshare-organized/
 
 ### Option 1 : Avec Docker Compose (recommandé)
 
+Docker Compose lance l'application complète (frontend React + API backend) dans un seul conteneur.
+
 ```bash
 # Lancer l'application
 docker-compose up
@@ -47,22 +49,52 @@ docker-compose up -d
 
 # Arrêter
 docker-compose down
+
+# Reconstruire après modification
+docker-compose up --build
 ```
+
+**Application accessible :**
+- **http://localhost:5000** (frontend + API sur le même port)
+- API disponible sur http://localhost:5000/api
+
+**Persistance des fichiers :**
+Les fichiers MP3 uploadés sont stockés dans un volume Docker nommé `audio_uploads` et persistent même après l'arrêt des conteneurs.
 
 ### Option 2 : Installation Node.js classique
 
+#### Développement (frontend et backend séparés)
+
 ```bash
-# Installer les dépendances
+# Terminal 1 : Serveur backend
+cd server
 npm install
-
-# Lancer en développement
 npm start
+# API disponible sur http://localhost:5000/api
 
-# Build pour production
-npm run build
+# Terminal 2 : Frontend React (avec hot reload)
+npm install
+npm start
+# Application sur http://localhost:3000
 ```
 
-L'application sera accessible sur **http://localhost:3000**
+L'application de développement sera accessible sur **http://localhost:3000** avec proxy vers le backend sur le port 5000.
+
+#### Production (tout-en-un)
+
+```bash
+# 1. Installer les dépendances
+npm install
+cd server && npm install && cd ..
+
+# 2. Builder le frontend
+npm run build
+
+# 3. Démarrer le serveur (sert frontend + API)
+cd server && npm start
+```
+
+L'application complète sera accessible sur **http://localhost:5000**
 
 ## Fonctionnalités
 
@@ -189,6 +221,45 @@ L'application utilise maintenant **Firebase Firestore** pour la persistance des 
   - `instrumentSlots` : Emplacements d'instruments personnalisés
 
 **Note** : Sans configuration Firebase, l'application fonctionne normalement mais les données sont perdues au rafraîchissement de la page.
+
+### 🎵 Stockage des fichiers audio sur serveur
+
+L'application intègre un backend Express qui gère l'upload et le stockage des fichiers MP3 sur le serveur.
+
+#### Architecture
+
+- **Frontend React** : Interface utilisateur
+- **Backend Express** : API REST pour l'upload de fichiers
+- **Même origine** : `/api` pour les requêtes API (pas de problèmes CORS)
+- **Stockage** : Fichiers MP3 dans `server/uploads/`
+
+#### Fonctionnalités
+
+- ✅ **Upload de fichiers MP3** : Stockés sur le serveur dans `server/uploads/`
+- ✅ **Formats supportés** : MP3, WAV, OGG, M4A
+- ✅ **Limite de taille** : 50MB par fichier
+- ✅ **Fallback automatique** : Si le serveur n'est pas disponible, stockage dans IndexedDB
+- ✅ **Suppression automatique** : Les fichiers sont supprimés quand un titre est supprimé
+
+#### Endpoints API
+
+- `POST /api/upload/audio` : Upload d'un fichier audio
+- `GET /api/audio/:filename` : Récupération d'un fichier audio
+- `DELETE /api/audio/:filename` : Suppression d'un fichier audio
+- `GET /api/health` : Health check du serveur
+
+#### Déploiement en production
+
+Pour déployer sur `https://music4chalemine.moka-web.net` :
+
+1. **Build le frontend** : `npm run build`
+2. **Déployer le dossier server/** sur votre serveur
+3. **Copier le dossier build/** dans le serveur
+4. **Démarrer le serveur** : `cd server && npm start`
+5. L'application complète sera sur `https://music4chalemine.moka-web.net`
+6. L'API sera sur `https://music4chalemine.moka-web.net/api`
+
+**Note** : Les fichiers uploadés sont stockés dans `server/uploads/` et ne sont pas versionnés (exclus via `.gitignore`).
 
 ## Architecture
 
