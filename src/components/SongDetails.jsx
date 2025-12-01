@@ -13,6 +13,7 @@ const SongDetails = ({ song, onClose, onSave }) => {
     lyrics: song?.lyrics || '',
     youtubeLink: song?.youtubeLink || '',
     audioFile: null,
+    removeAudio: false,
   });
 
   if (!song) return null;
@@ -38,6 +39,7 @@ const SongDetails = ({ song, onClose, onSave }) => {
       lyrics: song.lyrics || '',
       youtubeLink: song.youtubeLink || '',
       audioFile: null,
+      removeAudio: false,
     });
     setIsEditing(false);
   };
@@ -254,9 +256,33 @@ const SongDetails = ({ song, onClose, onSave }) => {
                   </button>
                 )}
               </div>
-              {song.audioUrl && !editedSong.audioFile && (
-                <div className="mt-2 text-xs text-green-700">
-                  ℹ️ Un fichier audio existe déjà. Uploadez un nouveau fichier pour le remplacer.
+              {song.audioUrl && !editedSong.audioFile && !editedSong.removeAudio && (
+                <div className="mt-2 space-y-2">
+                  <div className="text-xs text-green-700">
+                    ℹ️ Un fichier audio existe déjà. Uploadez un nouveau fichier pour le remplacer.
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditedSong(prev => ({ ...prev, removeAudio: true }))}
+                    className="w-full flex items-center justify-center px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition text-sm font-medium"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Supprimer le fichier audio
+                  </button>
+                </div>
+              )}
+              {editedSong.removeAudio && (
+                <div className="mt-2 space-y-2">
+                  <div className="text-xs text-red-700 font-medium">
+                    ⚠️ Le fichier audio sera supprimé lors de la sauvegarde.
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditedSong(prev => ({ ...prev, removeAudio: false }))}
+                    className="w-full flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition text-sm font-medium"
+                  >
+                    Annuler la suppression
+                  </button>
                 </div>
               )}
             </div>
