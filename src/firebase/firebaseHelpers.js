@@ -124,7 +124,12 @@ export const updateSong = async (songId, updates) => {
   if (!db) return;
 
   try {
-    await updateDoc(doc(db, 'songs', songId), updates);
+    // Filter out undefined values - Firebase doesn't accept them
+    const cleanUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([_, value]) => value !== undefined)
+    );
+
+    await updateDoc(doc(db, 'songs', songId), cleanUpdates);
   } catch (error) {
     console.error('Erreur lors de la mise à jour du titre:', error);
     throw error;

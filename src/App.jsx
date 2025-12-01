@@ -21,7 +21,8 @@ import {
   addArtist,
   updateArtist,
   deleteArtist,
-  uploadAudioFile
+  uploadAudioFile,
+  deleteAudioFile
 } from './firebase/firebaseHelpers';
 import { cleanOrphanedLocalAudioRefs } from './utils/audioCleanup';
 import Header from './components/Header';
@@ -543,10 +544,30 @@ export default function App() {
     if (!song) return;
 
     try {
-      // Store audio file locally if provided
-      let audioUrl = song.audioUrl; // Keep existing URL
+      // Handle audio file operations
+      let audioUrl = song.audioUrl; // Keep existing URL by default
+
+      // Remove audio if requested
+      if (editedData.removeAudio && song.audioUrl) {
+        try {
+          await deleteAudioFile(songId, song.audioUrl);
+          audioUrl = null;
+          toast.success('Fichier audio supprimé');
+        } catch (error) {
+          console.error('Erreur lors de la suppression du fichier audio:', error);
+          toast.error('Erreur lors de la suppression du fichier audio');
+          // Continue anyway - don't block the save
+        }
+      }
+
+      // Upload new audio file if provided
       if (editedData.audioFile) {
         try {
+          // If replacing an existing file, delete the old one first
+          if (song.audioUrl && !editedData.removeAudio) {
+            await deleteAudioFile(songId, song.audioUrl);
+          }
+
           toast.info('Sauvegarde du fichier audio en local...');
           audioUrl = await uploadAudioFile(editedData.audioFile, songId);
           toast.success('Fichier audio sauvegardé localement !');
@@ -610,6 +631,11 @@ export default function App() {
     }
 
     try {
+      // Delete audio file first if it exists
+      if (song.audioUrl) {
+        await deleteAudioFile(songId, song.audioUrl);
+      }
+
       await deleteSong(songId);
       // Supprimer aussi les participations liées
       const songParticipations = participations.filter(p => p.songId === songId);
