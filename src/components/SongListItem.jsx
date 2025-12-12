@@ -43,6 +43,7 @@ const SongListItem = ({
   currentUser,
   groups = [],
   artists = [],
+  songPdfs = [],
   onJoinSlot,
   onLeaveSlot,
   onReenrichSong,
@@ -304,6 +305,7 @@ const SongListItem = ({
       {showDetails && (
         <SongDetails
           song={song}
+          songPdfs={songPdfs}
           onClose={() => setShowDetails(false)}
           onSave={onSaveSong}
         />

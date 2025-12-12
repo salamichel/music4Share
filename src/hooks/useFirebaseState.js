@@ -19,6 +19,7 @@ export const useFirebaseState = () => {
   const [setlists, setSetlists] = useState([]);
   const [setlistSongs, setSetlistSongs] = useState([]);
   const [artists, setArtists] = useState([]);
+  const [songPdfs, setSongPdfs] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSlotManager, setShowSlotManager] = useState(false);
   const [isFirebaseReady, setIsFirebaseReady] = useState(false);
@@ -211,6 +212,27 @@ export const useFirebaseState = () => {
     return () => unsubscribe();
   }, [isFirebaseReady]);
 
+  // Synchroniser les PDF des chansons avec Firestore
+  useEffect(() => {
+    if (!db) return;
+
+    const unsubscribe = onSnapshot(
+      collection(db, 'songPdfs'),
+      (snapshot) => {
+        const pdfsData = snapshot.docs.map(doc => ({
+          ...doc.data(),
+          id: doc.id
+        }));
+        setSongPdfs(pdfsData);
+      },
+      (error) => {
+        console.error('Erreur lors de la synchronisation des PDF:', error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [isFirebaseReady]);
+
   // Fonctions de mise à jour (wrapper pour Firebase ou local)
   const updateUsers = async (newUsers) => {
     if (db && Array.isArray(newUsers)) {
@@ -277,6 +299,14 @@ export const useFirebaseState = () => {
     }
   };
 
+  const updateSongPdfs = async (newPdfs) => {
+    if (db && Array.isArray(newPdfs)) {
+      // onSnapshot gère la mise à jour
+    } else {
+      setSongPdfs(newPdfs);
+    }
+  };
+
   return {
     currentUser,
     setCurrentUser,
@@ -298,6 +328,8 @@ export const useFirebaseState = () => {
     setSetlistSongs: updateSetlistSongs,
     artists,
     setArtists: updateArtists,
+    songPdfs,
+    setSongPdfs: updateSongPdfs,
     searchTerm,
     setSearchTerm,
     showSlotManager,
