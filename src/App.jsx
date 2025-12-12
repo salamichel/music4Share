@@ -56,6 +56,8 @@ export default function App() {
     setSetlistSongs,
     artists,
     setArtists,
+    songPdfs,
+    setSongPdfs,
     searchTerm,
     setSearchTerm,
     showSlotManager,
@@ -1084,6 +1086,7 @@ export default function App() {
               currentUser={currentUser}
               groups={groups}
               artists={artists}
+              songPdfs={songPdfs}
               onJoinSlot={handleJoinSlot}
               onLeaveSlot={handleLeaveSlot}
               onReenrichSong={handleReenrichSong}

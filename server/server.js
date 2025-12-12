@@ -41,6 +41,13 @@ if (!fs.existsSync(uploadsDir)) {
   console.log('✅ Dossier uploads créé');
 }
 
+// Create PDF uploads directory
+const pdfUploadsDir = path.join(__dirname, 'uploads', 'pdf');
+if (!fs.existsSync(pdfUploadsDir)) {
+  fs.mkdirSync(pdfUploadsDir, { recursive: true });
+  console.log('✅ Dossier uploads/pdf créé');
+}
+
 // Configure multer for file storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -70,6 +77,37 @@ const upload = multer({
   fileFilter: fileFilter,
   limits: {
     fileSize: 50 * 1024 * 1024 // 50MB max
+  }
+});
+
+// Configure multer for PDF storage
+const pdfStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, pdfUploadsDir);
+  },
+  filename: (req, file, cb) => {
+    // Generate unique filename: songId_pdfId_timestamp.pdf
+    const pdfId = req.body.pdfId || Date.now().toString();
+    const timestamp = Date.now();
+    const ext = path.extname(file.originalname);
+    cb(null, `${req.body.songId}_${pdfId}_${timestamp}${ext}`);
+  }
+});
+
+// File filter - only accept PDF files
+const pdfFileFilter = (req, file, cb) => {
+  if (file.mimetype === 'application/pdf') {
+    cb(null, true);
+  } else {
+    cb(new Error('Format de fichier non supporté. Utilisez uniquement des fichiers PDF.'), false);
+  }
+};
+
+const pdfUpload = multer({
+  storage: pdfStorage,
+  fileFilter: pdfFileFilter,
+  limits: {
+    fileSize: 20 * 1024 * 1024 // 20MB max for PDFs
   }
 });
 
@@ -132,6 +170,66 @@ app.delete('/api/audio/:filename', (req, res) => {
   } catch (error) {
     console.error('Erreur lors de la suppression:', error);
     res.status(500).json({ error: 'Erreur lors de la suppression du fichier' });
+  }
+});
+
+// ========== PDF ROUTES ==========
+
+// Upload PDF file
+app.post('/api/upload/pdf', pdfUpload.single('pdfFile'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Aucun fichier PDF fourni' });
+    }
+
+    const fileUrl = `/api/pdf/${req.file.filename}`;
+
+    res.json({
+      success: true,
+      message: 'PDF uploadé avec succès',
+      url: fileUrl,
+      filename: req.file.filename,
+      size: req.file.size
+    });
+
+    console.log(`✅ PDF uploadé: ${req.file.filename} (${(req.file.size / 1024).toFixed(2)} KB)`);
+  } catch (error) {
+    console.error('Erreur lors de l\'upload du PDF:', error);
+    res.status(500).json({ error: 'Erreur lors de l\'upload du fichier PDF' });
+  }
+});
+
+// Serve PDF files
+app.get('/api/pdf/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(pdfUploadsDir, filename);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'PDF non trouvé' });
+  }
+
+  // Set headers for PDF
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+  res.sendFile(filePath);
+});
+
+// Delete PDF file
+app.delete('/api/pdf/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(pdfUploadsDir, filename);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'PDF non trouvé' });
+  }
+
+  try {
+    fs.unlinkSync(filePath);
+    res.json({ success: true, message: 'PDF supprimé avec succès' });
+    console.log(`🗑️ PDF supprimé: ${filename}`);
+  } catch (error) {
+    console.error('Erreur lors de la suppression du PDF:', error);
+    res.status(500).json({ error: 'Erreur lors de la suppression du fichier PDF' });
   }
 });
 

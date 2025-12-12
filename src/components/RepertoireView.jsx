@@ -12,6 +12,7 @@ const RepertoireView = ({
   currentUser,
   groups,
   artists = [],
+  songPdfs = [],
   onJoinSlot,
   onLeaveSlot,
   onReenrichSong,
@@ -217,6 +218,7 @@ const RepertoireView = ({
                     currentUser={currentUser}
                     groups={groups}
                     artists={artists}
+                    songPdfs={songPdfs}
                     onJoinSlot={onJoinSlot}
                     onLeaveSlot={onLeaveSlot}
                     onReenrichSong={onReenrichSong}
@@ -252,6 +254,7 @@ const RepertoireView = ({
                     currentUser={currentUser}
                     groups={groups}
                     artists={artists}
+                    songPdfs={songPdfs}
                     onJoinSlot={onJoinSlot}
                     onLeaveSlot={onLeaveSlot}
                     onReenrichSong={onReenrichSong}

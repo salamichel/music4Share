@@ -358,6 +358,109 @@ export const calculateSetlistDuration = (setlistSongs, allSongs) => {
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 };
 
+// ========== PDF FILES ==========
+
+/**
+ * Add a PDF to a song
+ * @param {Object} pdfData - PDF metadata { id, songId, type, instrument, filename, url, createdAt }
+ * @returns {Promise<Object>}
+ */
+export const addSongPdf = async (pdfData) => {
+  if (!db) {
+    console.warn('Firebase non configuré - mode local');
+    return pdfData;
+  }
+
+  try {
+    await setDoc(doc(db, 'songPdfs', pdfData.id), pdfData);
+    return pdfData;
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout du PDF:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a PDF
+ * @param {string} pdfId - The PDF ID
+ * @returns {Promise<void>}
+ */
+export const deleteSongPdf = async (pdfId) => {
+  if (!db) return;
+
+  try {
+    await deleteDoc(doc(db, 'songPdfs', pdfId));
+  } catch (error) {
+    console.error('Erreur lors de la suppression du PDF:', error);
+    throw error;
+  }
+};
+
+/**
+ * Upload a PDF file to the server
+ * @param {File} pdfFile - The PDF file to upload
+ * @param {string} songId - The ID of the song
+ * @param {string} pdfId - The ID of the PDF metadata
+ * @returns {Promise<string>} - The URL of the uploaded file
+ */
+export const uploadPdfFile = async (pdfFile, songId, pdfId) => {
+  try {
+    const formData = new FormData();
+    formData.append('pdfFile', pdfFile);
+    formData.append('songId', songId);
+    formData.append('pdfId', pdfId);
+
+    const response = await fetch('/api/upload/pdf', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Erreur lors de l\'upload du PDF');
+    }
+
+    const data = await response.json();
+    return data.url;
+  } catch (error) {
+    console.error('Erreur lors de l\'upload du PDF sur le serveur:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a PDF file from the server
+ * @param {string} pdfUrl - The URL of the PDF file
+ * @returns {Promise<void>}
+ */
+export const deletePdfFile = async (pdfUrl) => {
+  if (!pdfUrl) return;
+
+  try {
+    if (pdfUrl.startsWith('/api/pdf/')) {
+      const response = await fetch(pdfUrl, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        console.warn('Erreur lors de la suppression du PDF sur le serveur');
+      }
+    } else if (pdfUrl.startsWith('http')) {
+      // Legacy: full URLs (for backwards compatibility)
+      const filename = pdfUrl.split('/').pop();
+      const response = await fetch(`/api/pdf/${filename}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        console.warn('Erreur lors de la suppression du PDF sur le serveur');
+      }
+    }
+  } catch (error) {
+    console.error('Erreur lors de la suppression du PDF:', error);
+  }
+};
+
 // ========== AUDIO FILE STORAGE (SERVER) ==========
 
 /**
