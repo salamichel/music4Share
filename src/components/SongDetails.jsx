@@ -386,6 +386,106 @@ const SongDetails = ({ song, songPdfs = [], onClose, onSave }) => {
             </div>
           )}
 
+          {/* PDF Upload Form (Edit Mode) */}
+          {isEditing && (
+            <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200">
+              <div className="flex items-center mb-4">
+                <div className="bg-orange-600 p-2 rounded-lg mr-3">
+                  <FileUp className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-orange-900">Ajouter Partition / Paroles PDF</h3>
+              </div>
+
+              <div className="bg-white rounded-lg p-4 border border-orange-100">
+                <div className="space-y-3">
+                  {/* Type selector */}
+                  <div>
+                    <label className="block text-sm font-semibold text-orange-900 mb-2">Type de document</label>
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setPdfType('paroles')}
+                        className={`flex-1 px-4 py-2 rounded-lg font-medium transition ${
+                          pdfType === 'paroles'
+                            ? 'bg-orange-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        📝 Paroles
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPdfType('partition')}
+                        className={`flex-1 px-4 py-2 rounded-lg font-medium transition ${
+                          pdfType === 'partition'
+                            ? 'bg-orange-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        🎼 Partition
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Instrument field (only for partition) */}
+                  {pdfType === 'partition' && (
+                    <div>
+                      <label className="block text-sm font-semibold text-orange-900 mb-2">Instrument</label>
+                      <input
+                        type="text"
+                        value={pdfInstrument}
+                        onChange={(e) => setPdfInstrument(e.target.value)}
+                        className="w-full px-3 py-2 border-2 border-orange-300 rounded-lg focus:outline-none focus:border-orange-500"
+                        placeholder="Ex: Guitare, Piano, Batterie..."
+                      />
+                    </div>
+                  )}
+
+                  {/* File selector */}
+                  <div>
+                    <label className="block text-sm font-semibold text-orange-900 mb-2">Fichier PDF</label>
+                    <div className="relative">
+                      <label className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-orange-300 rounded-lg cursor-pointer hover:border-orange-500 transition text-sm text-orange-700 hover:text-orange-800 bg-white">
+                        <FileUp className="w-5 h-5 mr-2" />
+                        {pdfFile ? pdfFile.name : 'Choisir un fichier PDF'}
+                        <input
+                          type="file"
+                          accept="application/pdf"
+                          onChange={handlePdfFileChange}
+                          className="hidden"
+                        />
+                      </label>
+                      {pdfFile && (
+                        <button
+                          type="button"
+                          onClick={() => setPdfFile(null)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-red-600 hover:text-red-800 text-xs font-bold"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Upload button */}
+                  <button
+                    type="button"
+                    onClick={handleUploadPdf}
+                    disabled={!pdfFile || isUploadingPdf}
+                    className={`w-full flex items-center justify-center px-4 py-3 rounded-lg font-semibold transition shadow-md ${
+                      !pdfFile || isUploadingPdf
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-orange-600 hover:bg-orange-700 text-white'
+                    }`}
+                  >
+                    <Upload className="w-5 h-5 mr-2" />
+                    {isUploadingPdf ? 'Upload en cours...' : 'Uploader le PDF'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Chords Section */}
           {(song.chords || isEditing) && (
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-blue-200">
@@ -438,157 +538,64 @@ const SongDetails = ({ song, songPdfs = [], onClose, onSave }) => {
             </div>
           )}
 
-          {/* PDF Section */}
-          <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 sm:p-6 border border-orange-200">
-            <div className="flex items-center mb-4">
-              <div className="bg-orange-600 p-2 rounded-lg mr-3">
-                <FileUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <h3 className="text-lg sm:text-xl font-bold text-orange-900">Partitions et Paroles PDF</h3>
-            </div>
-
-            {/* Upload Form */}
-            <div className="bg-white rounded-lg p-4 mb-4 border border-orange-100">
-              <div className="space-y-3">
-                {/* Type selector */}
-                <div>
-                  <label className="block text-sm font-semibold text-orange-900 mb-2">Type de document</label>
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setPdfType('paroles')}
-                      className={`flex-1 px-4 py-2 rounded-lg font-medium transition ${
-                        pdfType === 'paroles'
-                          ? 'bg-orange-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      📝 Paroles
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPdfType('partition')}
-                      className={`flex-1 px-4 py-2 rounded-lg font-medium transition ${
-                        pdfType === 'partition'
-                          ? 'bg-orange-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      🎼 Partition
-                    </button>
-                  </div>
+          {/* Documents disponibles (Always visible) */}
+          {currentSongPdfs.length > 0 && (
+            <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 sm:p-6 border border-orange-200">
+              <div className="flex items-center mb-4">
+                <div className="bg-orange-600 p-2 rounded-lg mr-3">
+                  <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-
-                {/* Instrument field (only for partition) */}
-                {pdfType === 'partition' && (
-                  <div>
-                    <label className="block text-sm font-semibold text-orange-900 mb-2">Instrument</label>
-                    <input
-                      type="text"
-                      value={pdfInstrument}
-                      onChange={(e) => setPdfInstrument(e.target.value)}
-                      className="w-full px-3 py-2 border-2 border-orange-300 rounded-lg focus:outline-none focus:border-orange-500"
-                      placeholder="Ex: Guitare, Piano, Batterie..."
-                    />
-                  </div>
-                )}
-
-                {/* File selector */}
-                <div>
-                  <label className="block text-sm font-semibold text-orange-900 mb-2">Fichier PDF</label>
-                  <div className="relative">
-                    <label className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-orange-300 rounded-lg cursor-pointer hover:border-orange-500 transition text-sm text-orange-700 hover:text-orange-800 bg-white">
-                      <FileUp className="w-5 h-5 mr-2" />
-                      {pdfFile ? pdfFile.name : 'Choisir un fichier PDF'}
-                      <input
-                        type="file"
-                        accept="application/pdf"
-                        onChange={handlePdfFileChange}
-                        className="hidden"
-                      />
-                    </label>
-                    {pdfFile && (
-                      <button
-                        type="button"
-                        onClick={() => setPdfFile(null)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-red-600 hover:text-red-800 text-xs font-bold"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Upload button */}
-                <button
-                  type="button"
-                  onClick={handleUploadPdf}
-                  disabled={!pdfFile || isUploadingPdf}
-                  className={`w-full flex items-center justify-center px-4 py-3 rounded-lg font-semibold transition shadow-md ${
-                    !pdfFile || isUploadingPdf
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-orange-600 hover:bg-orange-700 text-white'
-                  }`}
-                >
-                  <Upload className="w-5 h-5 mr-2" />
-                  {isUploadingPdf ? 'Upload en cours...' : 'Uploader le PDF'}
-                </button>
+                <h3 className="text-lg sm:text-xl font-bold text-orange-900">Documents disponibles ({currentSongPdfs.length})</h3>
               </div>
-            </div>
 
-            {/* List of existing PDFs */}
-            {currentSongPdfs.length > 0 && (
-              <div className="bg-white rounded-lg p-4 border border-orange-100">
-                <h4 className="text-sm font-bold text-orange-900 mb-3">Documents disponibles ({currentSongPdfs.length})</h4>
-                <div className="space-y-2">
-                  {currentSongPdfs.map((pdf) => (
-                    <div
-                      key={pdf.id}
-                      className="flex items-center justify-between p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-lg">
-                            {pdf.type === 'paroles' ? '📝' : '🎼'}
-                          </span>
-                          <span className="font-semibold text-orange-900 truncate">
-                            {pdf.filename}
-                          </span>
-                        </div>
-                        <div className="text-xs text-orange-700">
-                          {pdf.type === 'paroles' ? 'Paroles' : 'Partition'}
-                          {pdf.instrument && ` - ${pdf.instrument}`}
-                        </div>
+              <div className="space-y-2">
+                {currentSongPdfs.map((pdf) => (
+                  <div
+                    key={pdf.id}
+                    className="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-orange-100 transition border border-orange-100"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-lg">
+                          {pdf.type === 'paroles' ? '📝' : '🎼'}
+                        </span>
+                        <span className="font-semibold text-orange-900 truncate">
+                          {pdf.filename}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-2 ml-2">
-                        <button
-                          onClick={() => handleViewPdf(pdf)}
-                          className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
-                          title="Visualiser"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDownloadPdf(pdf)}
-                          className="p-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
-                          title="Télécharger"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeletePdf(pdf)}
-                          className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
-                          title="Supprimer"
-                        >
-                          <Trash className="w-4 h-4" />
-                        </button>
+                      <div className="text-xs text-orange-700">
+                        {pdf.type === 'paroles' ? 'Paroles' : 'Partition'}
+                        {pdf.instrument && ` - ${pdf.instrument}`}
                       </div>
                     </div>
-                  ))}
-                </div>
+                    <div className="flex items-center gap-2 ml-2">
+                      <button
+                        onClick={() => handleViewPdf(pdf)}
+                        className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
+                        title="Visualiser"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDownloadPdf(pdf)}
+                        className="p-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
+                        title="Télécharger"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeletePdf(pdf)}
+                        className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
+                        title="Supprimer"
+                      >
+                        <Trash className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* No enrichment data message */}
           {!song.chords && !song.lyrics && !song.enriched && (
