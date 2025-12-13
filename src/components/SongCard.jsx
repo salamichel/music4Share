@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Youtube, Info, Trash2 } from 'lucide-react';
+import { Youtube, Info, Trash2, FileText } from 'lucide-react';
 import { isSongPlayable } from '../utils/helpers';
 import { useLocalAudio } from '../hooks/useLocalAudio';
 import SongDetails from './SongDetails';
@@ -60,6 +60,10 @@ const SongCard = ({
   const [selectedSlotId, setSelectedSlotId] = useState(null);
   const songParticipations = participations.filter(p => p.songId === song.id);
   const isPlayable = isSongPlayable(song.id, participations);
+
+  // Vérifier si des PDFs sont disponibles
+  const currentSongPdfs = songPdfs.filter(pdf => pdf.songId === song.id);
+  const hasPdfs = currentSongPdfs.length > 0;
 
   // Obtenir la vignette YouTube si disponible
   const youtubeThumbnail = getYouTubeThumbnail(song.youtubeLink);
@@ -153,6 +157,18 @@ const SongCard = ({
           {isPlayable && (
             <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold shadow-lg">
               ✓
+            </div>
+          )}
+
+          {/* PDF badge */}
+          {hasPdfs && (
+            <div
+              className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold shadow-lg flex items-center gap-1"
+              style={{ top: isPlayable ? '2.25rem' : '0.5rem' }}
+              title={`${currentSongPdfs.length} document${currentSongPdfs.length > 1 ? 's' : ''} PDF disponible${currentSongPdfs.length > 1 ? 's' : ''}`}
+            >
+              <FileText className="w-3 h-3" />
+              {currentSongPdfs.length}
             </div>
           )}
 
