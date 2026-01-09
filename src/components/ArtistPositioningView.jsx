@@ -1,7 +1,23 @@
 import React, { useState, useMemo } from 'react';
 import { TrendingUp, ChevronDown, ChevronUp, Search, Music } from 'lucide-react';
+import SongCard from './SongCard';
 
-const ArtistPositioningView = ({ artists, participations, songs, instrumentSlots }) => {
+const ArtistPositioningView = ({
+  artists,
+  participations,
+  songs,
+  instrumentSlots,
+  users,
+  currentUser,
+  groups,
+  songPdfs,
+  onJoinSlot,
+  onLeaveSlot,
+  onDeleteSong,
+  onSaveSong,
+  setlists,
+  setlistSongs
+}) => {
   const [expandedArtists, setExpandedArtists] = useState(new Set());
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -53,12 +69,9 @@ const ArtistPositioningView = ({ artists, participations, songs, instrumentSlots
     );
   }, [artistsWithPositioning, searchTerm]);
 
-  // Trier par nombre de chansons décroissant, puis par nom
+  // Trier par ordre alphabétique
   const sortedArtists = useMemo(() => {
     return [...filteredArtists].sort((a, b) => {
-      if (b.songCount !== a.songCount) {
-        return b.songCount - a.songCount;
-      }
       return a.artist.name.localeCompare(b.artist.name);
     });
   }, [filteredArtists]);
@@ -189,42 +202,26 @@ const ArtistPositioningView = ({ artists, participations, songs, instrumentSlots
 
                   {/* Liste des chansons (dépliable) */}
                   {isExpanded && (
-                    <div className="p-4 bg-white border-t">
-                      <div className="space-y-3">
-                        {songDetails.map(({ song, instruments }) => (
-                          <div
+                    <div className="p-4 bg-gray-100 border-t">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {songDetails.map(({ song }) => (
+                          <SongCard
                             key={song.id}
-                            className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                          >
-                            <Music className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-medium text-gray-900 truncate">
-                                {song.title}
-                              </h4>
-                              {song.artist && (
-                                <p className="text-xs text-gray-500 mt-0.5">
-                                  Artiste original : {song.artist}
-                                </p>
-                              )}
-                              <div className="flex flex-wrap gap-1.5 mt-2">
-                                {instruments.map((inst, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-teal-100 text-teal-800"
-                                    title={inst.comment || ''}
-                                  >
-                                    <span className="mr-1">{inst.icon}</span>
-                                    {inst.name}
-                                    {inst.comment && (
-                                      <span className="ml-1 text-teal-600">
-                                        ({inst.comment})
-                                      </span>
-                                    )}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
+                            song={song}
+                            participations={participations}
+                            instrumentSlots={instrumentSlots}
+                            users={users}
+                            currentUser={currentUser}
+                            groups={groups}
+                            artists={artists}
+                            songPdfs={songPdfs}
+                            onJoinSlot={onJoinSlot}
+                            onLeaveSlot={onLeaveSlot}
+                            onDeleteSong={onDeleteSong}
+                            onSaveSong={onSaveSong}
+                            setlists={setlists}
+                            setlistSongs={setlistSongs}
+                          />
                         ))}
                       </div>
                     </div>
