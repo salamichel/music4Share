@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, Clock, MapPin, Music, Plus, Trash2, Edit2, Users, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, Music, Plus, Trash2, Edit2, Users, CheckCircle, XCircle, AlertCircle, List, CalendarDays } from 'lucide-react';
 import {
   addRehearsal,
   updateRehearsal,
@@ -8,6 +8,7 @@ import {
 } from '../firebase/firebaseHelpers';
 import RehearsalForm from './RehearsalForm';
 import RehearsalCard from './RehearsalCard';
+import CalendarView from './CalendarView';
 
 const RehearsalView = ({
   rehearsals,
@@ -23,6 +24,7 @@ const RehearsalView = ({
   const [editingRehearsal, setEditingRehearsal] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState('all');
   const [viewMode, setViewMode] = useState('upcoming'); // upcoming, past, all
+  const [displayMode, setDisplayMode] = useState('list'); // list, calendar
 
   // Get user's groups
   const userGroups = groups.filter(g =>
@@ -146,13 +148,40 @@ const RehearsalView = ({
           </h1>
           <p className="text-gray-600 mt-1">Gérez vos événements et suivez les présences</p>
         </div>
-        <button
-          onClick={openCreateForm}
-          className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
-        >
-          <Plus className="w-5 h-5" />
-          Nouvel événement
-        </button>
+        <div className="flex items-center gap-3">
+          {/* View mode toggle */}
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setDisplayMode('list')}
+              className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
+                displayMode === 'list'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              <List className="w-4 h-4" />
+              Liste
+            </button>
+            <button
+              onClick={() => setDisplayMode('calendar')}
+              className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
+                displayMode === 'calendar'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              <CalendarDays className="w-4 h-4" />
+              Calendrier
+            </button>
+          </div>
+          <button
+            onClick={openCreateForm}
+            className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+          >
+            <Plus className="w-5 h-5" />
+            Nouvel événement
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -195,42 +224,49 @@ const RehearsalView = ({
         </div>
       </div>
 
-      {/* Events List */}
-      <div className="space-y-4">
-        {filteredRehearsals.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-            <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg mb-2">
-              {viewMode === 'upcoming' ? 'Aucun événement à venir' : 'Aucun événement trouvé'}
-            </p>
-            <p className="text-gray-400 text-sm mb-4">
-              Créez votre premier événement pour commencer
-            </p>
-            <button
-              onClick={openCreateForm}
-              className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
-            >
-              Créer un événement
-            </button>
-          </div>
-        ) : (
-          filteredRehearsals.map(rehearsal => (
-            <RehearsalCard
-              key={rehearsal.id}
-              rehearsal={rehearsal}
-              currentUser={currentUser}
-              groups={groups}
-              setlists={setlists}
-              users={users}
-              artists={artists}
-              instrumentSlots={instrumentSlots}
-              onEdit={openEditForm}
-              onDelete={handleDeleteRehearsal}
-              onAttendanceUpdate={handleAttendanceUpdate}
-            />
-          ))
-        )}
-      </div>
+      {/* Content - List or Calendar */}
+      {displayMode === 'list' ? (
+        <div className="space-y-4">
+          {filteredRehearsals.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+              <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg mb-2">
+                {viewMode === 'upcoming' ? 'Aucun événement à venir' : 'Aucun événement trouvé'}
+              </p>
+              <p className="text-gray-400 text-sm mb-4">
+                Créez votre premier événement pour commencer
+              </p>
+              <button
+                onClick={openCreateForm}
+                className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
+              >
+                Créer un événement
+              </button>
+            </div>
+          ) : (
+            filteredRehearsals.map(rehearsal => (
+              <RehearsalCard
+                key={rehearsal.id}
+                rehearsal={rehearsal}
+                currentUser={currentUser}
+                groups={groups}
+                setlists={setlists}
+                users={users}
+                artists={artists}
+                instrumentSlots={instrumentSlots}
+                onEdit={openEditForm}
+                onDelete={handleDeleteRehearsal}
+                onAttendanceUpdate={handleAttendanceUpdate}
+              />
+            ))
+          )}
+        </div>
+      ) : (
+        <CalendarView
+          events={filteredRehearsals}
+          onEventClick={(event) => openEditForm(event)}
+        />
+      )}
 
       {/* Form Modal */}
       {showForm && (
