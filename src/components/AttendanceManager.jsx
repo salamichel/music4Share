@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Users, CheckCircle, XCircle, AlertCircle, Music2 } from 'lucide-react';
 
 const AttendanceManager = ({
@@ -9,6 +9,16 @@ const AttendanceManager = ({
   onUpdateAttendance,
   onClose
 }) => {
+  // Local state to track attendance changes for immediate UI feedback
+  const [localAttendance, setLocalAttendance] = useState({});
+
+  // Initialize local attendance from rehearsal data
+  useEffect(() => {
+    if (rehearsal.artistAttendees) {
+      setLocalAttendance(rehearsal.artistAttendees);
+    }
+  }, [rehearsal.artistAttendees]);
+
   // Get artists for this group
   const groupArtists = artists.filter(artist => {
     // If artists don't have groupIds, show all artists
@@ -28,22 +38,34 @@ const AttendanceManager = ({
   };
 
   const getArtistStatus = (artistId) => {
-    if (!rehearsal.artistAttendees || !rehearsal.artistAttendees[artistId]) {
+    if (!localAttendance[artistId]) {
       return 'pending';
     }
-    return rehearsal.artistAttendees[artistId].status;
+    return localAttendance[artistId].status;
   };
 
   const handleStatusChange = async (artistId, status) => {
+    // Update local state immediately for instant UI feedback
+    setLocalAttendance(prev => ({
+      ...prev,
+      [artistId]: {
+        userId: artistId,
+        status,
+        notes: '',
+        updatedAt: new Date().toISOString()
+      }
+    }));
+
+    // Update in Firebase
     await onUpdateAttendance(rehearsal.id, artistId, status, 'artist');
   };
 
   const getStatusStats = () => {
-    if (!rehearsal.artistAttendees) {
+    if (!localAttendance || Object.keys(localAttendance).length === 0) {
       return { confirmed: 0, tentative: 0, declined: 0, pending: groupArtists.length };
     }
 
-    const attendees = Object.values(rehearsal.artistAttendees);
+    const attendees = Object.values(localAttendance);
     const confirmed = attendees.filter(a => a.status === 'confirmed').length;
     const tentative = attendees.filter(a => a.status === 'tentative').length;
     const declined = attendees.filter(a => a.status === 'declined').length;

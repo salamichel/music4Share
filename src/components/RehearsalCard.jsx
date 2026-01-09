@@ -54,24 +54,6 @@ const RehearsalCard = ({
     return `${mins} min`;
   };
 
-  // Get user's attendance status
-  const userAttendance = rehearsal.attendees?.[currentUser?.id];
-  const userStatus = userAttendance?.status || 'pending';
-
-  // Get attendance stats
-  const getAttendanceStats = () => {
-    if (!rehearsal.attendees || typeof rehearsal.attendees !== 'object') {
-      return { confirmed: 0, tentative: 0, declined: 0 };
-    }
-
-    const attendeesList = Object.values(rehearsal.attendees);
-    return {
-      confirmed: attendeesList.filter(a => a.status === 'confirmed').length,
-      tentative: attendeesList.filter(a => a.status === 'tentative').length,
-      declined: attendeesList.filter(a => a.status === 'declined').length
-    };
-  };
-
   // Get artist attendance stats
   const getArtistAttendanceStats = () => {
     if (!rehearsal.artistAttendees || typeof rehearsal.artistAttendees !== 'object') {
@@ -87,7 +69,6 @@ const RehearsalCard = ({
     };
   };
 
-  const stats = getAttendanceStats();
   const artistStats = getArtistAttendanceStats();
 
   // Get type badge color
@@ -111,11 +92,6 @@ const RehearsalCard = ({
       default:
         return 'Répétition';
     }
-  };
-
-  const handleAttendance = (status) => {
-    onAttendanceUpdate(rehearsal.id, status, '');
-    setShowAttendanceModal(false);
   };
 
   // Check if user can edit/delete
@@ -195,67 +171,6 @@ const RehearsalCard = ({
               </div>
             )}
 
-            {/* User's attendance status */}
-            {!isPast && (
-              <div className="flex gap-1 mt-2">
-                <button
-                  onClick={() => handleAttendance('confirmed')}
-                  className={`p-2 rounded transition ${
-                    userStatus === 'confirmed'
-                      ? 'bg-green-100 text-green-700'
-                      : 'text-gray-400 hover:bg-green-50 hover:text-green-600'
-                  }`}
-                  title="Je serai présent"
-                >
-                  <CheckCircle className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => handleAttendance('tentative')}
-                  className={`p-2 rounded transition ${
-                    userStatus === 'tentative'
-                      ? 'bg-yellow-100 text-yellow-700'
-                      : 'text-gray-400 hover:bg-yellow-50 hover:text-yellow-600'
-                  }`}
-                  title="Peut-être"
-                >
-                  <AlertCircle className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => handleAttendance('declined')}
-                  className={`p-2 rounded transition ${
-                    userStatus === 'declined'
-                      ? 'bg-red-100 text-red-700'
-                      : 'text-gray-400 hover:bg-red-50 hover:text-red-600'
-                  }`}
-                  title="Je ne serai pas là"
-                >
-                  <XCircle className="w-5 h-5" />
-                </button>
-              </div>
-            )}
-
-            {/* Attendance stats */}
-            <div className="flex items-center gap-2 text-xs mt-2">
-              {stats.confirmed > 0 && (
-                <span className="flex items-center gap-1 text-green-600">
-                  <CheckCircle className="w-3 h-3" />
-                  {stats.confirmed}
-                </span>
-              )}
-              {stats.tentative > 0 && (
-                <span className="flex items-center gap-1 text-yellow-600">
-                  <AlertCircle className="w-3 h-3" />
-                  {stats.tentative}
-                </span>
-              )}
-              {stats.declined > 0 && (
-                <span className="flex items-center gap-1 text-red-600">
-                  <XCircle className="w-3 h-3" />
-                  {stats.declined}
-                </span>
-              )}
-            </div>
-
             {/* Artist Attendance Button */}
             <button
               onClick={() => setShowAttendanceModal(true)}
@@ -322,31 +237,6 @@ const RehearsalCard = ({
               <p className="text-sm text-gray-600 whitespace-pre-wrap">
                 {rehearsal.notes}
               </p>
-            </div>
-          )}
-
-          {/* Attendees list */}
-          {rehearsal.attendees && Object.keys(rehearsal.attendees).length > 0 && (
-            <div>
-              <h4 className="font-medium text-gray-700 mb-2">Présences utilisateurs</h4>
-              <div className="space-y-1">
-                {Object.values(rehearsal.attendees).map(attendee => {
-                  const user = users.find(u => u.id === attendee.userId);
-                  if (!user) return null;
-
-                  return (
-                    <div key={attendee.userId} className="flex items-center gap-2 text-sm">
-                      {attendee.status === 'confirmed' && <CheckCircle className="w-4 h-4 text-green-600" />}
-                      {attendee.status === 'tentative' && <AlertCircle className="w-4 h-4 text-yellow-600" />}
-                      {attendee.status === 'declined' && <XCircle className="w-4 h-4 text-red-600" />}
-                      <span className="text-gray-700">{user.username}</span>
-                      {attendee.notes && (
-                        <span className="text-gray-500 text-xs">• {attendee.notes}</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
             </div>
           )}
 

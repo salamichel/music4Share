@@ -64,7 +64,7 @@ const RehearsalView = ({
     const newRehearsal = {
       id: Date.now().toString(),
       ...data,
-      attendees: {}, // Will be populated as users respond
+      artistAttendees: {}, // Will be populated as artists are marked
       createdBy: currentUser.id,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -91,8 +91,8 @@ const RehearsalView = ({
     await deleteRehearsal(rehearsalId);
   };
 
-  const handleAttendanceUpdate = async (rehearsalId, status, notes = '') => {
-    await updateRehearsalAttendance(rehearsalId, currentUser.id, status, notes);
+  const handleAttendanceUpdate = async (rehearsalId, userId, status, type = 'artist') => {
+    await updateRehearsalAttendance(rehearsalId, userId, status, '', type);
   };
 
   const openEditForm = (rehearsal) => {
