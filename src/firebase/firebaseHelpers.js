@@ -606,17 +606,21 @@ export const deleteRehearsal = async (rehearsalId) => {
  * @param {string} userId - The user ID
  * @param {string} status - "confirmed", "tentative", or "declined"
  * @param {string} notes - Optional notes
+ * @param {string} type - "user" or "artist" (default: "user")
  * @returns {Promise<void>}
  */
-export const updateRehearsalAttendance = async (rehearsalId, userId, status, notes = '') => {
+export const updateRehearsalAttendance = async (rehearsalId, userId, status, notes = '', type = 'user') => {
   if (!db) return;
 
   try {
     const rehearsalRef = doc(db, 'rehearsals', rehearsalId);
 
-    // We'll store attendees as an object keyed by userId for easier updates
+    // Choose the field based on type
+    const field = type === 'artist' ? 'artistAttendees' : 'attendees';
+
+    // We'll store attendees as an object keyed by userId/artistId for easier updates
     const attendeeUpdate = {
-      [`attendees.${userId}`]: {
+      [`${field}.${userId}`]: {
         userId,
         status,
         notes,

@@ -15,6 +15,8 @@ const RehearsalView = ({
   users,
   setlists,
   songs,
+  artists,
+  instrumentSlots,
   currentUser
 }) => {
   const [showForm, setShowForm] = useState(false);
@@ -220,6 +222,8 @@ const RehearsalView = ({
               groups={groups}
               setlists={setlists}
               users={users}
+              artists={artists}
+              instrumentSlots={instrumentSlots}
               onEdit={openEditForm}
               onDelete={handleDeleteRehearsal}
               onAttendanceUpdate={handleAttendanceUpdate}

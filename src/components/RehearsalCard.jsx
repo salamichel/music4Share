@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Calendar, Clock, MapPin, Music, FileText, Users, Edit2, Trash2, ChevronDown, ChevronUp, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, Music, FileText, Users, Edit2, Trash2, ChevronDown, ChevronUp, CheckCircle, XCircle, AlertCircle, UserCheck } from 'lucide-react';
+import AttendanceManager from './AttendanceManager';
 
 const RehearsalCard = ({
   rehearsal,
@@ -7,6 +8,8 @@ const RehearsalCard = ({
   groups,
   setlists,
   users,
+  artists,
+  instrumentSlots,
   onEdit,
   onDelete,
   onAttendanceUpdate
@@ -69,7 +72,23 @@ const RehearsalCard = ({
     };
   };
 
+  // Get artist attendance stats
+  const getArtistAttendanceStats = () => {
+    if (!rehearsal.artistAttendees || typeof rehearsal.artistAttendees !== 'object') {
+      return { confirmed: 0, tentative: 0, declined: 0, total: 0 };
+    }
+
+    const attendeesList = Object.values(rehearsal.artistAttendees);
+    return {
+      confirmed: attendeesList.filter(a => a.status === 'confirmed').length,
+      tentative: attendeesList.filter(a => a.status === 'tentative').length,
+      declined: attendeesList.filter(a => a.status === 'declined').length,
+      total: attendeesList.length
+    };
+  };
+
   const stats = getAttendanceStats();
+  const artistStats = getArtistAttendanceStats();
 
   // Get type badge color
   const getTypeBadge = () => {
@@ -236,6 +255,21 @@ const RehearsalCard = ({
                 </span>
               )}
             </div>
+
+            {/* Artist Attendance Button */}
+            <button
+              onClick={() => setShowAttendanceModal(true)}
+              className="mt-3 flex items-center gap-2 px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition text-sm"
+              title="Gérer les présences des artistes"
+            >
+              <UserCheck className="w-4 h-4" />
+              <span>Présences artistes</span>
+              {artistStats.total > 0 && (
+                <span className="ml-1 px-2 py-0.5 bg-purple-200 rounded-full text-xs font-medium">
+                  {artistStats.confirmed}/{artistStats.total}
+                </span>
+              )}
+            </button>
           </div>
         </div>
 
@@ -294,7 +328,7 @@ const RehearsalCard = ({
           {/* Attendees list */}
           {rehearsal.attendees && Object.keys(rehearsal.attendees).length > 0 && (
             <div>
-              <h4 className="font-medium text-gray-700 mb-2">Présences</h4>
+              <h4 className="font-medium text-gray-700 mb-2">Présences utilisateurs</h4>
               <div className="space-y-1">
                 {Object.values(rehearsal.attendees).map(attendee => {
                   const user = users.find(u => u.id === attendee.userId);
@@ -315,7 +349,44 @@ const RehearsalCard = ({
               </div>
             </div>
           )}
+
+          {/* Artist Attendees list */}
+          {rehearsal.artistAttendees && Object.keys(rehearsal.artistAttendees).length > 0 && (
+            <div>
+              <h4 className="font-medium text-gray-700 mb-2">Présences artistes</h4>
+              <div className="space-y-1">
+                {Object.values(rehearsal.artistAttendees).map(attendee => {
+                  const artist = artists.find(a => a.id === attendee.userId);
+                  if (!artist) return null;
+
+                  return (
+                    <div key={attendee.userId} className="flex items-center gap-2 text-sm">
+                      {attendee.status === 'confirmed' && <CheckCircle className="w-4 h-4 text-green-600" />}
+                      {attendee.status === 'tentative' && <AlertCircle className="w-4 h-4 text-yellow-600" />}
+                      {attendee.status === 'declined' && <XCircle className="w-4 h-4 text-red-600" />}
+                      <span className="text-gray-700">{artist.name}</span>
+                      {attendee.notes && (
+                        <span className="text-gray-500 text-xs">• {attendee.notes}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
+      )}
+
+      {/* Attendance Manager Modal */}
+      {showAttendanceModal && (
+        <AttendanceManager
+          rehearsal={rehearsal}
+          group={group}
+          artists={artists}
+          instrumentSlots={instrumentSlots}
+          onUpdateAttendance={onAttendanceUpdate}
+          onClose={() => setShowAttendanceModal(false)}
+        />
       )}
     </div>
   );

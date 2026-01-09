@@ -1207,6 +1207,8 @@ export default function App() {
               users={users}
               setlists={setlists}
               songs={songs}
+              artists={artists}
+              instrumentSlots={instrumentSlots}
               currentUser={currentUser}
             />
           )}
