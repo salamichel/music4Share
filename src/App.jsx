@@ -1174,6 +1174,16 @@ export default function App() {
               participations={participations}
               songs={songs}
               instrumentSlots={instrumentSlots}
+              users={users}
+              currentUser={currentUser}
+              groups={groups}
+              songPdfs={songPdfs}
+              onJoinSlot={handleJoinSlot}
+              onLeaveSlot={handleLeaveSlot}
+              onDeleteSong={handleDeleteSong}
+              onSaveSong={handleSaveSong}
+              setlists={setlists}
+              setlistSongs={setlistSongs}
             />
           )}
         </div>
