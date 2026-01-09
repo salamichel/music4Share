@@ -12,8 +12,8 @@ const getYouTubeVideoId = (url) => {
 
   // Gérer différents formats d'URL YouTube
   const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/,
-    /youtube\.com\/embed\/([^&\s]+)/,
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/,
+    /youtube\.com\/embed\/([\w-]+)/,
   ];
 
   for (const pattern of patterns) {
@@ -31,8 +31,8 @@ const getYouTubeThumbnail = (url) => {
   const videoId = getYouTubeVideoId(url);
   if (!videoId) return null;
 
-  // mqdefault = qualité moyenne (320x180)
-  return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+  // hqdefault = haute qualité (480x360)
+  return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 };
 
 const SongListItem = ({
