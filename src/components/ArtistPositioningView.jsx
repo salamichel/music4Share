@@ -184,20 +184,6 @@ const ArtistPositioningView = ({
                         </p>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 justify-end">
-                      {artist.instruments.map(inst => {
-                        const slot = instrumentSlots.find(s => s.id === inst.slotId);
-                        return slot ? (
-                          <span
-                            key={inst.slotId}
-                            className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-teal-100 text-teal-800"
-                          >
-                            <span className="mr-1">{slot.icon}</span>
-                            {slot.name}
-                          </span>
-                        ) : null;
-                      })}
-                    </div>
                   </button>
 
                   {/* Liste des chansons (dépliable) */}
