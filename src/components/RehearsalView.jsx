@@ -160,64 +160,65 @@ const RehearsalView = ({
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-3 md:p-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-0 mb-4 md:mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
-            <Calendar className="w-8 h-8" />
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-2">
+            <Calendar className="w-6 h-6 md:w-8 md:h-8" />
             Gestion des événements
           </h1>
-          <p className="text-gray-600 mt-1">Gérez vos événements et suivez les présences</p>
+          <p className="text-xs md:text-base text-gray-600 mt-0.5 md:mt-1">Gérez vos événements et suivez les présences</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
           {/* View mode toggle */}
-          <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="flex bg-gray-100 rounded-lg p-0.5 md:p-1">
             <button
               onClick={() => setDisplayMode('list')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
+              className={`flex items-center gap-1 md:gap-2 px-2 py-1.5 md:px-3 md:py-2 rounded-md transition text-xs md:text-sm ${
                 displayMode === 'list'
                   ? 'bg-white text-blue-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-              <List className="w-4 h-4" />
-              Liste
+              <List className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              <span className="hidden sm:inline">Liste</span>
             </button>
             <button
               onClick={() => setDisplayMode('calendar')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-md transition ${
+              className={`flex items-center gap-1 md:gap-2 px-2 py-1.5 md:px-3 md:py-2 rounded-md transition text-xs md:text-sm ${
                 displayMode === 'calendar'
                   ? 'bg-white text-blue-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-              <CalendarDays className="w-4 h-4" />
-              Calendrier
+              <CalendarDays className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              <span className="hidden sm:inline">Calendrier</span>
             </button>
           </div>
           <button
             onClick={openCreateForm}
-            className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+            className="flex items-center gap-1 md:gap-2 bg-blue-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:bg-blue-600 transition text-xs md:text-sm flex-1 md:flex-initial justify-center"
           >
-            <Plus className="w-5 h-5" />
-            Nouvel événement
+            <Plus className="w-4 h-4 md:w-5 md:h-5" />
+            <span className="hidden sm:inline">Nouvel événement</span>
+            <span className="sm:hidden">Nouveau</span>
           </button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-        <div className="flex flex-wrap gap-4">
+      <div className="bg-white rounded-lg shadow-sm p-3 md:p-4 mb-4 md:mb-6">
+        <div className="flex flex-col md:flex-row gap-3 md:gap-4">
           {/* Group filter */}
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="flex-1 min-w-0 md:min-w-[200px]">
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
               Groupe
             </label>
             <select
               value={selectedGroup}
               onChange={(e) => setSelectedGroup(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-2 py-1.5 md:px-3 md:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs md:text-sm"
             >
               <option value="all">Tous mes groupes</option>
               {userGroups.map(group => (
@@ -229,14 +230,14 @@ const RehearsalView = ({
           </div>
 
           {/* Time filter */}
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="flex-1 min-w-0 md:min-w-[200px]">
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
               Période
             </label>
             <select
               value={viewMode}
               onChange={(e) => setViewMode(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-2 py-1.5 md:px-3 md:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs md:text-sm"
             >
               <option value="upcoming">À venir</option>
               <option value="past">Passées</option>

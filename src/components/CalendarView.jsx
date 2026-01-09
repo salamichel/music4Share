@@ -95,46 +95,46 @@ const CalendarView = ({ events, onEventClick }) => {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       {/* Header */}
-      <div className="p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+      <div className="p-3 md:p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <CalendarIcon className="w-6 h-6" />
-            <h2 className="text-xl font-bold">
+          <div className="flex items-center gap-2 md:gap-3">
+            <CalendarIcon className="w-5 h-5 md:w-6 md:h-6" />
+            <h2 className="text-lg md:text-xl font-bold">
               {monthNames[month]} {year}
             </h2>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 md:gap-2">
             <button
               onClick={goToToday}
-              className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition"
+              className="px-2 py-1 md:px-3 bg-white/20 hover:bg-white/30 rounded text-xs md:text-sm transition"
             >
               Aujourd'hui
             </button>
             <button
               onClick={goToPreviousMonth}
-              className="p-2 hover:bg-white/20 rounded transition"
+              className="p-1.5 md:p-2 hover:bg-white/20 rounded transition"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
             </button>
             <button
               onClick={goToNextMonth}
-              className="p-2 hover:bg-white/20 rounded transition"
+              className="p-1.5 md:p-2 hover:bg-white/20 rounded transition"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
             </button>
           </div>
         </div>
       </div>
 
       {/* Calendar Grid */}
-      <div className="p-4">
+      <div className="p-2 md:p-4">
         {/* Day names */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
+        <div className="grid grid-cols-7 gap-0.5 md:gap-1 mb-1 md:mb-2">
           {dayNames.map(day => (
             <div
               key={day}
-              className="text-center text-xs font-semibold text-gray-600 py-2"
+              className="text-center text-[10px] md:text-xs font-semibold text-gray-600 py-1 md:py-2"
             >
               {day}
             </div>
@@ -142,7 +142,7 @@ const CalendarView = ({ events, onEventClick }) => {
         </div>
 
         {/* Calendar days */}
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-0.5 md:gap-1">
           {calendarDays.map((day, index) => {
             const dayEvents = getEventsForDay(day);
             const isTodayDate = isToday(day);
@@ -150,7 +150,7 @@ const CalendarView = ({ events, onEventClick }) => {
             return (
               <div
                 key={index}
-                className={`min-h-[100px] p-2 border rounded-lg ${
+                className={`min-h-[60px] md:min-h-[100px] p-1 md:p-2 border rounded ${
                   day
                     ? isTodayDate
                       ? 'bg-blue-50 border-blue-300'
@@ -162,7 +162,7 @@ const CalendarView = ({ events, onEventClick }) => {
                   <>
                     {/* Day number */}
                     <div
-                      className={`text-sm font-semibold mb-1 ${
+                      className={`text-xs md:text-sm font-semibold mb-0.5 md:mb-1 ${
                         isTodayDate
                           ? 'text-blue-600'
                           : 'text-gray-700'
@@ -171,30 +171,53 @@ const CalendarView = ({ events, onEventClick }) => {
                       {day}
                     </div>
 
-                    {/* Events */}
-                    <div className="space-y-1">
-                      {dayEvents.slice(0, 3).map(event => (
-                        <button
-                          key={event.id}
-                          onClick={() => onEventClick && onEventClick(event)}
-                          className={`w-full text-left px-2 py-1 rounded text-xs font-medium text-white ${getEventColor(
-                            event.type
-                          )} hover:opacity-80 transition truncate`}
-                          title={event.title}
-                        >
-                          {new Date(event.dateTime).toLocaleTimeString('fr-FR', {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}{' '}
-                          {event.title}
-                        </button>
-                      ))}
+                    {/* Events - Mobile: dots, Desktop: badges */}
+                    <div className="space-y-0.5 md:space-y-1">
+                      {/* Mobile: show colored dots */}
+                      <div className="md:hidden flex flex-wrap gap-1">
+                        {dayEvents.slice(0, 4).map(event => (
+                          <button
+                            key={event.id}
+                            onClick={() => onEventClick && onEventClick(event)}
+                            className={`w-2 h-2 rounded-full ${getEventColor(event.type)}`}
+                            title={`${new Date(event.dateTime).toLocaleTimeString('fr-FR', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })} ${event.title}`}
+                          />
+                        ))}
+                        {dayEvents.length > 4 && (
+                          <span className="text-[8px] text-gray-500">
+                            +{dayEvents.length - 4}
+                          </span>
+                        )}
+                      </div>
 
-                      {dayEvents.length > 3 && (
-                        <div className="text-xs text-gray-500 px-2">
-                          +{dayEvents.length - 3} autre{dayEvents.length - 3 > 1 ? 's' : ''}
-                        </div>
-                      )}
+                      {/* Desktop: show event badges */}
+                      <div className="hidden md:block space-y-1">
+                        {dayEvents.slice(0, 3).map(event => (
+                          <button
+                            key={event.id}
+                            onClick={() => onEventClick && onEventClick(event)}
+                            className={`w-full text-left px-2 py-1 rounded text-xs font-medium text-white ${getEventColor(
+                              event.type
+                            )} hover:opacity-80 transition truncate`}
+                            title={event.title}
+                          >
+                            {new Date(event.dateTime).toLocaleTimeString('fr-FR', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}{' '}
+                            {event.title}
+                          </button>
+                        ))}
+
+                        {dayEvents.length > 3 && (
+                          <div className="text-xs text-gray-500 px-2">
+                            +{dayEvents.length - 3} autre{dayEvents.length - 3 > 1 ? 's' : ''}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </>
                 )}
@@ -205,25 +228,25 @@ const CalendarView = ({ events, onEventClick }) => {
       </div>
 
       {/* Legend */}
-      <div className="px-4 pb-4 flex flex-wrap gap-3 text-xs">
+      <div className="px-2 md:px-4 pb-3 md:pb-4 flex flex-wrap gap-2 md:gap-3 text-[10px] md:text-xs">
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-blue-500"></div>
+          <div className="w-2 h-2 md:w-3 md:h-3 rounded bg-blue-500"></div>
           <span className="text-gray-600">Répétition</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-purple-500"></div>
+          <div className="w-2 h-2 md:w-3 md:h-3 rounded bg-purple-500"></div>
           <span className="text-gray-600">Spectacle</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-yellow-500"></div>
+          <div className="w-2 h-2 md:w-3 md:h-3 rounded bg-yellow-500"></div>
           <span className="text-gray-600">Réunion</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-orange-500"></div>
+          <div className="w-2 h-2 md:w-3 md:h-3 rounded bg-orange-500"></div>
           <span className="text-gray-600">Apéro</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-gray-500"></div>
+          <div className="w-2 h-2 md:w-3 md:h-3 rounded bg-gray-500"></div>
           <span className="text-gray-600">Installation</span>
         </div>
       </div>
