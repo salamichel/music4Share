@@ -196,6 +196,34 @@ const RehearsalCard = ({
           </div>
         </div>
 
+        {/* Artist Attendance List - Always visible */}
+        {rehearsal.artistAttendees && Object.keys(rehearsal.artistAttendees).length > 0 && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <h4 className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1">
+              <Users className="w-3 h-3" />
+              Présences
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {Object.values(rehearsal.artistAttendees).map(attendee => {
+                const artist = artists.find(a => a.id === attendee.userId);
+                if (!artist) return null;
+
+                return (
+                  <div
+                    key={attendee.userId}
+                    className="flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-gray-50 border border-gray-200"
+                  >
+                    {attendee.status === 'confirmed' && <CheckCircle className="w-3 h-3 text-green-600" />}
+                    {attendee.status === 'tentative' && <AlertCircle className="w-3 h-3 text-yellow-600" />}
+                    {attendee.status === 'declined' && <XCircle className="w-3 h-3 text-red-600" />}
+                    <span className="text-gray-700">{artist.name}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Description preview */}
         {rehearsal.description && !expanded && (
           <p className="text-sm text-gray-600 mt-3 line-clamp-2">
@@ -245,31 +273,6 @@ const RehearsalCard = ({
               <p className="text-sm text-gray-600 whitespace-pre-wrap">
                 {rehearsal.notes}
               </p>
-            </div>
-          )}
-
-          {/* Artist Attendees list */}
-          {rehearsal.artistAttendees && Object.keys(rehearsal.artistAttendees).length > 0 && (
-            <div>
-              <h4 className="font-medium text-gray-700 mb-2">Présences artistes</h4>
-              <div className="space-y-1">
-                {Object.values(rehearsal.artistAttendees).map(attendee => {
-                  const artist = artists.find(a => a.id === attendee.userId);
-                  if (!artist) return null;
-
-                  return (
-                    <div key={attendee.userId} className="flex items-center gap-2 text-sm">
-                      {attendee.status === 'confirmed' && <CheckCircle className="w-4 h-4 text-green-600" />}
-                      {attendee.status === 'tentative' && <AlertCircle className="w-4 h-4 text-yellow-600" />}
-                      {attendee.status === 'declined' && <XCircle className="w-4 h-4 text-red-600" />}
-                      <span className="text-gray-700">{artist.name}</span>
-                      {attendee.notes && (
-                        <span className="text-gray-500 text-xs">• {attendee.notes}</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
             </div>
           )}
         </div>
