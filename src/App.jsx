@@ -1092,7 +1092,7 @@ export default function App() {
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-              📅 Répétitions ({rehearsals.length})
+              📅 Événements ({rehearsals.length})
             </button>
           </div>
         </div>

@@ -20,7 +20,7 @@ export const useFirebaseState = () => {
   const [setlistSongs, setSetlistSongs] = useState([]);
   const [artists, setArtists] = useState([]);
   const [songPdfs, setSongPdfs] = useState([]);
-  const [rehearsals, setRehearsals] = useState([]);
+  const [events, setEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSlotManager, setShowSlotManager] = useState(false);
   const [isFirebaseReady, setIsFirebaseReady] = useState(false);
@@ -234,21 +234,21 @@ export const useFirebaseState = () => {
     return () => unsubscribe();
   }, [isFirebaseReady]);
 
-  // Synchroniser les répétitions avec Firestore
+  // Synchroniser les événements avec Firestore
   useEffect(() => {
     if (!db) return;
 
     const unsubscribe = onSnapshot(
-      collection(db, 'rehearsals'),
+      collection(db, 'events'),
       (snapshot) => {
-        const rehearsalsData = snapshot.docs.map(doc => ({
+        const eventsData = snapshot.docs.map(doc => ({
           ...doc.data(),
           id: doc.id
         }));
-        setRehearsals(rehearsalsData);
+        setEvents(eventsData);
       },
       (error) => {
-        console.error('Erreur lors de la synchronisation des répétitions:', error);
+        console.error('Erreur lors de la synchronisation des événements:', error);
       }
     );
 
@@ -329,11 +329,11 @@ export const useFirebaseState = () => {
     }
   };
 
-  const updateRehearsals = async (newRehearsals) => {
-    if (db && Array.isArray(newRehearsals)) {
+  const updateEvents = async (newEvents) => {
+    if (db && Array.isArray(newEvents)) {
       // onSnapshot gère la mise à jour
     } else {
-      setRehearsals(newRehearsals);
+      setEvents(newEvents);
     }
   };
 
@@ -360,8 +360,11 @@ export const useFirebaseState = () => {
     setArtists: updateArtists,
     songPdfs,
     setSongPdfs: updateSongPdfs,
-    rehearsals,
-    setRehearsals: updateRehearsals,
+    events,
+    setEvents: updateEvents,
+    // Legacy aliases for backward compatibility
+    rehearsals: events,
+    setRehearsals: updateEvents,
     searchTerm,
     setSearchTerm,
     showSlotManager,

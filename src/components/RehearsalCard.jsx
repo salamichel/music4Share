@@ -78,6 +78,10 @@ const RehearsalCard = ({
         return 'bg-purple-100 text-purple-800';
       case 'meeting':
         return 'bg-yellow-100 text-yellow-800';
+      case 'apero':
+        return 'bg-orange-100 text-orange-800';
+      case 'installation':
+        return 'bg-gray-100 text-gray-800';
       default:
         return 'bg-blue-100 text-blue-800';
     }
@@ -86,11 +90,15 @@ const RehearsalCard = ({
   const getTypeLabel = () => {
     switch (rehearsal.type) {
       case 'performance':
-        return 'Spectacle';
+        return '🎭 Spectacle';
       case 'meeting':
-        return 'Réunion';
+        return '💼 Réunion';
+      case 'apero':
+        return '🍻 Apéro';
+      case 'installation':
+        return '🔧 Installation';
       default:
-        return 'Répétition';
+        return '🎵 Répétition';
     }
   };
 

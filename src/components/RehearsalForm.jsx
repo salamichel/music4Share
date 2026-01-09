@@ -68,7 +68,7 @@ const RehearsalForm = ({ rehearsal, groups, setlists, onSubmit, onClose }) => {
         <div className="flex justify-between items-center p-6 border-b border-gray-200 sticky top-0 bg-white">
           <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
             <Calendar className="w-6 h-6" />
-            {rehearsal ? 'Modifier la répétition' : 'Nouvelle répétition'}
+            {rehearsal ? 'Modifier l\'événement' : 'Nouvel événement'}
           </h2>
           <button
             onClick={onClose}
@@ -168,7 +168,7 @@ const RehearsalForm = ({ rehearsal, groups, setlists, onSubmit, onClose }) => {
           {/* Type */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Type de répétition
+              Type d'événement
             </label>
             <select
               name="type"
@@ -176,9 +176,11 @@ const RehearsalForm = ({ rehearsal, groups, setlists, onSubmit, onClose }) => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="practice">Répétition</option>
-              <option value="performance">Spectacle</option>
-              <option value="meeting">Réunion</option>
+              <option value="practice">🎵 Répétition</option>
+              <option value="performance">🎭 Spectacle</option>
+              <option value="meeting">💼 Réunion</option>
+              <option value="apero">🍻 Apéro</option>
+              <option value="installation">🔧 Installation</option>
             </select>
           </div>
 

@@ -540,35 +540,40 @@ export const deleteAudioFile = async (songId, audioUrl) => {
   }
 };
 
-// ========== REHEARSALS ==========
+// ========== EVENTS (REHEARSALS, PERFORMANCES, ETC.) ==========
 
 /**
- * Add a new rehearsal
- * @param {Object} rehearsalData - Rehearsal data
+ * Event types: practice (répétition), performance (spectacle), meeting (réunion),
+ * apero (apéro), installation (installation)
+ */
+
+/**
+ * Add a new event
+ * @param {Object} eventData - Event data
  * @returns {Promise<Object>}
  */
-export const addRehearsal = async (rehearsalData) => {
+export const addEvent = async (eventData) => {
   if (!db) {
     console.warn('Firebase non configuré - mode local');
-    return rehearsalData;
+    return eventData;
   }
 
   try {
-    await setDoc(doc(db, 'rehearsals', rehearsalData.id), rehearsalData);
-    return rehearsalData;
+    await setDoc(doc(db, 'events', eventData.id), eventData);
+    return eventData;
   } catch (error) {
-    console.error('Erreur lors de l\'ajout de la répétition:', error);
+    console.error('Erreur lors de l\'ajout de l\'événement:', error);
     throw error;
   }
 };
 
 /**
- * Update a rehearsal
- * @param {string} rehearsalId - The rehearsal ID
+ * Update an event
+ * @param {string} eventId - The event ID
  * @param {Object} updates - Fields to update
  * @returns {Promise<void>}
  */
-export const updateRehearsal = async (rehearsalId, updates) => {
+export const updateEvent = async (eventId, updates) => {
   if (!db) return;
 
   try {
@@ -577,43 +582,43 @@ export const updateRehearsal = async (rehearsalId, updates) => {
       Object.entries(updates).filter(([_, value]) => value !== undefined)
     );
 
-    await updateDoc(doc(db, 'rehearsals', rehearsalId), cleanUpdates);
+    await updateDoc(doc(db, 'events', eventId), cleanUpdates);
   } catch (error) {
-    console.error('Erreur lors de la mise à jour de la répétition:', error);
+    console.error('Erreur lors de la mise à jour de l\'événement:', error);
     throw error;
   }
 };
 
 /**
- * Delete a rehearsal
- * @param {string} rehearsalId - The rehearsal ID
+ * Delete an event
+ * @param {string} eventId - The event ID
  * @returns {Promise<void>}
  */
-export const deleteRehearsal = async (rehearsalId) => {
+export const deleteEvent = async (eventId) => {
   if (!db) return;
 
   try {
-    await deleteDoc(doc(db, 'rehearsals', rehearsalId));
+    await deleteDoc(doc(db, 'events', eventId));
   } catch (error) {
-    console.error('Erreur lors de la suppression de la répétition:', error);
+    console.error('Erreur lors de la suppression de l\'événement:', error);
     throw error;
   }
 };
 
 /**
- * Update an attendee's status for a rehearsal
- * @param {string} rehearsalId - The rehearsal ID
+ * Update an attendee's status for an event
+ * @param {string} eventId - The event ID
  * @param {string} userId - The user ID
  * @param {string} status - "confirmed", "tentative", or "declined"
  * @param {string} notes - Optional notes
  * @param {string} type - "user" or "artist" (default: "user")
  * @returns {Promise<void>}
  */
-export const updateRehearsalAttendance = async (rehearsalId, userId, status, notes = '', type = 'user') => {
+export const updateEventAttendance = async (eventId, userId, status, notes = '', type = 'user') => {
   if (!db) return;
 
   try {
-    const rehearsalRef = doc(db, 'rehearsals', rehearsalId);
+    const eventRef = doc(db, 'events', eventId);
 
     // Choose the field based on type
     const field = type === 'artist' ? 'artistAttendees' : 'attendees';
@@ -628,9 +633,15 @@ export const updateRehearsalAttendance = async (rehearsalId, userId, status, not
       }
     };
 
-    await updateDoc(rehearsalRef, attendeeUpdate);
+    await updateDoc(eventRef, attendeeUpdate);
   } catch (error) {
     console.error('Erreur lors de la mise à jour de la présence:', error);
     throw error;
   }
 };
+
+// Legacy exports for backward compatibility
+export const addRehearsal = addEvent;
+export const updateRehearsal = updateEvent;
+export const deleteRehearsal = deleteEvent;
+export const updateRehearsalAttendance = updateEventAttendance;

@@ -142,16 +142,16 @@ const RehearsalView = ({
         <div>
           <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
             <Calendar className="w-8 h-8" />
-            Planning des répétitions
+            Gestion des événements
           </h1>
-          <p className="text-gray-600 mt-1">Gérez vos répétitions et suivez les présences</p>
+          <p className="text-gray-600 mt-1">Gérez vos événements et suivez les présences</p>
         </div>
         <button
           onClick={openCreateForm}
           className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
         >
           <Plus className="w-5 h-5" />
-          Nouvelle répétition
+          Nouvel événement
         </button>
       </div>
 
@@ -195,22 +195,22 @@ const RehearsalView = ({
         </div>
       </div>
 
-      {/* Rehearsals List */}
+      {/* Events List */}
       <div className="space-y-4">
         {filteredRehearsals.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 text-lg mb-2">
-              {viewMode === 'upcoming' ? 'Aucune répétition à venir' : 'Aucune répétition trouvée'}
+              {viewMode === 'upcoming' ? 'Aucun événement à venir' : 'Aucun événement trouvé'}
             </p>
             <p className="text-gray-400 text-sm mb-4">
-              Créez votre première répétition pour commencer
+              Créez votre premier événement pour commencer
             </p>
             <button
               onClick={openCreateForm}
               className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
             >
-              Créer une répétition
+              Créer un événement
             </button>
           </div>
         ) : (
