@@ -113,32 +113,50 @@ const SongCard = ({
           ${isSelected ? 'ring-2 ring-orange-500' : ''}
         `}
       >
-        {/* Vignette YouTube cliquable si disponible */}
-        {youtubeThumbnail && song.youtubeLink && (
-          <a
-            href={song.youtubeLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="relative block rounded-t-xl overflow-hidden group"
-          >
-            <img
-              src={youtubeThumbnail}
-              alt={`Vignette ${song.title}`}
-              className="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-105"
-              onError={(e) => {
-                // En cas d'erreur de chargement, afficher une div de fallback
-                e.target.style.display = 'none';
-                e.target.parentElement.style.display = 'none';
-              }}
-            />
-            {/* Overlay YouTube au survol */}
-            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors flex items-center justify-center">
-              <div className="bg-red-600 rounded-full p-3 transform group-hover:scale-110 transition-transform">
-                <Youtube className="w-6 h-6 text-white" />
+        {/* Zone média de hauteur fixe (vignette YouTube ou placeholder) */}
+        <div className="relative h-40 rounded-t-xl overflow-hidden">
+          {youtubeThumbnail && song.youtubeLink ? (
+            <a
+              href={song.youtubeLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full h-full group"
+            >
+              <img
+                src={youtubeThumbnail}
+                alt={`Vignette ${song.title}`}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                onError={(e) => {
+                  // En cas d'erreur de chargement, afficher le placeholder
+                  e.target.style.display = 'none';
+                  const placeholder = e.target.parentElement.nextElementSibling;
+                  if (placeholder) placeholder.style.display = 'flex';
+                }}
+              />
+              {/* Overlay YouTube au survol */}
+              <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors flex items-center justify-center">
+                <div className="bg-red-600 rounded-full p-3 transform group-hover:scale-110 transition-transform">
+                  <Youtube className="w-6 h-6 text-white" />
+                </div>
               </div>
+            </a>
+          ) : (
+            /* Placeholder avec dégradé si pas de vignette */
+            <div className="w-full h-full bg-gradient-to-br from-purple-400 via-indigo-500 to-purple-600 flex items-center justify-center">
+              {song.youtubeLink && (
+                <a
+                  href={song.youtubeLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-red-600 hover:bg-red-700 rounded-full p-4 transform hover:scale-110 transition-all shadow-lg"
+                  title="Voir sur YouTube"
+                >
+                  <Youtube className="w-8 h-8 text-white" />
+                </a>
+              )}
             </div>
-          </a>
-        )}
+          )}
+        </div>
 
         {/* Header with title and artist */}
         <div className="bg-gradient-to-br from-purple-500 to-indigo-600 text-white p-3 relative">
@@ -178,19 +196,6 @@ const SongCard = ({
             <p className="text-xs opacity-90 line-clamp-1">{song.artist}</p>
           </div>
 
-          {/* YouTube link (petit badge si pas de vignette) */}
-          {song.youtubeLink && !youtubeThumbnail && (
-            <a
-              href={song.youtubeLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center text-xs bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-full transition mx-auto w-fit mt-2"
-            >
-              <Youtube className="w-3 h-3 mr-1" />
-              YouTube
-            </a>
-          )}
-
           {/* Audio Player */}
           {song.audioUrl && actualAudioUrl && (
             <div className="mt-2 px-2">
@@ -211,7 +216,7 @@ const SongCard = ({
         </div>
 
         {/* Instruments section */}
-        <div className="p-3 flex-1 flex flex-col">
+        <div className="p-3 flex-1 flex flex-col min-h-[200px]">
           <h4 className="text-xs font-semibold text-gray-600 uppercase mb-2">Instruments</h4>
 
           {/* Grille de boutons d'instruments */}
