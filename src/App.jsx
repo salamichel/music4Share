@@ -31,6 +31,7 @@ import MyGroupsView from './components/MyGroupsView';
 import SetlistsView from './components/SetlistsView';
 import ArtistsView from './components/ArtistsView';
 import ArtistPositioningView from './components/ArtistPositioningView';
+import RehearsalView from './components/RehearsalView';
 import SlotManager from './components/SlotManager';
 import UserSettings from './components/UserSettings';
 import { Music, LogOut } from 'lucide-react';
@@ -59,6 +60,8 @@ export default function App() {
     setArtists,
     songPdfs,
     setSongPdfs,
+    rehearsals,
+    setRehearsals,
     searchTerm,
     setSearchTerm,
     showSlotManager,
@@ -1081,6 +1084,16 @@ export default function App() {
             >
               📊 Positionnement
             </button>
+            <button
+              onClick={() => setActiveTab('rehearsals')}
+              className={`px-3 py-2 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap ${
+                activeTab === 'rehearsals'
+                  ? 'text-green-600 border-b-2 border-green-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              📅 Répétitions ({rehearsals.length})
+            </button>
           </div>
         </div>
       </div>
@@ -1184,6 +1197,17 @@ export default function App() {
               onSaveSong={handleSaveSong}
               setlists={setlists}
               setlistSongs={setlistSongs}
+            />
+          )}
+
+          {activeTab === 'rehearsals' && (
+            <RehearsalView
+              rehearsals={rehearsals}
+              groups={groups}
+              users={users}
+              setlists={setlists}
+              songs={songs}
+              currentUser={currentUser}
             />
           )}
         </div>

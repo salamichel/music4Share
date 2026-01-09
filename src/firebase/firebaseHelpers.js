@@ -539,3 +539,94 @@ export const deleteAudioFile = async (songId, audioUrl) => {
     // Don't throw - we don't want to block song deletion if audio deletion fails
   }
 };
+
+// ========== REHEARSALS ==========
+
+/**
+ * Add a new rehearsal
+ * @param {Object} rehearsalData - Rehearsal data
+ * @returns {Promise<Object>}
+ */
+export const addRehearsal = async (rehearsalData) => {
+  if (!db) {
+    console.warn('Firebase non configuré - mode local');
+    return rehearsalData;
+  }
+
+  try {
+    await setDoc(doc(db, 'rehearsals', rehearsalData.id), rehearsalData);
+    return rehearsalData;
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout de la répétition:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update a rehearsal
+ * @param {string} rehearsalId - The rehearsal ID
+ * @param {Object} updates - Fields to update
+ * @returns {Promise<void>}
+ */
+export const updateRehearsal = async (rehearsalId, updates) => {
+  if (!db) return;
+
+  try {
+    // Filter out undefined values - Firebase doesn't accept them
+    const cleanUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([_, value]) => value !== undefined)
+    );
+
+    await updateDoc(doc(db, 'rehearsals', rehearsalId), cleanUpdates);
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour de la répétition:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a rehearsal
+ * @param {string} rehearsalId - The rehearsal ID
+ * @returns {Promise<void>}
+ */
+export const deleteRehearsal = async (rehearsalId) => {
+  if (!db) return;
+
+  try {
+    await deleteDoc(doc(db, 'rehearsals', rehearsalId));
+  } catch (error) {
+    console.error('Erreur lors de la suppression de la répétition:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update an attendee's status for a rehearsal
+ * @param {string} rehearsalId - The rehearsal ID
+ * @param {string} userId - The user ID
+ * @param {string} status - "confirmed", "tentative", or "declined"
+ * @param {string} notes - Optional notes
+ * @returns {Promise<void>}
+ */
+export const updateRehearsalAttendance = async (rehearsalId, userId, status, notes = '') => {
+  if (!db) return;
+
+  try {
+    const rehearsalRef = doc(db, 'rehearsals', rehearsalId);
+
+    // We'll store attendees as an object keyed by userId for easier updates
+    const attendeeUpdate = {
+      [`attendees.${userId}`]: {
+        userId,
+        status,
+        notes,
+        updatedAt: new Date().toISOString()
+      }
+    };
+
+    await updateDoc(rehearsalRef, attendeeUpdate);
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour de la présence:', error);
+    throw error;
+  }
+};

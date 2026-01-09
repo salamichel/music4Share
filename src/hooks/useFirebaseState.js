@@ -20,6 +20,7 @@ export const useFirebaseState = () => {
   const [setlistSongs, setSetlistSongs] = useState([]);
   const [artists, setArtists] = useState([]);
   const [songPdfs, setSongPdfs] = useState([]);
+  const [rehearsals, setRehearsals] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSlotManager, setShowSlotManager] = useState(false);
   const [isFirebaseReady, setIsFirebaseReady] = useState(false);
@@ -233,6 +234,27 @@ export const useFirebaseState = () => {
     return () => unsubscribe();
   }, [isFirebaseReady]);
 
+  // Synchroniser les répétitions avec Firestore
+  useEffect(() => {
+    if (!db) return;
+
+    const unsubscribe = onSnapshot(
+      collection(db, 'rehearsals'),
+      (snapshot) => {
+        const rehearsalsData = snapshot.docs.map(doc => ({
+          ...doc.data(),
+          id: doc.id
+        }));
+        setRehearsals(rehearsalsData);
+      },
+      (error) => {
+        console.error('Erreur lors de la synchronisation des répétitions:', error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [isFirebaseReady]);
+
   // Fonctions de mise à jour (wrapper pour Firebase ou local)
   const updateUsers = async (newUsers) => {
     if (db && Array.isArray(newUsers)) {
@@ -307,6 +329,14 @@ export const useFirebaseState = () => {
     }
   };
 
+  const updateRehearsals = async (newRehearsals) => {
+    if (db && Array.isArray(newRehearsals)) {
+      // onSnapshot gère la mise à jour
+    } else {
+      setRehearsals(newRehearsals);
+    }
+  };
+
   return {
     currentUser,
     setCurrentUser,
@@ -330,6 +360,8 @@ export const useFirebaseState = () => {
     setArtists: updateArtists,
     songPdfs,
     setSongPdfs: updateSongPdfs,
+    rehearsals,
+    setRehearsals: updateRehearsals,
     searchTerm,
     setSearchTerm,
     showSlotManager,
