@@ -30,6 +30,7 @@ import RepertoireView from './components/RepertoireView';
 import MyGroupsView from './components/MyGroupsView';
 import SetlistsView from './components/SetlistsView';
 import ArtistsView from './components/ArtistsView';
+import ArtistPositioningView from './components/ArtistPositioningView';
 import SlotManager from './components/SlotManager';
 import UserSettings from './components/UserSettings';
 import { Music, LogOut } from 'lucide-react';
@@ -1070,6 +1071,16 @@ export default function App() {
             >
               👥 Artistes ({artists.length})
             </button>
+            <button
+              onClick={() => setActiveTab('positioning')}
+              className={`px-3 py-2 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap ${
+                activeTab === 'positioning'
+                  ? 'text-teal-600 border-b-2 border-teal-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              📊 Positionnement
+            </button>
           </div>
         </div>
       </div>
@@ -1154,6 +1165,15 @@ export default function App() {
               onAddArtist={handleAddArtist}
               onUpdateArtist={handleUpdateArtist}
               onDeleteArtist={handleDeleteArtist}
+            />
+          )}
+
+          {activeTab === 'positioning' && (
+            <ArtistPositioningView
+              artists={artists}
+              participations={participations}
+              songs={songs}
+              instrumentSlots={instrumentSlots}
             />
           )}
         </div>
