@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, Clock, MapPin, Music, FileText, Users, Edit2, Trash2, ChevronDown, ChevronUp, CheckCircle, XCircle, AlertCircle, UserCheck } from 'lucide-react';
+import { Calendar, Clock, MapPin, Music, FileText, Users, Edit2, Trash2, Copy, ChevronDown, ChevronUp, CheckCircle, XCircle, AlertCircle, UserCheck } from 'lucide-react';
 import AttendanceManager from './AttendanceManager';
 
 const RehearsalCard = ({
@@ -12,6 +12,7 @@ const RehearsalCard = ({
   instrumentSlots,
   onEdit,
   onDelete,
+  onClone,
   onAttendanceUpdate
 }) => {
   const [expanded, setExpanded] = useState(false);
@@ -168,6 +169,13 @@ const RehearsalCard = ({
                   title="Modifier"
                 >
                   <Edit2 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => onClone(rehearsal)}
+                  className="p-2 text-green-600 hover:bg-green-50 rounded transition"
+                  title="Cloner"
+                >
+                  <Copy className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => onDelete(rehearsal.id)}

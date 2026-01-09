@@ -22,6 +22,7 @@ const RehearsalView = ({
 }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingRehearsal, setEditingRehearsal] = useState(null);
+  const [isCloning, setIsCloning] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState('all');
   const [viewMode, setViewMode] = useState('upcoming'); // upcoming, past, all
   const [displayMode, setDisplayMode] = useState('list'); // list, calendar
@@ -93,16 +94,36 @@ const RehearsalView = ({
     await deleteRehearsal(rehearsalId);
   };
 
+  const handleCloneRehearsal = (rehearsal) => {
+    // Create a clone with new ID and reset certain fields
+    const clonedRehearsal = {
+      ...rehearsal,
+      id: Date.now().toString(),
+      title: `${rehearsal.title} (copie)`,
+      artistAttendees: {}, // Reset attendance for the clone
+      createdBy: currentUser.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    // Open the form with cloned data for editing before saving
+    setIsCloning(true);
+    setEditingRehearsal(clonedRehearsal);
+    setShowForm(true);
+  };
+
   const handleAttendanceUpdate = async (rehearsalId, userId, status, type = 'artist') => {
     await updateRehearsalAttendance(rehearsalId, userId, status, '', type);
   };
 
   const openEditForm = (rehearsal) => {
+    setIsCloning(false);
     setEditingRehearsal(rehearsal);
     setShowForm(true);
   };
 
   const openCreateForm = () => {
+    setIsCloning(false);
     setEditingRehearsal(null);
     setShowForm(true);
   };
@@ -110,6 +131,7 @@ const RehearsalView = ({
   const closeForm = () => {
     setShowForm(false);
     setEditingRehearsal(null);
+    setIsCloning(false);
   };
 
   const getGroupName = (groupId) => {
@@ -255,6 +277,7 @@ const RehearsalView = ({
                 artists={artists}
                 instrumentSlots={instrumentSlots}
                 onEdit={openEditForm}
+                onClone={handleCloneRehearsal}
                 onDelete={handleDeleteRehearsal}
                 onAttendanceUpdate={handleAttendanceUpdate}
               />
@@ -274,7 +297,7 @@ const RehearsalView = ({
           rehearsal={editingRehearsal}
           groups={userGroups}
           setlists={setlists}
-          onSubmit={editingRehearsal ? handleUpdateRehearsal : handleCreateRehearsal}
+          onSubmit={editingRehearsal && !isCloning ? handleUpdateRehearsal : handleCreateRehearsal}
           onClose={closeForm}
         />
       )}
