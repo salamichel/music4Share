@@ -53,12 +53,9 @@ const ArtistPositioningView = ({ artists, participations, songs, instrumentSlots
     );
   }, [artistsWithPositioning, searchTerm]);
 
-  // Trier par nombre de chansons décroissant, puis par nom
+  // Trier par ordre alphabétique
   const sortedArtists = useMemo(() => {
     return [...filteredArtists].sort((a, b) => {
-      if (b.songCount !== a.songCount) {
-        return b.songCount - a.songCount;
-      }
       return a.artist.name.localeCompare(b.artist.name);
     });
   }, [filteredArtists]);
