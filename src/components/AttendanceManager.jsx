@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Users, CheckCircle, XCircle, AlertCircle, Music2 } from 'lucide-react';
+import { X, Users, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 const AttendanceManager = ({
   rehearsal,
@@ -25,17 +25,6 @@ const AttendanceManager = ({
     // You might want to add groupIds to artists in the future
     return true;
   });
-
-  const getInstrumentNames = (artistInstruments) => {
-    if (!artistInstruments || artistInstruments.length === 0) return 'Aucun instrument';
-
-    return artistInstruments
-      .map(inst => {
-        const slot = instrumentSlots.find(s => s.id === inst.slotId);
-        return slot?.name || 'Inconnu';
-      })
-      .join(', ');
-  };
 
   const getArtistStatus = (artistId) => {
     if (!localAttendance[artistId]) {
@@ -153,13 +142,9 @@ const AttendanceManager = ({
                     <div className="flex items-center justify-between">
                       {/* Artist Info */}
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                        <h3 className="font-semibold text-gray-800">
                           {artist.name}
                         </h3>
-                        <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
-                          <Music2 className="w-4 h-4" />
-                          <span>{getInstrumentNames(artist.instruments)}</span>
-                        </div>
                       </div>
 
                       {/* Status Buttons */}
