@@ -46,6 +46,13 @@ const RepertoireView = ({
       const hasString = filledSlots.has('guitar') || filledSlots.has('bass');
       const hasVocals = filledSlots.has('vocals');
       if (!(hasDrums && hasString && hasVocals)) return false;
+    } else if (filterPlayable === 'unplayable') {
+      const songParts = participations.filter(p => p.songId === song.id);
+      const filledSlots = new Set(songParts.map(p => p.slotId));
+      const hasDrums = filledSlots.has('drums');
+      const hasString = filledSlots.has('guitar') || filledSlots.has('bass');
+      const hasVocals = filledSlots.has('vocals');
+      if (hasDrums && hasString && hasVocals) return false;
     }
 
     // Filtre par artiste
@@ -135,6 +142,7 @@ const RepertoireView = ({
               >
                 <option value="all" className="text-gray-900">Tous les titres</option>
                 <option value="playable" className="text-gray-900">Jouables uniquement</option>
+                <option value="unplayable" className="text-gray-900">Non jouables uniquement</option>
               </select>
             </div>
           </div>
