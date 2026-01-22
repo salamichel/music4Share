@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { List, Filter, Sparkles, CheckSquare, Square, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { List, Filter, Sparkles, CheckSquare, Square, Trash2, ChevronDown, ChevronUp, Printer } from 'lucide-react';
 import SongCard from './SongCard';
 import SongListItem from './SongListItem';
 import ViewModeToggle from './ViewModeToggle';
+import { exportArtistPositioningSheet } from '../utils/pdfExport';
 
 const RepertoireView = ({
   songs,
@@ -33,6 +34,10 @@ const RepertoireView = ({
   const [filterArtist, setFilterArtist] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
+
+  const handlePrintPositioningSheet = () => {
+    exportArtistPositioningSheet(filteredSongs, participations, artists, filterGroup, groups);
+  };
 
   const filteredSongs = songs.filter(song => {
     // Filtre par groupe
@@ -84,6 +89,16 @@ const RepertoireView = ({
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Print Positioning Sheet button */}
+            <button
+              onClick={handlePrintPositioningSheet}
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition"
+              title="Imprimer feuille de positionnement"
+            >
+              <Printer className="w-5 h-5" />
+              <span className="hidden lg:inline">Feuille artistes</span>
+            </button>
+
             {/* View Mode Toggle */}
             <ViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
 
