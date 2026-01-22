@@ -147,3 +147,128 @@ export const exportSetlistToPDF = (setlist, setlistSongs, allSongs, participatio
   const fileName = `${setlist.name.replace(/[^a-z0-9]/gi, '_')}_setlist.pdf`;
   doc.save(fileName);
 };
+
+export const exportArtistPositioningSheet = (songs, participations, artists, filterGroup, groups) => {
+  // Create document in landscape orientation for wider matrix
+  const doc = new jsPDF('landscape');
+
+  // Title
+  doc.setFontSize(18);
+  doc.setFont(undefined, 'bold');
+  let title = 'Feuille de Positionnement des Artistes';
+
+  // Add group filter info if applicable
+  if (filterGroup && filterGroup !== 'all') {
+    if (filterGroup === 'null') {
+      title += ' - Personnel';
+    } else {
+      const group = groups.find(g => g.id === filterGroup);
+      if (group) {
+        title += ` - ${group.name}`;
+      }
+    }
+  }
+
+  doc.text(title, 14, 15);
+
+  // Sort songs alphabetically
+  const sortedSongs = [...songs].sort((a, b) => a.title.localeCompare(b.title));
+
+  // Get all artists that have participations in these songs
+  const artistIds = new Set();
+  participations.forEach(p => {
+    if (p.artistId && sortedSongs.some(s => s.id === p.songId)) {
+      artistIds.add(p.artistId);
+    }
+  });
+
+  // Filter and sort artists alphabetically
+  const activeArtists = artists
+    .filter(a => artistIds.has(a.id))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  if (activeArtists.length === 0) {
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'normal');
+    doc.text('Aucun artiste positionné sur ces titres.', 14, 30);
+    doc.save('feuille_positionnement_artistes.pdf');
+    return;
+  }
+
+  // Build table headers: ['Titre', ...artist names]
+  const headers = ['Titre', ...activeArtists.map(a => a.name)];
+
+  // Build table body: each row is [songTitle, ...marks for each artist]
+  const tableData = sortedSongs.map(song => {
+    const row = [song.title || 'Sans titre'];
+
+    // For each artist, check if they have a participation in this song
+    activeArtists.forEach(artist => {
+      const hasParticipation = participations.some(
+        p => p.songId === song.id && p.artistId === artist.id
+      );
+      row.push(hasParticipation ? 'X' : '');
+    });
+
+    return row;
+  });
+
+  // Create table using autoTable
+  autoTable(doc, {
+    startY: 25,
+    head: [headers],
+    body: tableData,
+    headStyles: {
+      fillColor: [20, 184, 166], // teal-600
+      textColor: 255,
+      fontStyle: 'bold',
+      halign: 'center'
+    },
+    styles: {
+      fontSize: 8,
+      cellPadding: 2,
+      overflow: 'linebreak'
+    },
+    columnStyles: {
+      0: { cellWidth: 50, fontStyle: 'bold', halign: 'left' }, // Titre column
+      // All other columns (artists) will be auto-sized and centered
+      ...Object.fromEntries(
+        activeArtists.map((_, index) => [
+          index + 1,
+          { halign: 'center', cellWidth: 'auto' }
+        ])
+      )
+    },
+    didDrawPage: (data) => {
+      // Footer
+      const pageCount = doc.internal.getNumberOfPages();
+      const pageSize = doc.internal.pageSize;
+      const pageWidth = pageSize.width || pageSize.getWidth();
+      const pageHeight = pageSize.height || pageSize.getHeight();
+
+      doc.setFontSize(8);
+      doc.setTextColor(128);
+      doc.text(
+        `Page ${data.pageNumber} / ${pageCount}`,
+        data.settings.margin.left,
+        pageHeight - 10
+      );
+
+      // Add date and song count
+      const today = new Date().toLocaleDateString('fr-FR');
+      const info = `${sortedSongs.length} titre${sortedSongs.length > 1 ? 's' : ''} · ${activeArtists.length} artiste${activeArtists.length > 1 ? 's' : ''} · ${today}`;
+      doc.text(
+        info,
+        pageWidth - data.settings.margin.right - doc.getTextWidth(info),
+        pageHeight - 10
+      );
+    }
+  });
+
+  // Save the PDF
+  const fileName = filterGroup && filterGroup !== 'all'
+    ? `feuille_positionnement_${filterGroup === 'null' ? 'personnel' : filterGroup}.pdf`
+    : 'feuille_positionnement_artistes.pdf';
+
+  doc.save(fileName);
+};
