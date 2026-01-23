@@ -18,8 +18,7 @@ const MediaUploadView = () => {
   const fetchUploadedMedia = async () => {
     setLoading(true);
     try {
-      const serverUrl = process.env.REACT_APP_SERVER_URL || 'http://localhost:5000';
-      const response = await fetch(`${serverUrl}/api/media`);
+      const response = await fetch('/api/media');
       const data = await response.json();
 
       if (data.success) {
@@ -109,8 +108,7 @@ const MediaUploadView = () => {
     });
 
     try {
-      const serverUrl = process.env.REACT_APP_SERVER_URL || 'http://localhost:5000';
-      const response = await fetch(`${serverUrl}/api/upload/media`, {
+      const response = await fetch('/api/upload/media', {
         method: 'POST',
         body: formData
       });
@@ -143,8 +141,7 @@ const MediaUploadView = () => {
     if (!window.confirm('Supprimer ce fichier?')) return;
 
     try {
-      const serverUrl = process.env.REACT_APP_SERVER_URL || 'http://localhost:5000';
-      const response = await fetch(`${serverUrl}/api/media/${filename}`, {
+      const response = await fetch(`/api/media/${filename}`, {
         method: 'DELETE'
       });
 
@@ -163,11 +160,8 @@ const MediaUploadView = () => {
   };
 
   const downloadMedia = (url, filename) => {
-    const serverUrl = process.env.REACT_APP_SERVER_URL || 'http://localhost:5000';
-    const fullUrl = `${serverUrl}${url}`;
-
     const a = document.createElement('a');
-    a.href = fullUrl;
+    a.href = url;
     a.download = filename;
     a.click();
   };
@@ -337,25 +331,22 @@ const MediaUploadView = () => {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {uploadedMedia.map((media) => {
-                const serverUrl = process.env.REACT_APP_SERVER_URL || 'http://localhost:5000';
-                const fullUrl = `${serverUrl}${media.url}`;
-
                 return (
                   <div key={media.filename} className="relative group">
                     <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                       {media.type === 'image' ? (
                         <img
-                          src={fullUrl}
+                          src={media.url}
                           alt={media.filename}
                           className="w-full h-full object-cover cursor-pointer hover:opacity-90"
-                          onClick={() => window.open(fullUrl, '_blank')}
+                          onClick={() => window.open(media.url, '_blank')}
                           loading="lazy"
                         />
                       ) : (
                         <video
-                          src={fullUrl}
+                          src={media.url}
                           className="w-full h-full object-cover cursor-pointer hover:opacity-90"
-                          onClick={() => window.open(fullUrl, '_blank')}
+                          onClick={() => window.open(media.url, '_blank')}
                         />
                       )}
                     </div>
