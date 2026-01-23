@@ -46,12 +46,8 @@ const SongCard = ({
   songPdfs = [],
   onJoinSlot,
   onLeaveSlot,
-  onReenrichSong,
   onDeleteSong,
   onSaveSong,
-  isEnriching = false,
-  isSelected = false,
-  onToggleSelection,
   setlists = [],
   setlistSongs = []
 }) => {
@@ -110,7 +106,6 @@ const SongCard = ({
           bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300
           flex flex-col h-full
           ${isPlayable ? 'ring-2 ring-green-500' : ''}
-          ${isSelected ? 'ring-2 ring-orange-500' : ''}
         `}
       >
         {/* Zone média de hauteur fixe (vignette YouTube ou placeholder) */}
@@ -160,17 +155,6 @@ const SongCard = ({
 
         {/* Header with title and artist */}
         <div className="bg-gradient-to-br from-purple-500 to-indigo-600 text-white p-3 relative">
-          {/* Checkbox de sélection */}
-          {onToggleSelection && (
-            <input
-              type="checkbox"
-              checked={isSelected}
-              onChange={() => onToggleSelection(song.id)}
-              className="absolute top-2 left-2 w-4 h-4 text-purple-600 focus:ring-purple-500 rounded cursor-pointer z-10"
-              title="Sélectionner pour enrichissement"
-            />
-          )}
-
           {/* Playable badge */}
           {isPlayable && (
             <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold shadow-lg">

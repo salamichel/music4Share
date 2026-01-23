@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Clock, Music2, FileText, Tag, Youtube, Sparkles, Edit2, Save, Download, Upload, FileUp, Eye, Trash } from 'lucide-react';
+import { X, Clock, Music2, FileText, Tag, Youtube, Edit2, Save, Download, Upload, FileUp, Eye, Trash } from 'lucide-react';
 import { downloadAudio, generateAudioFileName } from '../utils/audioDownload';
 import { uploadPdfFile, addSongPdf, deleteSongPdf, deletePdfFile } from '../firebase/firebaseHelpers';
 import PdfViewer from './PdfViewer';
@@ -215,12 +215,6 @@ const SongDetails = ({ song, songPdfs = [], onClose, onSave }) => {
 
           {/* Quick Info Tags */}
           <div className="flex flex-wrap gap-2 sm:gap-3 mt-4">
-            {song.enriched && (
-              <div className="flex items-center bg-green-500 bg-opacity-90 px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg">
-                <Sparkles className="w-4 h-4 mr-2" />
-                Enrichi par Gemini
-              </div>
-            )}
             {isEditing ? (
               <>
                 <div className="flex items-center bg-white bg-opacity-20 px-3 py-1.5 rounded-full text-sm">
@@ -265,24 +259,6 @@ const SongDetails = ({ song, songPdfs = [], onClose, onSave }) => {
 
         {/* Content - Scrollable */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
-          {/* Message si pas enrichi */}
-          {!song.enriched && (
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-yellow-800">
-                    Ce titre n'a pas été enrichi automatiquement. Les informations détaillées (accords, paroles) ne sont pas disponibles.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* YouTube Link */}
           {(song.youtubeLink || isEditing) && (
             <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-4 border border-red-200">
@@ -598,14 +574,14 @@ const SongDetails = ({ song, songPdfs = [], onClose, onSave }) => {
           )}
 
           {/* No enrichment data message */}
-          {!song.chords && !song.lyrics && !song.enriched && (
+          {!song.chords && !song.lyrics && (
             <div className="text-center py-8 sm:py-12 text-gray-500">
               <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full mb-4">
                 <Music2 className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
               </div>
-              <p className="text-base sm:text-lg font-medium mb-2">Aucune donnée enrichie disponible</p>
+              <p className="text-base sm:text-lg font-medium mb-2">Aucune donnée disponible</p>
               <p className="text-sm text-gray-400 max-w-md mx-auto px-4">
-                Ce titre n'a pas encore été enrichi avec l'API Gemini. Les accords et paroles ne sont pas disponibles pour le moment.
+                Les accords et paroles ne sont pas disponibles pour ce titre.
               </p>
             </div>
           )}

@@ -3,7 +3,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useFirebaseState } from './hooks/useFirebaseState';
 import { parseBulkImportText } from './utils/helpers';
-import { enrichSongWithGemini, enrichBatchSongs } from './services/geminiService';
 import {
   addUser,
   updateUser,
@@ -72,9 +71,7 @@ export default function App() {
 
   const [newGroup, setNewGroup] = useState({ name: '', style: '' });
   const [activeTab, setActiveTab] = useState('repertoire'); // repertoire, mygroups, allgroups
-  const [enrichingSongs, setEnrichingSongs] = useState(new Set()); // IDs des titres en cours d'enrichissement
   const [showUserSettings, setShowUserSettings] = useState(false);
-  const [selectedSongs, setSelectedSongs] = useState(new Set()); // IDs des titres sélectionnés pour enrichissement
 
   // Auto-connexion avec utilisateur par défaut (pas d'authentification)
   useEffect(() => {
@@ -493,58 +490,6 @@ export default function App() {
     }
   };
 
-  // Re-enrichir un titre existant
-  const handleReenrichSong = async (songId) => {
-    const song = songs.find(s => s.id === songId);
-    if (!song) return;
-
-    // Marquer le titre comme en cours d'enrichissement
-    setEnrichingSongs(prev => new Set([...prev, songId]));
-
-    try {
-      // Enrichir le titre avec Gemini
-      const enrichedData = await enrichSongWithGemini(song.title, song.artist);
-
-      // Mettre à jour le titre avec les nouvelles données UNIQUEMENT si les champs n'existent pas déjà
-      const updates = {
-        artist: enrichedData.artist || song.artist || 'Artiste inconnu',
-        duration: song.duration || enrichedData.duration,
-        chords: song.chords || enrichedData.chords,
-        lyrics: song.lyrics || enrichedData.lyrics,
-        genre: song.genre || enrichedData.genre,
-        youtubeLink: song.youtubeLink || enrichedData.youtubeLink,
-        enriched: enrichedData.enriched || song.enriched
-      };
-
-      try {
-        await updateSong(songId, updates);
-        if (enrichedData.enriched) {
-          toast.success(`"${song.title}" enrichi avec succès !`);
-        } else {
-          toast.error(`Impossible d'enrichir "${song.title}"`);
-        }
-      } catch (error) {
-        // Fallback mode local
-        setSongs(songs.map(s => s.id === songId ? { ...s, ...updates } : s));
-        if (enrichedData.enriched) {
-          toast.success(`"${song.title}" enrichi avec succès !`);
-        } else {
-          toast.error(`Impossible d'enrichir "${song.title}"`);
-        }
-      }
-    } catch (error) {
-      console.error('Erreur lors du re-enrichissement:', error);
-      toast.error(`Erreur lors de l'enrichissement de "${song.title}"`);
-    } finally {
-      // Retirer le titre de la liste des enrichissements en cours
-      setEnrichingSongs(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(songId);
-        return newSet;
-      });
-    }
-  };
-
   // Sauvegarder les modifications d'un titre
   const handleSaveSong = async (songId, editedData) => {
     const song = songs.find(s => s.id === songId);
@@ -655,143 +600,6 @@ export default function App() {
       setSongs(songs.filter(s => s.id !== songId));
       setParticipations(participations.filter(p => p.songId !== songId));
       toast.success(`"${song.title}" supprimé`);
-    }
-  };
-
-  // Toggle sélection d'un titre
-  const handleToggleSongSelection = (songId) => {
-    setSelectedSongs(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(songId)) {
-        newSet.delete(songId);
-      } else {
-        newSet.add(songId);
-      }
-      return newSet;
-    });
-  };
-
-  // Sélectionner tous les titres non enrichis
-  const handleSelectAllUnenriched = () => {
-    const unenrichedSongIds = songs.filter(s => !s.enriched).map(s => s.id);
-    setSelectedSongs(new Set(unenrichedSongIds));
-  };
-
-  // Désélectionner tous
-  const handleDeselectAll = () => {
-    setSelectedSongs(new Set());
-  };
-
-  // Supprimer les titres sélectionnés en masse
-  const handleDeleteSelected = async () => {
-    if (selectedSongs.size === 0) {
-      console.log('⚠️ Aucun titre sélectionné');
-      return;
-    }
-
-    const songsToDelete = songs.filter(s => selectedSongs.has(s.id));
-
-    // Vérifier les permissions pour chaque titre
-    const deletableSongs = songsToDelete.filter(song => {
-      if (song.ownerGroupId) {
-        const ownerGroup = groups.find(g => g.id === song.ownerGroupId);
-        return ownerGroup && ownerGroup.memberIds.includes(currentUser.id);
-      }
-      // Pour les titres personnels: vérifier addedBy ou accepter si addedBy est manquant (anciens titres)
-      return !song.addedBy || song.addedBy === currentUser.id;
-    });
-
-    if (deletableSongs.length === 0) {
-      alert('Aucun titre sélectionné ne peut être supprimé (permissions insuffisantes).');
-      return;
-    }
-
-    // Confirmation
-    const confirmMessage = deletableSongs.length === songsToDelete.length
-      ? `Supprimer ${deletableSongs.length} titre(s) sélectionné(s) ?`
-      : `Vous pouvez supprimer ${deletableSongs.length} titre(s) sur ${songsToDelete.length} sélectionné(s). Continuer ?`;
-
-    if (!window.confirm(confirmMessage)) {
-      return;
-    }
-
-    // Supprimer tous les titres autorisés
-    let successCount = 0;
-    for (const song of deletableSongs) {
-      try {
-        await deleteSong(song.id);
-        // Supprimer aussi les participations liées
-        const songParticipations = participations.filter(p => p.songId === song.id);
-        for (const p of songParticipations) {
-          await deleteParticipation(p.id);
-        }
-        successCount++;
-      } catch (error) {
-        // Fallback mode local
-        setSongs(prevSongs => prevSongs.filter(s => s.id !== song.id));
-        setParticipations(prevParts => prevParts.filter(p => p.songId !== song.id));
-        successCount++;
-      }
-    }
-
-    toast.success(`${successCount} titre(s) supprimé(s) avec succès`);
-    setSelectedSongs(new Set());
-  };
-
-  // Enrichir les titres sélectionnés en masse
-  const handleEnrichSelected = async () => {
-    if (selectedSongs.size === 0) {
-      toast.warning('Aucun titre sélectionné');
-      return;
-    }
-
-    const songsToEnrich = songs.filter(s => selectedSongs.has(s.id));
-
-    // Marquer tous comme en cours d'enrichissement
-    setEnrichingSongs(prev => new Set([...prev, ...selectedSongs]));
-    toast.info(`Enrichissement de ${selectedSongs.size} titre(s) en cours...`);
-
-    try {
-      // Enrichir avec Gemini
-      const enrichedResults = await enrichBatchSongs(songsToEnrich);
-
-      // Mettre à jour chaque titre avec les données enrichies
-      for (const enrichedData of enrichedResults) {
-        const song = songs.find(s => s.id === enrichedData.id);
-        if (!song) continue;
-
-        // Ne mettre à jour que les champs qui n'existent pas déjà
-        const updates = {
-          artist: song.artist || enrichedData.artist,
-          duration: song.duration || enrichedData.duration,
-          chords: song.chords || enrichedData.chords,
-          lyrics: song.lyrics || enrichedData.lyrics,
-          genre: song.genre || enrichedData.genre,
-          youtubeLink: song.youtubeLink || enrichedData.youtubeLink,
-          enriched: enrichedData.enriched || song.enriched
-        };
-
-        try {
-          await updateSong(enrichedData.id, updates);
-        } catch (error) {
-          // Fallback mode local
-          setSongs(prevSongs => prevSongs.map(s =>
-            s.id === enrichedData.id ? { ...s, ...updates } : s
-          ));
-        }
-      }
-
-      const enrichedCount = enrichedResults.filter(r => r.enriched).length;
-      toast.success(`${enrichedCount}/${selectedSongs.size} titre(s) enrichi(s) avec succès !`);
-
-      // Désélectionner après enrichissement
-      setSelectedSongs(new Set());
-    } catch (error) {
-      console.error('Erreur lors de l\'enrichissement en masse:', error);
-      toast.error('Erreur lors de l\'enrichissement. Veuillez réessayer.');
-    } finally {
-      // Retirer tous de la liste des enrichissements en cours
-      setEnrichingSongs(new Set());
     }
   };
 
@@ -1124,16 +932,8 @@ export default function App() {
               songPdfs={songPdfs}
               onJoinSlot={handleJoinSlot}
               onLeaveSlot={handleLeaveSlot}
-              onReenrichSong={handleReenrichSong}
               onDeleteSong={handleDeleteSong}
               onSaveSong={handleSaveSong}
-              enrichingSongs={enrichingSongs}
-              selectedSongs={selectedSongs}
-              onToggleSongSelection={handleToggleSongSelection}
-              onEnrichSelected={handleEnrichSelected}
-              onDeleteSelected={handleDeleteSelected}
-              onSelectAllUnenriched={handleSelectAllUnenriched}
-              onDeselectAll={handleDeselectAll}
               setlists={setlists}
               setlistSongs={setlistSongs}
             />
@@ -1154,16 +954,8 @@ export default function App() {
               onBulkImport={handleBulkImport}
               onJsonImport={handleJsonImport}
               onCreateGroup={handleCreateGroup}
-              onReenrichSong={handleReenrichSong}
               onDeleteSong={handleDeleteSong}
               onSaveSong={handleSaveSong}
-              enrichingSongs={enrichingSongs}
-              selectedSongs={selectedSongs}
-              onToggleSongSelection={handleToggleSongSelection}
-              onEnrichSelected={handleEnrichSelected}
-              onDeleteSelected={handleDeleteSelected}
-              onSelectAllUnenriched={handleSelectAllUnenriched}
-              onDeselectAll={handleDeselectAll}
               setlists={setlists}
               setlistSongs={setlistSongs}
             />
