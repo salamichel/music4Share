@@ -32,6 +32,7 @@ import SetlistsView from './components/SetlistsView';
 import ArtistsView from './components/ArtistsView';
 import ArtistPositioningView from './components/ArtistPositioningView';
 import RehearsalView from './components/RehearsalView';
+import MediaUploadView from './components/MediaUploadView';
 import SlotManager from './components/SlotManager';
 import UserSettings from './components/UserSettings';
 import { Music, LogOut } from 'lucide-react';
@@ -1094,6 +1095,16 @@ export default function App() {
             >
               📅 Événements ({rehearsals.length})
             </button>
+            <button
+              onClick={() => setActiveTab('media')}
+              className={`px-3 py-2 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap ${
+                activeTab === 'media'
+                  ? 'text-pink-600 border-b-2 border-pink-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              📸 Médias
+            </button>
           </div>
         </div>
       </div>
@@ -1211,6 +1222,10 @@ export default function App() {
               instrumentSlots={instrumentSlots}
               currentUser={currentUser}
             />
+          )}
+
+          {activeTab === 'media' && (
+            <MediaUploadView />
           )}
         </div>
       </div>
