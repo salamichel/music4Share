@@ -35,7 +35,7 @@ import RehearsalView from './components/RehearsalView';
 import MediaUploadView from './components/MediaUploadView';
 import SlotManager from './components/SlotManager';
 import UserSettings from './components/UserSettings';
-import { Music, LogOut } from 'lucide-react';
+import { Music, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function App() {
   const {
@@ -75,6 +75,11 @@ export default function App() {
   const [enrichingSongs, setEnrichingSongs] = useState(new Set()); // IDs des titres en cours d'enrichissement
   const [showUserSettings, setShowUserSettings] = useState(false);
   const [selectedSongs, setSelectedSongs] = useState(new Set()); // IDs des titres sélectionnés pour enrichissement
+
+  // Menu scroll states
+  const menuScrollRef = React.useRef(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
 
   // Auto-connexion avec utilisateur par défaut (pas d'authentification)
   useEffect(() => {
@@ -143,6 +148,43 @@ export default function App() {
     const timer = setTimeout(cleanup, 2000);
     return () => clearTimeout(timer);
   }, [isFirebaseReady, songs.length]); // Se déclenche une fois que les chansons sont chargées
+
+  // Gestion du scroll du menu mobile
+  const updateScrollArrows = () => {
+    const container = menuScrollRef.current;
+    if (!container) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    setShowLeftArrow(scrollLeft > 10);
+    setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+  };
+
+  const scrollMenu = (direction) => {
+    const container = menuScrollRef.current;
+    if (!container) return;
+
+    const scrollAmount = 200;
+    const newScrollLeft = direction === 'left'
+      ? container.scrollLeft - scrollAmount
+      : container.scrollLeft + scrollAmount;
+
+    container.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
+  };
+
+  // Initialiser et surveiller le scroll du menu
+  useEffect(() => {
+    const container = menuScrollRef.current;
+    if (!container) return;
+
+    updateScrollArrows();
+    container.addEventListener('scroll', updateScrollArrows);
+    window.addEventListener('resize', updateScrollArrows);
+
+    return () => {
+      container.removeEventListener('scroll', updateScrollArrows);
+      window.removeEventListener('resize', updateScrollArrows);
+    };
+  }, []);
 
   // Trouver le slot correspondant à un instrument
   const findUserSlotForInstrument = (instrumentName) => {
@@ -1034,77 +1076,118 @@ export default function App() {
       {/* Onglets */}
       <div className="bg-white border-b shadow-sm">
         <div className="container mx-auto px-2 sm:px-4">
-          <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
-            <button
-              onClick={() => setActiveTab('repertoire')}
-              className={`px-3 py-2 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap ${
-                activeTab === 'repertoire'
-                  ? 'text-purple-600 border-b-2 border-purple-600'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
+          <div className="menu-scroll-container relative">
+            {/* Flèche gauche - visible sur mobile uniquement */}
+            {showLeftArrow && (
+              <button
+                onClick={() => scrollMenu('left')}
+                className="menu-scroll-arrow menu-scroll-arrow-left md:hidden"
+                aria-label="Défiler vers la gauche"
+              >
+                <ChevronLeft className="w-5 h-5 text-gray-600" />
+              </button>
+            )}
+
+            {/* Effet de fade gauche */}
+            {showLeftArrow && <div className="menu-scroll-fade-left md:hidden" />}
+
+            {/* Menu scrollable */}
+            <div
+              ref={menuScrollRef}
+              className="flex space-x-1 overflow-x-auto scrollbar-hide py-1"
             >
-              📋 Répertoire Global
-            </button>
-            <button
-              onClick={() => setActiveTab('mygroups')}
-              className={`px-3 py-2 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap ${
-                activeTab === 'mygroups'
-                  ? 'text-indigo-600 border-b-2 border-indigo-600'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              🎸 Mes Groupes ({myGroups.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('setlists')}
-              className={`px-3 py-2 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap ${
-                activeTab === 'setlists'
-                  ? 'text-orange-600 border-b-2 border-orange-600'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              🎵 Setlists ({setlists.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('artists')}
-              className={`px-3 py-2 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap ${
-                activeTab === 'artists'
-                  ? 'text-purple-600 border-b-2 border-purple-600'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              👥 Artistes ({artists.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('positioning')}
-              className={`px-3 py-2 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap ${
-                activeTab === 'positioning'
-                  ? 'text-teal-600 border-b-2 border-teal-600'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              📊 Positionnement
-            </button>
-            <button
-              onClick={() => setActiveTab('rehearsals')}
-              className={`px-3 py-2 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap ${
-                activeTab === 'rehearsals'
-                  ? 'text-green-600 border-b-2 border-green-600'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              📅 Événements ({rehearsals.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('media')}
-              className={`px-3 py-2 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap ${
-                activeTab === 'media'
-                  ? 'text-pink-600 border-b-2 border-pink-600'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              📸 Médias
-            </button>
+              <button
+                onClick={() => setActiveTab('repertoire')}
+                className={`px-4 py-3 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap rounded-lg flex items-center gap-2 ${
+                  activeTab === 'repertoire'
+                    ? 'bg-purple-50 text-purple-600 border-2 border-purple-600'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                }`}
+              >
+                <span className="text-xl">📋</span>
+                <span className="font-semibold">Répertoire Global</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('mygroups')}
+                className={`px-4 py-3 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap rounded-lg flex items-center gap-2 ${
+                  activeTab === 'mygroups'
+                    ? 'bg-indigo-50 text-indigo-600 border-2 border-indigo-600'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                }`}
+              >
+                <span className="text-xl">🎸</span>
+                <span className="font-semibold">Mes Groupes ({myGroups.length})</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('setlists')}
+                className={`px-4 py-3 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap rounded-lg flex items-center gap-2 ${
+                  activeTab === 'setlists'
+                    ? 'bg-orange-50 text-orange-600 border-2 border-orange-600'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                }`}
+              >
+                <span className="text-xl">🎵</span>
+                <span className="font-semibold">Setlists ({setlists.length})</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('artists')}
+                className={`px-4 py-3 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap rounded-lg flex items-center gap-2 ${
+                  activeTab === 'artists'
+                    ? 'bg-purple-50 text-purple-600 border-2 border-purple-600'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                }`}
+              >
+                <span className="text-xl">👥</span>
+                <span className="font-semibold">Artistes ({artists.length})</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('positioning')}
+                className={`px-4 py-3 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap rounded-lg flex items-center gap-2 ${
+                  activeTab === 'positioning'
+                    ? 'bg-teal-50 text-teal-600 border-2 border-teal-600'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                }`}
+              >
+                <span className="text-xl">📊</span>
+                <span className="font-semibold">Positionnement</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('rehearsals')}
+                className={`px-4 py-3 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap rounded-lg flex items-center gap-2 ${
+                  activeTab === 'rehearsals'
+                    ? 'bg-green-50 text-green-600 border-2 border-green-600'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                }`}
+              >
+                <span className="text-xl">📅</span>
+                <span className="font-semibold">Événements ({rehearsals.length})</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('media')}
+                className={`px-4 py-3 sm:px-4 md:px-6 sm:py-3 font-medium transition text-sm sm:text-base whitespace-nowrap rounded-lg flex items-center gap-2 ${
+                  activeTab === 'media'
+                    ? 'bg-pink-50 text-pink-600 border-2 border-pink-600'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                }`}
+              >
+                <span className="text-xl">📸</span>
+                <span className="font-semibold">Médias</span>
+              </button>
+            </div>
+
+            {/* Effet de fade droit */}
+            {showRightArrow && <div className="menu-scroll-fade-right md:hidden" />}
+
+            {/* Flèche droite - visible sur mobile uniquement */}
+            {showRightArrow && (
+              <button
+                onClick={() => scrollMenu('right')}
+                className="menu-scroll-arrow menu-scroll-arrow-right md:hidden"
+                aria-label="Défiler vers la droite"
+              >
+                <ChevronRight className="w-5 h-5 text-gray-600" />
+              </button>
+            )}
           </div>
         </div>
       </div>
