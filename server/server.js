@@ -48,6 +48,13 @@ if (!fs.existsSync(pdfUploadsDir)) {
   console.log('✅ Dossier uploads/pdf créé');
 }
 
+// Create media uploads directory for photos and videos
+const mediaUploadsDir = path.join(__dirname, 'uploads', 'media');
+if (!fs.existsSync(mediaUploadsDir)) {
+  fs.mkdirSync(mediaUploadsDir, { recursive: true });
+  console.log('✅ Dossier uploads/media créé');
+}
+
 // Configure multer for file storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -108,6 +115,40 @@ const pdfUpload = multer({
   fileFilter: pdfFileFilter,
   limits: {
     fileSize: 20 * 1024 * 1024 // 20MB max for PDFs
+  }
+});
+
+// Configure multer for media storage (images and videos)
+const mediaStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, mediaUploadsDir);
+  },
+  filename: (req, file, cb) => {
+    // Generate unique filename: timestamp_originalname
+    const timestamp = Date.now();
+    const safeName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    cb(null, `${timestamp}_${safeName}`);
+  }
+});
+
+// File filter - accept images and videos
+const mediaFileFilter = (req, file, cb) => {
+  const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif'];
+  const allowedVideoTypes = ['video/mp4', 'video/mpeg', 'video/quicktime', 'video/x-msvideo', 'video/webm', 'video/x-matroska'];
+  const allAllowedTypes = [...allowedImageTypes, ...allowedVideoTypes];
+
+  if (allAllowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Format de fichier non supporté. Utilisez JPG, PNG, GIF, WebP, HEIC, MP4, MOV, AVI, WebM ou MKV.'), false);
+  }
+};
+
+const mediaUpload = multer({
+  storage: mediaStorage,
+  fileFilter: mediaFileFilter,
+  limits: {
+    fileSize: 100 * 1024 * 1024 // 100MB max for media files
   }
 });
 
@@ -230,6 +271,106 @@ app.delete('/api/pdf/:filename', (req, res) => {
   } catch (error) {
     console.error('Erreur lors de la suppression du PDF:', error);
     res.status(500).json({ error: 'Erreur lors de la suppression du fichier PDF' });
+  }
+});
+
+// ========== MEDIA ROUTES (PHOTOS & VIDEOS) ==========
+
+// Upload multiple media files
+app.post('/api/upload/media', mediaUpload.array('mediaFiles', 50), (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'Aucun fichier fourni' });
+    }
+
+    const uploadedFiles = req.files.map(file => ({
+      url: `/api/media/${file.filename}`,
+      filename: file.filename,
+      originalName: file.originalname,
+      size: file.size,
+      mimetype: file.mimetype,
+      type: file.mimetype.startsWith('image/') ? 'image' : 'video'
+    }));
+
+    res.json({
+      success: true,
+      message: `${uploadedFiles.length} fichier(s) uploadé(s) avec succès`,
+      files: uploadedFiles
+    });
+
+    console.log(`✅ ${uploadedFiles.length} média(s) uploadé(s)`);
+  } catch (error) {
+    console.error('Erreur lors de l\'upload des médias:', error);
+    res.status(500).json({ error: 'Erreur lors de l\'upload des fichiers' });
+  }
+});
+
+// Serve media files
+app.get('/api/media/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(mediaUploadsDir, filename);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'Fichier non trouvé' });
+  }
+
+  res.sendFile(filePath);
+});
+
+// Get list of all media files
+app.get('/api/media', (req, res) => {
+  try {
+    const files = fs.readdirSync(mediaUploadsDir);
+
+    const mediaList = files.map(filename => {
+      const filePath = path.join(mediaUploadsDir, filename);
+      const stats = fs.statSync(filePath);
+      const ext = path.extname(filename).toLowerCase();
+
+      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif'];
+      const videoExtensions = ['.mp4', '.mpeg', '.mov', '.avi', '.webm', '.mkv'];
+
+      let type = 'unknown';
+      if (imageExtensions.includes(ext)) type = 'image';
+      else if (videoExtensions.includes(ext)) type = 'video';
+
+      return {
+        filename,
+        url: `/api/media/${filename}`,
+        size: stats.size,
+        type,
+        createdAt: stats.birthtime,
+        modifiedAt: stats.mtime
+      };
+    }).sort((a, b) => b.createdAt - a.createdAt); // Sort by newest first
+
+    res.json({
+      success: true,
+      count: mediaList.length,
+      files: mediaList
+    });
+  } catch (error) {
+    console.error('Erreur lors de la récupération des médias:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des fichiers' });
+  }
+});
+
+// Delete media file
+app.delete('/api/media/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(mediaUploadsDir, filename);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'Fichier non trouvé' });
+  }
+
+  try {
+    fs.unlinkSync(filePath);
+    res.json({ success: true, message: 'Fichier supprimé avec succès' });
+    console.log(`🗑️ Média supprimé: ${filename}`);
+  } catch (error) {
+    console.error('Erreur lors de la suppression du média:', error);
+    res.status(500).json({ error: 'Erreur lors de la suppression du fichier' });
   }
 });
 
