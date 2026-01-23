@@ -46,12 +46,8 @@ const SongListItem = ({
   songPdfs = [],
   onJoinSlot,
   onLeaveSlot,
-  onReenrichSong,
   onDeleteSong,
   onSaveSong,
-  isEnriching = false,
-  isSelected = false,
-  onToggleSelection,
   setlists = [],
   setlistSongs = []
 }) => {
@@ -110,20 +106,8 @@ const SongListItem = ({
           bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300
           flex items-center gap-4 p-3
           ${isPlayable ? 'ring-2 ring-green-500' : ''}
-          ${isSelected ? 'ring-2 ring-orange-500' : ''}
         `}
       >
-        {/* Checkbox de sélection */}
-        {onToggleSelection && (
-          <input
-            type="checkbox"
-            checked={isSelected}
-            onChange={() => onToggleSelection(song.id)}
-            className="w-4 h-4 text-purple-600 focus:ring-purple-500 rounded cursor-pointer flex-shrink-0"
-            title="Sélectionner pour enrichissement"
-          />
-        )}
-
         {/* Vignette YouTube */}
         {youtubeThumbnail && song.youtubeLink ? (
           <a

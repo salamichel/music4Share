@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { List, Filter, Sparkles, CheckSquare, Square, Trash2, ChevronDown, ChevronUp, Printer } from 'lucide-react';
+import { List, Filter, ChevronDown, ChevronUp, Printer } from 'lucide-react';
 import SongCard from './SongCard';
 import SongListItem from './SongListItem';
 import ViewModeToggle from './ViewModeToggle';
@@ -16,16 +16,8 @@ const RepertoireView = ({
   songPdfs = [],
   onJoinSlot,
   onLeaveSlot,
-  onReenrichSong,
   onDeleteSong,
   onSaveSong,
-  enrichingSongs,
-  selectedSongs,
-  onToggleSongSelection,
-  onEnrichSelected,
-  onDeleteSelected,
-  onSelectAllUnenriched,
-  onDeselectAll,
   setlists = [],
   setlistSongs = []
 }) => {
@@ -70,8 +62,6 @@ const RepertoireView = ({
     return true;
   }).sort((a, b) => a.title.localeCompare(b.title));
 
-  const unenrichedCount = songs.filter(s => !s.enriched).length;
-
   return (
     <div className="bg-white rounded-lg shadow-lg h-full flex flex-col">
       {/* Header */}
@@ -84,7 +74,6 @@ const RepertoireView = ({
             </h2>
             <p className="text-sm text-purple-100 mt-1">
               {filteredSongs.length} titre{filteredSongs.length > 1 ? 's' : ''}
-              {unenrichedCount > 0 && ` · ${unenrichedCount} non enrichi${unenrichedCount > 1 ? 's' : ''}`}
             </p>
           </div>
 
@@ -164,57 +153,6 @@ const RepertoireView = ({
         </div>
       </div>
 
-      {/* Barre d'actions pour l'enrichissement en masse */}
-      {onEnrichSelected && (
-        <div className="p-3 border-b bg-orange-50 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={onSelectAllUnenriched}
-              className="text-xs bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-lg flex items-center gap-1 transition shadow-sm"
-              title="Sélectionner tous les titres non enrichis"
-            >
-              <CheckSquare className="w-3 h-3" />
-              Tout sélectionner
-            </button>
-            {selectedSongs && selectedSongs.size > 0 && (
-              <>
-                <button
-                  onClick={onDeselectAll}
-                  className="text-xs bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg flex items-center gap-1 transition shadow-sm"
-                >
-                  <Square className="w-3 h-3" />
-                  Désélectionner
-                </button>
-                <span className="text-sm text-gray-700 font-medium">
-                  {selectedSongs.size} titre{selectedSongs.size > 1 ? 's' : ''}
-                </span>
-              </>
-            )}
-          </div>
-          {selectedSongs && selectedSongs.size > 0 && (
-            <div className="flex gap-2">
-              <button
-                onClick={onEnrichSelected}
-                className="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm flex items-center justify-center gap-2 transition shadow-sm"
-              >
-                <Sparkles className="w-4 h-4" />
-                Enrichir
-              </button>
-              {onDeleteSelected && (
-                <button
-                  onClick={onDeleteSelected}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition shadow-sm"
-                  title="Supprimer les titres sélectionnés"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Supprimer</span>
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Grid de cards ou Liste - Responsive */}
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
         {filteredSongs.length === 0 ? (
@@ -244,12 +182,8 @@ const RepertoireView = ({
                     songPdfs={songPdfs}
                     onJoinSlot={onJoinSlot}
                     onLeaveSlot={onLeaveSlot}
-                    onReenrichSong={onReenrichSong}
                     onDeleteSong={onDeleteSong}
                     onSaveSong={onSaveSong}
-                    isEnriching={enrichingSongs.has(song.id)}
-                    isSelected={selectedSongs && selectedSongs.has(song.id)}
-                    onToggleSelection={onToggleSongSelection}
                     setlists={setlists}
                     setlistSongs={setlistSongs}
                   />
@@ -280,12 +214,8 @@ const RepertoireView = ({
                     songPdfs={songPdfs}
                     onJoinSlot={onJoinSlot}
                     onLeaveSlot={onLeaveSlot}
-                    onReenrichSong={onReenrichSong}
                     onDeleteSong={onDeleteSong}
                     onSaveSong={onSaveSong}
-                    isEnriching={enrichingSongs.has(song.id)}
-                    isSelected={selectedSongs && selectedSongs.has(song.id)}
-                    onToggleSelection={onToggleSongSelection}
                     setlists={setlists}
                     setlistSongs={setlistSongs}
                   />
